@@ -1,0 +1,28 @@
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  --hbr-app-shift-top: 56px;
+}
+
+:not(:defined) {
+  opacity: 0;
+}
+
+:defined {
+  opacity: 1;
+  transition: opacity 0.4s ease-in;
+}
+
+body {
+  margin: 0 auto;
+  font-family: var(--hbr-font-body);
+  height: calc(100vh - var(--hbr-app-shift-top));
+  overflow-y: auto;
+  background-color: var(--hbr-color-neutral-bg-medium);
+}
+
+* {
+  box-sizing: border-box;
+}
