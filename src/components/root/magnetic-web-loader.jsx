@@ -21,7 +21,7 @@ function MagneticWebLoader() {
         injectMagneticTheme: true,
         injectMagneticDarkTheme: true,
         injectMagneticClassicTheme: true,
-        injectMagneticBrandAltTheme: true,
+        // injectMagneticBrandAltTheme: true,
       });
     `;
 
