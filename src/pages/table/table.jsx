@@ -4,10 +4,6 @@ function Table() {
   // Wait for the custom element to be defined (ergonomic helper)
   const defined = useCustomElementDefined('hbr-dom-table');
 
-  if (!defined) {
-    return null;
-  }
-
   const columns = [
     { id: "name", name: "Name", width: "100px" },
     { id: "age", name: "Age" },
@@ -32,6 +28,7 @@ function Table() {
     )
   }
 
+  if (!defined) return null;
   return <div className="hbr-css__page-title-container hbr-css__layout-col-lg">
     <div className="hbr-css__layout-row-sm">
       <div className="hbr-css__text-heading-xl-bold">Table page</div>

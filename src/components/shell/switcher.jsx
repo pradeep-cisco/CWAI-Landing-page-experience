@@ -274,7 +274,7 @@ function Tree({ selected }) {
         placeholder="Search hierarchy"
         onhbr-input={handleInput}
         clearable={true}
-        style={{ padding: "12px", backgroundColor: "#fff" }}
+        style={{ padding: "12px", backgroundColor: "var(--hbr-color-neutral-bg, #F2F4F7)" }}
       >
         <div
           slot="prefix"
