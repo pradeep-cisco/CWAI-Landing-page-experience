@@ -1,90 +1,134 @@
-import { useState } from "react";
+/**
+ * uses hbr-card component because health cards could be interactive
+ */
+const HealthCard = ({ trend = "up" }) => {
+	const trendIcon = trend === "up" ? "trend-up" : "trend-down";
+	return (
+		<hbr-card style={{ "--min-width": "200px" }}>
+			<hbr-layout direction="column" gap="2xs">
+				<hbr-text type="secondary" size="sm">Label</hbr-text>
+				<hbr-layout direction="row" gap="2xs">
+					<hbr-text type="primary" size="md" weight="bold">100%</hbr-text>
+					<hbr-icon
+						name={trendIcon}
+						style={{
+							fontSize: "16px",
+							color: `var(--hbr-color-${
+								trend === "up" ? "success" : "danger"
+							}-active)`,
+						}}
+					/>
+					<hbr-layout direction="row" gap="2xs">
+						<hbr-text type="primary" size="xs" weight="semibold">1%</hbr-text>
+						<hbr-text type="secondary" size="xs" weight="semibold">yesterday</hbr-text>
+					</hbr-layout>
+				</hbr-layout>
+			</hbr-layout>
+		</hbr-card>
+	);
+};
 
-function Home() {
-  const [name, setName] = useState("");
-  const [city, setCity] = useState("SF");
-  const handleTabClick = (event) => {
-    console.log("Tab clicked: " + event.target.panel);
-  };
-  const handleSelect = (event) => {
-    setCity(event.target.value);
-  };
-  const handleInput = (event) => {
-    setName(event.target.value);
-  };
-  const handleSubmit = (event) => {
-    event.preventDefault();
-    alert(`Name: ${name}, City: ${city}`);
-  };
-  return <div className="hbr-css__page-title-container hbr-css__layout-col-2xs">
-    <div className="hbr-css__layout-row-sm">
-      <div className="hbr-css__text-heading-xl-bold">Get started with Magnetic</div>
-    </div>
-    <hbr-tab-group primary size="small" onhbr-click={handleTabClick}>
-      <hbr-tab slot="nav" panel="form" active>Form</hbr-tab>
-      <hbr-tab slot="nav" panel="card">Card</hbr-tab>
+// Dummy content for widgets
+const Content = () => (
+	<hbr-layout direction="column" gap="md">
+		<hbr-layout direction="row" gap="md">
+			<hbr-text variant="sub-section-title">Sub-section title</hbr-text>
+			<hbr-button variant="text" style={{ marginInlineStart: "auto" }}>
+				Button
+			</hbr-button>
+		</hbr-layout>
+		<div
+			style={{
+				height: "160px",
+				backgroundColor: "var(--hbr-color-neutral-bg-medium)",
+				borderRadius: "2px",
+			}}
+		/>
+	</hbr-layout>
+);
 
-      <div style={{ "height": "var(--hbr-spacing-lg)" }}></div>
-
-      <hbr-tab-panel name="form">
-        <form onSubmit={handleSubmit} className="hbr-css__layout-col-md">
-          <div className="hbr-css__container-card">
-            <div className="hbr-css__form-container">
-              <div className="hbr-css__form-header">
-                <div className=" hbr-css__text-heading-lg-bold">Form title</div>
-                <div className="hbr-css__text-secondary-sm">Subtitle</div>
-              </div>
-
-              <div className="hbr-css__container-auto">
-                <div className="hbr-css__form-section">
-                  <hbr-select label="City" value={city} onhbr-change={handleSelect}>
-                    <hbr-option value="SF">San Francisco</hbr-option>
-                    <hbr-option value="Berlin">Berlin</hbr-option>
-                  </hbr-select>
-
-                  <hbr-input value={name} onInput={handleInput} label="Name">
-                    <div slot="label-suffix" className="hbr-css__text-secondary-sm">
-                      (Optional)
-                    </div>
-                  </hbr-input>
-
-                  <hbr-switch checked>
-                    <div slot="label">
-                      <span>Label</span>
-                      <hbr-icon name="info" className="hbr-css__text-secondary-sm"></hbr-icon>
-                    </div>
-                    Toggle
-                    <article slot="rear" className="hbr-css__text-secondary-sm">
-                      Amet minim mollit non deserunt ullamco est sit aliqua dolor do
-                      amet sint. Velit officia consequat duis enim velit mollit.
-                      Exercitation veniam consequat.
-                    </article>
-                  </hbr-switch>
-                </div>
-              </div>
-            </div>
-          </div>
-          <hbr-button type="submit">Submit</hbr-button>
-        </form>
-      </hbr-tab-panel>
-
-      <hbr-tab-panel name="card">
-        <hbr-card style={{ "--box-shadow": "none" }}>
-          <div slot="header" className="hbr-css__layout-col-3xs">
-            <div className="hbr-css__layout-row-xs">
-              <h3 className="hbr-css__text-heading-md-bold hbr-css__margin-none">
-                Title
-              </h3>
-              <hbr-tag size="small">default</hbr-tag>
-            </div>
-            <div className="hbr-css__text-secondary-sm">Subtitle</div>
-          </div>
-          <div className="hbr-css__container-empty" style={{ "width": "388px", "height": "77px" }} />
-        </hbr-card>
-      </hbr-tab-panel>
-
-    </hbr-tab-group>
-  </div>
+// Three widgets in a desktop row: one-third | one-third | one-third
+// Replace with actual widgets like donut-chart, pie-chart, key-value-pairs
+const SmallWidget = () => {
+	return <hbr-card container col="1/3">
+		<Content />
+	</hbr-card>
 }
 
-export default Home;
+// Two widgets in a desktop row: half | half
+// Replace with actual widgets like bar-chart, line-chart, key-value-pairs etc
+const MediumWidget = () => {
+	return <hbr-card container col="1/2">
+		<Content />
+	</hbr-card>
+}
+
+// Two-thirds widget, goes with a small widget in a desktop row: two-thirds | one-third
+// Replace with actual widgets like large line-chart, small table etc.
+const LargeWidget = () => {
+	return <hbr-card container col="2/3">
+		<Content />
+	</hbr-card>
+}
+
+// Full width widget
+// Replace with actual widgets like large table, large chart etc.
+const ExtraLargeWidget = () => {
+	return <hbr-card container col="full">
+		<Content />
+	</hbr-card>
+}
+
+export default function Dashboard() {
+	return (
+		<hbr-layout variant="page">
+			{/* Page title section */}
+			<hbr-layout variant="page:header">
+				<hbr-layout direction="row" gap="sm">
+					<hbr-text variant="page-title">Home</hbr-text>
+				</hbr-layout>
+				<hbr-tab-group id="tab-group" primary>
+					<hbr-tab slot="nav" active>
+						Tab
+					</hbr-tab>
+					<hbr-tab slot="nav">Tab</hbr-tab>
+				</hbr-tab-group>
+			</hbr-layout>
+
+			<hbr-layout variant="dashboard">
+				{/* Health cards section */}
+				<hbr-layout variant="dashboard:section">
+					<hbr-text variant="section-title">Section title</hbr-text>
+					<hbr-layout variant="dashboard:widgets:basic-health">
+						<HealthCard />
+						<HealthCard trend="down" />
+						<HealthCard />
+					</hbr-layout>
+				</hbr-layout>
+
+				{/* Container cards section */}
+				<hbr-layout variant="dashboard:section">
+					<hbr-text variant="section-title">Section title</hbr-text>
+					<hbr-layout variant="dashboard:widgets:container">
+						{/* Three cards in a desktop row: one-third | one-third | one-third */}
+						<SmallWidget />
+						<SmallWidget />
+						<SmallWidget />
+					</hbr-layout>
+				</hbr-layout>
+
+				{/* Container cards section */}
+				<hbr-layout variant="dashboard:section">
+					<hbr-text variant="section-title">Section title</hbr-text>
+					<hbr-layout variant="dashboard:widgets:container">
+						<MediumWidget />
+						<MediumWidget />
+						<ExtraLargeWidget />
+						<LargeWidget />
+						<SmallWidget />
+					</hbr-layout>
+				</hbr-layout>
+			</hbr-layout>
+		</hbr-layout>
+	);
+}

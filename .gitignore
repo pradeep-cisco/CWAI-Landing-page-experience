@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Harbor Context (auto-generated)
+ui-context/
+.cursor/rules/harbor-elements.instructions.mdc
