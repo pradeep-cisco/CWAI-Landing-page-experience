@@ -1,34 +1,24 @@
-import { useEffect } from "react";
-
-function MagneticWebLoader() {
-
-  useEffect(() => {
-    const tagEl = document.createElement("script");
-    tagEl.type = "module";
-
-    const packageURL = "https://hbr.cisco.com/packages/@harbor/elements";
-    const hbrDist = `${packageURL}/dist/harbor-elements`
-
-    tagEl.innerHTML = `
-      import { bootstrap } from "${hbrDist}/index.esm.js";
-    
-      bootstrap({
-        base: "${hbrDist}/",
-        injectScript: true,
-        injectStyle: true,
-        injectTokens: true,
-        injectDarkTokens: true,
-        injectMagneticTheme: true,
-        injectMagneticDarkTheme: true,
-        injectMagneticClassicTheme: true,
-        // injectMagneticBrandAltTheme: true,
-      });
-    `;
-
-    document.head.appendChild(tagEl);
-  }, [])
-
-  return null;
-}
-
-export default MagneticWebLoader;
+import { bootstrap } from "@harbor/elements";
+bootstrap({
+	base: `${import.meta.env.BASE_URL}harbor-elements/`,
+	iconAssetPath: "/harbor-elements/icons/magnetic/svg/",
+	nonce: "r4nd0m",
+	injectScript: true,
+	injectStyle: true,
+	injectTokens: true,
+	injectDarkTokens: true,
+	injectMagneticTheme: true,
+	injectMagneticDarkTheme: true,
+	injectMagneticClassicTheme: true,
+  /**
+   * Uncomment to get blue brand theme
+   */
+	// injectMagneticBrandAltTheme: true,
+  /**
+   * Uncomment to get OneCD theme
+   */
+	// injectOneCDTokens: true,
+	// injectOneCDDarkTokens: true,
+	// injectOneCDTheme: true,
+	// injectOneCDDarkTheme: true
+});

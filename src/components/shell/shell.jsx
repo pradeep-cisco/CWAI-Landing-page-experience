@@ -14,10 +14,10 @@ export default function Shell({ children, navConfig }) {
   const Page = children || null;
   return (
     <div
-      className={`hbr-css__layout-col-base n-root  ${navCollapsed ? "navCollapsed" : ""}`}
+      className={`n-root ${navCollapsed ? "navCollapsed" : ""}`}
     >
       <Header />
-      <div className="hbr-css__layout-row-base n-container">
+      <div className="n-container">
         <Nav
           collapsed={navCollapsed}
           setCollapsed={setNavCollapsed}
@@ -25,7 +25,7 @@ export default function Shell({ children, navConfig }) {
           setSelected={setSelected}
           config={navConfig}
         />
-        <main className="hbr-css__layout-col-base n-content">
+        <main className="n-content">
           <div className="n-page">
             {Page}
           </div>

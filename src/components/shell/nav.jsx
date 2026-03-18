@@ -24,12 +24,14 @@ const Item = ({ item, selected, onSelect }) => (
 const Group = ({ item, renderItems }) => (
   <React.Fragment>
     <hbr-menu-divider />
-    <div
-      className="hbr-css__text-secondary-xs-semibold"
+    <hbr-text
+      type="secondary"
+      size="xs"
+      weight="semibold"
       style={{ paddingLeft: "8px" }}
     >
       {item.label}
-    </div>
+    </hbr-text>
     {/** 
 			<hbr-divider />
 			<hbr-label variant="nav-group">

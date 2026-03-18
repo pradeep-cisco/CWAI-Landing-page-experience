@@ -30,3 +30,25 @@ body {
 hbr-shell-header::part(base) {
   min-width: 480px;
 }
+
+/* Patches till this PR is merged: https://www-github.cisco.com/Harbor/elements/pull/3394 */
+hbr-nav-item::part(prefix) {
+  --path-color-default: var(--brand-accent-icon-default, #7E868F);
+  --path-color-strong: var(--brand-accent-icon-default, #7E868F);
+  --path-color-medium: var(--brand-accent-icon-medium-default, #A7ADB5);
+  --path-color-weak: var(--brand-accent-icon-weak-default, #C1C6CC);
+}
+
+hbr-nav-item:hover::part(prefix),
+hbr-nav-item[selected]::part(prefix) {
+  --path-color-default: var(--brand-accent-icon-active, #45991F);
+  --path-color-strong: var(--brand-accent-icon-active, #45991F);
+  --path-color-medium: var(--brand-accent-icon-medium-active, #52A62B);
+  --path-color-weak: var(--brand-accent-icon-weak-active, #6BBF41);
+}
+
+hbr-tab-group[primary] {
+  hbr-tab {
+      --color-sentiment-indicator: var(--brand-accent-border-active, #45991F);
+  }
+}

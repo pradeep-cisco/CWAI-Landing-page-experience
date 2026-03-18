@@ -64,7 +64,7 @@ export default function Header({
         <hbr-shell-header>
           <a href="/" slot="logo-name">
             <hbr-icon name="cisco" />
-            <div>Magnetic</div>
+            <div>Meraki</div>
           </a>
 
           <div slot="utilities">

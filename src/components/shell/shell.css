@@ -1,4 +1,6 @@
 .n-root {
+    display: flex;
+    flex-direction: column;
     --hbr-app-shift-top: 56px;
     --hbr-app-shift-left: 280px;
     --hbr-app-shift-right: 0px;
@@ -19,14 +21,17 @@
 }
 
 .n-container {
+    display: flex;
+    flex-direction: row;
     flex: 1;
-    /* TODO: make layouting app level variables available from harbor */
     min-width: 100vw;
     min-height: calc(100vh - var(--hbr-app-shift-top));
     overflow: hidden;
 }
 
 .n-content {
+    display: flex;
+    flex-direction: column;
     width: calc(100vw - calc(var(--hbr-app-shift-left, 0px) + var(--hbr-app-shift-right, 0px)));
     min-height: calc(100vh - var(--hbr-app-shift-top, 0px));
     height: calc(100vh - var(--hbr-app-shift-top, 0px));

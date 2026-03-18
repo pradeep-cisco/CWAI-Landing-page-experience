@@ -1,16 +1,17 @@
 {
   "name": "gen-ui-react",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
+    "copy-elements": "rm -rf ./public/harbor-elements && cpy './node_modules/@harbor/elements/dist/harbor-elements/**/*' './public/harbor-elements' --parents ",
+    "dev": "npm run copy-elements && vite",
+    "build": "npm run copy-elements && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
-    "@harbor/context": "^0.1.9",
+    "@harbor/context": "^0.1.12",
+    "@harbor/elements": "^2.18.28",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.9.3",
@@ -21,15 +22,11 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",
+    "cpy-cli": "^7.0.0",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^16.4.0",
-    "vite": "npm:rolldown-vite@7.1.12"
-  },
-  "pnpm": {
-    "overrides": {
-      "vite": "npm:rolldown-vite@7.1.12"
-    }
+    "vite": "^8.0.0"
   }
 }
