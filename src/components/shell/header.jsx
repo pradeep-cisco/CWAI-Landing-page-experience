@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const iconsURL = "https://hbr.cisco.com/packages/phosphor"
+const iconsURL = "https://hbr.cisco.com/packages/phosphor";
 const modes = [
   { name: "light", label: "Light", icon: `${iconsURL}/sun-bold.svg` },
   { name: "dark", label: "Dark", icon: `${iconsURL}/moon-stars-bold.svg` },
@@ -13,22 +12,21 @@ const modes = [
 ];
 
 function ModeSelector() {
-  const detectSystem = () =>
-    typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches
-      ? 'dark'
-      : 'light';
+  const detectMode = () => {
+    if (typeof document !== "undefined" && document.body.classList.contains("hbr-mode-dark")) {
+      return "dark";
+    }
 
-  const [mode, setMode] = useState(detectSystem);
-
-  const applyMode = (m) => {
-    if (typeof document === "undefined") return;
-    const body = document.body;
-    if (m === "dark") body.classList.add("hbr-mode-dark");
-    else body.classList.remove("hbr-mode-dark");
+    return typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
   };
 
+  const [mode, setMode] = useState(detectMode);
+
   useEffect(() => {
-    applyMode(mode);
+    document.body.classList.toggle("hbr-mode-dark", mode === "dark");
   }, [mode]);
 
   // Toggle between light and dark
@@ -40,7 +38,14 @@ function ModeSelector() {
   const nextIcon = modes.find(m => m.name === nextMode)?.icon;
 
   return (
-    <hbr-button noPadding sentiment="header" slot="trigger" onClick={toggle}>
+    <hbr-button
+      aria-label={`Switch to ${nextMode} mode`}
+      noPadding
+      sentiment="header"
+      slot="trigger"
+      variant="context"
+      onClick={toggle}
+    >
       <hbr-icon
         src={nextIcon}
         sentiment="header"
@@ -56,6 +61,7 @@ export default function Header({
   return (
     <>
       <div
+        className="n-header"
         style={{
           width: "100%",
           minHeight: "56px",

@@ -1,0 +1,5 @@
+.shell__nav {
+    padding-top: var(--hbr-app-shift-top, 56px);
+    position: relative;
+    z-index: 1;
+}

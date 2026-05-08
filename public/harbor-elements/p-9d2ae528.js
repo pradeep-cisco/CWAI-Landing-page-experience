@@ -1,2 +1,0 @@
-import{a as t}from"./p-160975e0.js";import{T as e}from"./p-66c1dbdb.js";t((t=>{let o=t.theme||t.getAttribute("theme");if(typeof o==="string"){o=o.trim()}const s=e.getTheme(o);if(s!==o){t.setAttribute("theme",s)}return s}));const o=()=>{};const s=o;export{s as g};
-//# sourceMappingURL=p-9d2ae528.js.map

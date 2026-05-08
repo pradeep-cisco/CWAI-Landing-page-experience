@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useCallback, useState } from "react"
 import { useMatches } from "react-router-dom";
 import Header from "./header";
 import Footer from "./footer";
@@ -12,6 +12,23 @@ export default function Shell({ children, navConfig }) {
   const [navCollapsed, setNavCollapsed] = useState(true);
   const [selected, setSelected] = useState(currentPath || (navConfig.length > 0 ? navConfig[0].value : null));
   const Page = children || null;
+
+  const handleOneCdScroll = useCallback((event) => {
+    const target = event.currentTarget;
+    const header = document.querySelector("hbr-shell-header");
+    const glowLayer = target.querySelector(".hbr-css__glow-layer");
+
+    if (target.scrollTop > 160) {
+      header?.classList.add("scrolled");
+    } else {
+      header?.classList.remove("scrolled");
+    }
+
+    if (glowLayer) {
+      glowLayer.style.top = `-${target.scrollTop}px`;
+    }
+  }, []);
+
   return (
     <div
       className={`n-root ${navCollapsed ? "navCollapsed" : ""}`}
@@ -25,7 +42,11 @@ export default function Shell({ children, navConfig }) {
           setSelected={setSelected}
           config={navConfig}
         />
-        <main className="n-content">
+        <main
+          className="n-content hbr-css__base-bg-gradient-layer"
+          onScroll={handleOneCdScroll}
+        >
+          <div className="hbr-css__glow-layer" aria-hidden="true" />
           <div className="n-page">
             {Page}
           </div>

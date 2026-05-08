@@ -1,0 +1,7 @@
+interface:
+  display_name: "Apply OneCD Theme"
+  short_description: "Opt-in OneCD theme application"
+  default_prompt: "Use $apply-onecd-theme to apply the OneCD theme to this React Harbor app."
+
+policy:
+  allow_implicit_invocation: false

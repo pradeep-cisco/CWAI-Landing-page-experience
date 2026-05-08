@@ -17,8 +17,8 @@ bootstrap({
   /**
    * Uncomment to get OneCD theme
    */
-	// injectOneCDTokens: true,
-	// injectOneCDDarkTokens: true,
-	// injectOneCDTheme: true,
-	// injectOneCDDarkTheme: true
+	injectOneCDTokens: true,
+	injectOneCDDarkTokens: true,
+	injectOneCDTheme: true,
+	injectOneCDDarkTheme: true
 });
