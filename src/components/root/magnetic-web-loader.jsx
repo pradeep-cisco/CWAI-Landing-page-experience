@@ -10,15 +10,12 @@ bootstrap({
 	injectMagneticTheme: true,
 	injectMagneticDarkTheme: true,
 	injectMagneticClassicTheme: true,
-  /**
-   * Uncomment to get blue brand theme
-   */
-	// injectMagneticBrandAltTheme: true,
-  /**
-   * Uncomment to get OneCD theme
-   */
 	injectOneCDTokens: true,
 	injectOneCDDarkTokens: true,
 	injectOneCDTheme: true,
-	injectOneCDDarkTheme: true
+	injectOneCDDarkTheme: true,
+	/**
+   * Uncomment to get blue brand theme
+   */
+	// injectMagneticBrandAltTheme: true,
 });

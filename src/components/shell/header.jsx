@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 
 const iconsURL = "https://hbr.cisco.com/packages/phosphor";
+const oneCdLinkSelector = 'link[data-token^="onecd"], link[data-theme^="onecd"]';
 const modes = [
   { name: "light", label: "Light", icon: `${iconsURL}/sun-bold.svg` },
   { name: "dark", label: "Dark", icon: `${iconsURL}/moon-stars-bold.svg` },
@@ -56,6 +57,58 @@ function ModeSelector() {
   );
 }
 
+function setOneCdThemeEnabled(enabled) {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.querySelectorAll(oneCdLinkSelector).forEach((link) => {
+    if (enabled) {
+      link.removeAttribute("disabled");
+    } else {
+      link.setAttribute("disabled", "true");
+    }
+  });
+
+  if (enabled) {
+    document.body.setAttribute("data-theme", "onecd");
+  } else {
+    document.body.removeAttribute("data-theme");
+  }
+}
+
+function OneCdThemeToggle() {
+  const [oneCdEnabled, setOneCdEnabled] = useState(false);
+
+  useEffect(() => {
+    setOneCdThemeEnabled(oneCdEnabled);
+
+    const observer = new MutationObserver(() => {
+      setOneCdThemeEnabled(oneCdEnabled);
+    });
+
+    observer.observe(document.head, { childList: true });
+
+    return () => observer.disconnect();
+  }, [oneCdEnabled]);
+
+  const nextTheme = oneCdEnabled ? "Magnetic" : "OneCD";
+  const icon = oneCdEnabled ? "magnet" : "rocket";
+
+  return (
+    <hbr-button
+      aria-label={`Switch to ${nextTheme} theme`}
+      aria-pressed={oneCdEnabled}
+      sentiment="header"
+      variant="context"
+      onClick={() => setOneCdEnabled((enabled) => !enabled)}
+    >
+      <hbr-icon slot="prefix" name={icon} size="20px" />
+      {nextTheme}
+    </hbr-button>
+  );
+}
+
 export default function Header({
 }) {
   return (
@@ -74,6 +127,7 @@ export default function Header({
           </a>
 
           <div slot="utilities">
+            <OneCdThemeToggle />
             <ModeSelector />
           </div>
         </hbr-shell-header>
