@@ -12,6 +12,10 @@ dist
 dist-ssr
 *.local
 
+# Vendored at dev/build time by the `copy-elements` script from
+# node_modules/@harbor/elements. Regenerated every install; never committed.
+public/harbor-elements/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

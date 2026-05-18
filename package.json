@@ -5,7 +5,7 @@
   "type": "module",
   "description": "React 19 + Vite 8 + Harbor Elements (Magnetic) starter. Rename after scaffolding.",
   "scripts": {
-    "copy-elements": "rm -rf ./public/harbor-elements && cpy './node_modules/@harbor/elements/dist/harbor-elements/**/*' './public/harbor-elements' --parents ",
+    "copy-elements": "cpy './node_modules/@harbor/elements/dist/harbor-elements/**/*' './public/harbor-elements' --parents",
     "dev": "npm run copy-elements && vite",
     "build": "npm run copy-elements && vite build",
     "preview": "vite preview"
