@@ -18,8 +18,8 @@
 body {
   margin: 0 auto;
   font-family: var(--hbr-font-body);
-  height: calc(100vh - var(--hbr-app-shift-top));
-  overflow-y: auto;
+  height: 100vh;
+  overflow: hidden;
   background-color: var(--hbr-color-neutral-bg-medium);
 }
 

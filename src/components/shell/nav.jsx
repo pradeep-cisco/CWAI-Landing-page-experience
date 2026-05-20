@@ -1,6 +1,7 @@
 import Switcher from "./switcher";
-import React, { useState } from "react";
+import React from "react";
 import { useNavigate } from 'react-router-dom';
+import "./nav.css";
 
 // Define the navigation data structure
 // This array contains objects that represent different navigation items
@@ -156,7 +157,7 @@ const Nav = ({ selected, setSelected, config = [], collapsed, setCollapsed }) =>
   };
 
   return (
-    <nav>
+    <nav className="shell__nav">
       <hbr-shell-nav
         class="side-nav"
         onhbr-nav-item-click={handleNavItemClick}
