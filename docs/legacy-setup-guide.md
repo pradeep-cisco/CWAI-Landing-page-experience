@@ -4,14 +4,14 @@
 2. In Terminal, copy and paste:
 
 ```
-xcode-select --install   
+xcode-select --install
 ```
 1. A dialog box will appear on your screen.
 Follow the installation instructions shown in that dialog.
 2. After installation completes, verify it worked:
 
 ```
-xcode-select -p   
+xcode-select -p
 ```
 ---
 ## 2. Install Node
@@ -19,24 +19,24 @@ xcode-select -p
 In Terminal, run:
 
 ```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash   
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
 ```
 ### Step B — Activate nvm
 Run:
 
 ```
-source ~/.zshrc   
+source ~/.zshrc
 ```
 ### Step C — Install Node
 Run:
 
 ```
-nvm install --lts   
+nvm install --lts
 ```
 Verify installation:
 
 ```
-node -v   
+node -v
 ```
 You should see a version number.
 
@@ -61,7 +61,7 @@ You should now see project files in the left sidebar.
 2. In the terminal that opens at the bottom of Cursor, run:
 
 ```
-npm install   
+npm install
 ```
 Wait until it finishes.
 
@@ -69,7 +69,7 @@ Wait until it finishes.
 In the same terminal, run:
 
 ```
-npm run dev   
+npm run dev
 ```
 After a few seconds:
 
@@ -77,7 +77,7 @@ After a few seconds:
 * Or you will see a link such as:
 
 ```
-http://localhost:3000   
+http://localhost:3000
 ```
 ---
 # Part 3 — Generate UI Using Cursor
@@ -93,7 +93,7 @@ This opens the Cursor AI assistant.
 Try entering this prompt:
 
 ```
-Generate a network health dashboard for this app.   
+Generate a network health dashboard for this app.
 ```
 Review the suggested changes and accept them if appropriate.
 
@@ -115,7 +115,7 @@ Paste something like:
 ```
 <PASTE-FIGMA-LINK-HERE>
 
-Generate a page with layout and styling similar to this Figma design.   
+Generate a page with layout and styling similar to this Figma design.
 ```
 You might get prompted to give Cursor permission to run MCP tools, so keep an eye out for these permissions to appear in the cursor agent's response.
 
