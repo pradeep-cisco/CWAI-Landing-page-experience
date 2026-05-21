@@ -1,0 +1,17 @@
+Copyright (c) Cisco Systems, Inc. All rights reserved.
+
+This is an internal Cisco project. It is provided to Cisco employees
+and authorized contractors for internal use only. No license, express
+or implied, is granted for use, modification, or distribution outside
+of Cisco.
+
+If you are reading this and are not affiliated with Cisco, please stop
+and contact the maintainer listed in the README before going further.
+
+----
+
+NOTE TO MAINTAINER: this is a placeholder. Replace with the license
+text appropriate to how this repo is meant to be used (internal-only,
+Cisco-open-source, MIT, Apache-2.0, etc.). If this template is meant
+to be forkable by other Cisco teams who'll publish their own
+prototypes, an internal-source license is probably the right call.
