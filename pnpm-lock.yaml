@@ -335,7 +335,7 @@ packages:
     dev: true
 
   /@harbor/context@0.1.14(hono@4.12.18)(zod@4.4.3):
-    resolution: {integrity: sha512-cF1MgYYlYJk9XyINDnROPypF9njyuqoMuh88NI6Wt//zKfWcqaqm96HOfDd40hpECWeu9/6HLZ93lNCyfrLUPA==, tarball: https://artifactory.devhub-cloud.cisco.com/artifactory/api/npm/harbor-cloud-npm/@harbor/context/-/@harbor/context-0.1.14.tgz}
+    resolution: {integrity: sha512-cF1MgYYlYJk9XyINDnROPypF9njyuqoMuh88NI6Wt//zKfWcqaqm96HOfDd40hpECWeu9/6HLZ93lNCyfrLUPA==}
     hasBin: true
     dependencies:
       '@harbor/elements-context': 0.0.21(hono@4.12.18)(zod@4.4.3)
@@ -350,7 +350,7 @@ packages:
     dev: false
 
   /@harbor/elements-context@0.0.21(hono@4.12.18)(zod@4.4.3):
-    resolution: {integrity: sha512-fP7fbSjps7nDZKOAfasMxw46jr2alJE0jZmi6R4vf22VGLwYEQ3LwdoHIcWCBkndmEmB/03JqNfQlnZA0uTErg==, tarball: https://artifactory.devhub-cloud.cisco.com/artifactory/api/npm/harbor-cloud-npm/@harbor/elements-context/-/@harbor/elements-context-0.0.21.tgz}
+    resolution: {integrity: sha512-fP7fbSjps7nDZKOAfasMxw46jr2alJE0jZmi6R4vf22VGLwYEQ3LwdoHIcWCBkndmEmB/03JqNfQlnZA0uTErg==}
     hasBin: true
     dependencies:
       '@modelcontextprotocol/sdk': 1.25.1(hono@4.12.18)(zod@4.4.3)
@@ -364,7 +364,7 @@ packages:
     dev: false
 
   /@harbor/elements@2.18.39:
-    resolution: {integrity: sha512-ERKDwdZeTYfvrRqr2DlhbVuyxpIWfRBMjUlaQnRGqaAYLh+eaTDTrT3XWU7Iun5tvZy0cOuSFFtTxAq4z8PCoQ==, tarball: https://artifactory.devhub-cloud.cisco.com/artifactory/api/npm/harbor-cloud-npm/@harbor/elements/-/@harbor/elements-2.18.39.tgz}
+    resolution: {integrity: sha512-ERKDwdZeTYfvrRqr2DlhbVuyxpIWfRBMjUlaQnRGqaAYLh+eaTDTrT3XWU7Iun5tvZy0cOuSFFtTxAq4z8PCoQ==}
     dependencies:
       '@stencil/core': 4.12.3
     dev: false
