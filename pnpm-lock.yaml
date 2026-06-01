@@ -9,8 +9,8 @@ dependencies:
     specifier: ^0.1.12
     version: 0.1.14(hono@4.12.18)(zod@4.4.3)
   '@harbor/elements':
-    specifier: ^2.18.39
-    version: 2.18.39
+    specifier: ^2.18.43
+    version: 2.18.43
   react:
     specifier: ^19.1.1
     version: 19.2.6
@@ -363,8 +363,8 @@ packages:
       - zod
     dev: false
 
-  /@harbor/elements@2.18.39:
-    resolution: {integrity: sha512-ERKDwdZeTYfvrRqr2DlhbVuyxpIWfRBMjUlaQnRGqaAYLh+eaTDTrT3XWU7Iun5tvZy0cOuSFFtTxAq4z8PCoQ==}
+  /@harbor/elements@2.18.43:
+    resolution: {integrity: sha512-VpUfNX/OHgQOlwB0tonfCTnx2kbJTsIfevUZxzOcZGs/r7nNnsDyZO7KW7bFWrV4Pi0Fj2/GEYenMlJvSK3UEw==}
     dependencies:
       '@stencil/core': 4.12.3
     dev: false
