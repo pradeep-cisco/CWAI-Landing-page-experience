@@ -26,9 +26,18 @@ design system. Includes:
 
 ## Quick start
 
+Keep the canonical repository configured as `upstream` so the
+`$setup-boilerplate` skill can update from `upstream/main`. The skill
+also disables pushes to the canonical repository so local prototype work
+is not accidentally pushed upstream.
+
 ```bash
-npm install
-npm run dev
+git remote add upstream https://wwwin-github.cisco.com/kabimany/magnetic-boilerplate
+```
+
+```bash
+pnpm install
+pnpm dev
 ```
 
 Opens at <http://localhost:5173/> with hot reload. Edit
@@ -51,10 +60,10 @@ automatically.
 
 | Command | What it does |
 |---------|--------------|
-| `npm run dev` | Copies the Harbor Elements assets into `public/`, then starts the Vite dev server. |
-| `npm run build` | Copies the Harbor Elements assets, then builds to `dist/`. |
-| `npm run preview` | Serves the built `dist/` for local sanity checks. |
-| `npm run copy-elements` | Manually re-copy Harbor Elements from `node_modules/` into `public/` (also run automatically by `dev` and `build`). |
+| `pnpm dev` | Copies the Harbor Elements assets into `public/`, then starts the Vite dev server. |
+| `pnpm build` | Copies the Harbor Elements assets, then builds to `dist/`. |
+| `pnpm preview` | Serves the built `dist/` for local sanity checks. |
+| `pnpm copy-elements` | Manually re-copy Harbor Elements from `node_modules/` into `public/` (also run automatically by `dev` and `build`). |
 
 ## Generating UI with an AI assistant
 

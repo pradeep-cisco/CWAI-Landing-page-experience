@@ -1,0 +1,4 @@
+interface:
+  display_name: "Setup Boilerplate"
+  short_description: "Update this repo and restart the dev server"
+  default_prompt: "Use $setup-boilerplate to update my Magnetic boilerplate repo and restart the dev server."
