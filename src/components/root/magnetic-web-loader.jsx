@@ -1,4 +1,8 @@
-import { bootstrap } from "@harbor/elements";
+import { bootstrap, loadThemeStylesheets } from "@harbor/elements";
+
+document.body.setAttribute("data-theme", "onecd");
+loadThemeStylesheets();
+
 bootstrap({
 	base: `${import.meta.env.BASE_URL}harbor-elements/`,
 	iconAssetPath: "/harbor-elements/icons/magnetic/svg/",

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 
 const iconsURL = "https://hbr.cisco.com/packages/phosphor";
-const oneCdLinkSelector = 'link[data-token^="onecd"], link[data-theme^="onecd"]';
 const modes = [
   { name: "light", label: "Light", icon: `${iconsURL}/sun-bold.svg` },
   { name: "dark", label: "Dark", icon: `${iconsURL}/moon-stars-bold.svg` },
@@ -62,14 +61,6 @@ function setOneCdThemeEnabled(enabled) {
     return;
   }
 
-  document.querySelectorAll(oneCdLinkSelector).forEach((link) => {
-    if (enabled) {
-      link.removeAttribute("disabled");
-    } else {
-      link.setAttribute("disabled", "true");
-    }
-  });
-
   if (enabled) {
     document.body.setAttribute("data-theme", "onecd");
   } else {
@@ -78,7 +69,7 @@ function setOneCdThemeEnabled(enabled) {
 }
 
 function OneCdThemeToggle() {
-  const [oneCdEnabled, setOneCdEnabled] = useState(false);
+  const [oneCdEnabled, setOneCdEnabled] = useState(true);
 
   useEffect(() => {
     setOneCdThemeEnabled(oneCdEnabled);

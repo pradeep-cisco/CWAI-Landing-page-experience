@@ -34,7 +34,7 @@ export default function Shell({ children, navConfig }) {
       className={`n-root ${navCollapsed ? "navCollapsed" : ""}`}
     >
       <Header />
-      <div className="n-container">
+      <div className="n-container hbr-css__base-bg-gradient-layer">
         <Nav
           collapsed={navCollapsed}
           setCollapsed={setNavCollapsed}
@@ -43,7 +43,7 @@ export default function Shell({ children, navConfig }) {
           config={navConfig}
         />
         <main
-          className="n-content hbr-css__base-bg-gradient-layer"
+          className="n-content"
           onScroll={handleOneCdScroll}
         >
           <div className="hbr-css__glow-layer" aria-hidden="true" />
