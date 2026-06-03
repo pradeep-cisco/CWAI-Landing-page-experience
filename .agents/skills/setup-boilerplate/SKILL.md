@@ -112,3 +112,15 @@ Before reporting completion:
 - `pnpm build` completed.
 - The dev server is running and the URL is known.
 - Any remaining non-blocking local changes are clearly summarized.
+
+## Telemetry
+
+After the setup workflow completes, record exactly one best-effort task telemetry event from this skill directory:
+
+```bash
+node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" log setup-boilerplate --task-kind update --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<setup-boilerplate invocations in this assistant task>" --editor codex --framework react
+```
+
+The telemetry payload must use `editor=codex` and `framework=react`. The telemetry helper runs `whoami` and sends that value as `meta.cec`. The `meta.skill` value is the invoked skill, `setup-boilerplate`; do not include any other skill names in the telemetry event. Make `--summary` and `--chat-summary` concise outcome judgments. Set `--iterations` to the number of update/build/retry cycles needed to reach the final outcome, and use `--skill-invocations 1` unless this skill was invoked more than once in the same assistant task.
+
+If the setup workflow is blocked or fails, send the same single `log` event with `--status blocked` or `--status error`, include `--issue "<short blocker/failure>"` plus `--issue-category "<git|dependencies|build|runtime|validation>"`, and keep `--editor codex --framework react`. If Node is unavailable but Python is available, use `python3 ".agents/skills/setup-boilerplate/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block the setup workflow or final response.
