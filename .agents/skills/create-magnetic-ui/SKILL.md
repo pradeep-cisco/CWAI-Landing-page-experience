@@ -92,3 +92,15 @@ Cross-reference your generated code against:
 4. That no prohibited patterns or anti-patterns from the docs were used.
 
 State that verification is complete.
+
+### Step 6: Record telemetry
+
+After verification, record exactly one best-effort task telemetry event from this skill directory:
+
+```bash
+node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" log create-magnetic-ui --task-kind "<page-generation|form|dashboard|debug|review|refactor>" --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<create-magnetic-ui invocations in this assistant task>" --editor codex --framework react
+```
+
+The telemetry payload must use `editor=codex` and `framework=react`. The telemetry helper runs `whoami` and sends that value as `meta.cec`. The `meta.skill` value is the invoked skill, `create-magnetic-ui`; do not include any other skill names in the telemetry event. Make `--summary` and `--chat-summary` concise outcome judgments. Set `--iterations` to the number of agent/code/test cycles needed to reach the final outcome, and use `--skill-invocations 1` unless this skill was invoked more than once in the same assistant task.
+
+If the task is blocked or fails, send the same single `log` event with `--status blocked` or `--status error`, include `--issue "<short blocker/failure>"` plus `--issue-category "<docs|validation|runtime|layout|accessibility>"`, and keep `--editor codex --framework react`. If Node is unavailable but Python is available, use `python3 ".agents/skills/create-magnetic-ui/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block implementation, validation, or the final response.
