@@ -43,8 +43,19 @@ Pay attention to the cell rendering examples in the code examples.
 - Progress bars
 - Action buttons
 
+### Selected Row Styling
+- When using row selection, bind selected row ids through the table's `selected` API and let `hbr-dom-table` own the selected-row visual state.
+- Keep slotted cell content transparent. Avoid opaque backgrounds, margins, borders, card-like wrappers, or full-height custom cell surfaces inside row cell slots because they can mask or fragment the selected-row highlight.
+- Do not recreate selected-row styling with custom CSS or per-cell selected backgrounds.
+- Visually verify selected rows show one continuous highlight across all columns, including custom cells, pinned columns, and action columns.
+
+### Tables in Modals and Dense Overlays
+- Use standard Harbor table typography. Do not reduce row or cell font sizes unless the design explicitly requires a compact table.
+- Prefer wrapping long text in modal table cells before introducing horizontal scrolling. Horizontal scroll should be reserved for genuinely wide datasets that cannot be represented by wrapping or adjusted columns.
+
 Refer to code examples for complete implementations.
 
 ## Capabilities
 - table-basic: Baseline simple table: columns + data rendering only.
 - table-filtering-sorting-search-paging-selection: Combines filtering, sorting, search, pagination, and multi-row selection. Refer this node for ideal implementation of table features, always pick this node when implementing multiple table features together.
+- table-tree: Displays hierarchical expandable rows (tree data).

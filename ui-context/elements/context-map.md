@@ -4,6 +4,7 @@ A list of design system nodes grouped by type with their descriptions.
 
 ## Templates
 
+- **custom-dashboard**:
 - **dashboard**: Dashboard layout using hbr-layout variants for responsive widget grids.
 - **form-multi-section**: Multi-section form template. Use when form has multiple distinct sections (e.g., Basic Info, Preferences, Settings). Sticky action bar goes OUTSIDE sections at the form level.
 - **form**: Single-section form template. Use when form has one logical group of fields. Sticky action bar goes INSIDE the section.
@@ -70,6 +71,7 @@ A list of design system nodes grouped by type with their descriptions.
 - **tab-vertical**: Vertical tab container coordinating tab navigation and panels.
 - **table-basic**: Baseline simple table: columns + data rendering only.
 - **table-filtering-sorting-search-paging-selection**: Combines filtering, sorting, search, pagination, and multi-row selection. Refer this node for ideal implementation of table features, always pick this node when implementing multiple table features together.
+- **table-tree**: Displays hierarchical expandable rows (tree data).
 - **table**: Tabular display of structured data with rows and columns.
 - **tag**: Tags are compact elements that represent attributes, keywords, or categories. They help users identify, filter, or organize content quickly. Tags can also indicate status or selections in a concise manner.
 - **text**: 
