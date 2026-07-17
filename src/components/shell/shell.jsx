@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useMatches } from "react-router-dom";
 import Header from "./header";
 import Footer from "./footer";
@@ -12,6 +12,10 @@ export default function Shell({ children, navConfig }) {
   const [navCollapsed, setNavCollapsed] = useState(true);
   const [selected, setSelected] = useState(currentPath || (navConfig.length > 0 ? navConfig[0].value : null));
   const Page = children || null;
+
+  useEffect(() => {
+    setSelected(currentPath);
+  }, [currentPath]);
 
   const handleOneCdScroll = useCallback((event) => {
     const target = event.currentTarget;

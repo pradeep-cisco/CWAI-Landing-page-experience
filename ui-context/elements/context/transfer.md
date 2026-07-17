@@ -76,7 +76,6 @@ export default function TransferTree() {
 				<hbr-tree-item
 					key={item.id}
 					dataId={item.id}
-					selectable={true}
 					selected={selected ? selected.includes(item.id) : null}
 					indeterminate={partial ? partial.includes(item.id) : null}
 					triggerPosition="end"

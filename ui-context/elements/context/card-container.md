@@ -48,6 +48,12 @@ Place container cards inside `dashboard:widgets:container` or `dashboard:widgets
 </hbr-layout>
 ```
 
+### Standard vs Collapsible Cards
+
+- Use a standard `<hbr-card container>` for static sections, summaries, per-device/per-controller blocks, metric groups, and content that should always remain visible.
+- Use a collapsible card or `<hbr-accordion variant="card">` only when the design explicitly shows an expand/collapse affordance or the user asks for collapsible behavior.
+- Do not choose a collapsible card merely because a section has a title, description, metrics, or repeated instances.
+
 ### Row Layout Rules
 
 - Cards in a row should sum to full width: `1/3 + 2/3`, `1/2 + 1/2`, `1/3 + 1/3 + 1/3`

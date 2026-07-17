@@ -5,14 +5,51 @@ Modal is implemented using the web component: <hbr-modal>.
 ## Description
 Focused overlay displaying information that requires user attention or input.
 
+## Generation Guidance
+- For the Magnetic design theme, map design size names to the modal `size` prop as follows: use `size="xsmall"` for design small, `size="small"` for design medium, `size="medium"` for design large, and `size="large"` for design xlarge.
+- For long modal content, constrain the modal to the viewport and scroll the content/body area vertically rather than the full page. A common target is max-height around 80vh when the design calls for viewport-constrained modals.
+- Prefer wrapping long table/text content inside modals before introducing horizontal scrolling.
+- Informational and data-review modals should include an explicit footer action such as Close unless the design shows a different dismissal pattern.
+- Use hbr-modal's built-in centered overlay behavior. Do not create a custom modal overlay when hbr-modal can provide the required panel, overlay, title, body, and footer structure.
+
 ## Usage
 ```jsx
 import { useRef, useState } from "react";
+
+function FormSection({ title, subtitle, children }) {
+	return (
+		<hbr-card container>
+			<hbr-layout variant="form:section">
+				<hbr-layout variant="form:section:header">
+					<hbr-text variant="section-title">{title}</hbr-text>
+					{subtitle ? (
+						<hbr-text type="secondary" size="sm">
+							{subtitle}
+						</hbr-text>
+					) : null}
+				</hbr-layout>
+				<hbr-layout variant="form:section:body">{children}</hbr-layout>
+			</hbr-layout>
+		</hbr-card>
+	);
+}
 
 export default function Modal() {
 	const [open, setOpen] = useState(false);
 	const [openConfirmation, setOpenConfirmation] = useState(false);
 	const [openAnnouncement, setOpenAnnouncement] = useState(false);
+	const [formData, setFormData] = useState({
+		firstName: "Casey",
+		lastName: "Morgan",
+		email: "casey.morgan@example.com",
+		title: "Product Designer",
+		department: "design",
+		workspace: "hybrid",
+		notifications: true,
+		weeklyDigest: false,
+		reviewNotes:
+			"Use this modal to validate header and footer behavior while the body content scrolls through a realistic form layout.",
+	});
 	const refTrigger = useRef(null);
 	const refTriggerConfirmation = useRef(null);
 	const refTriggerAnnouncement = useRef(null);
@@ -62,20 +99,169 @@ export default function Modal() {
 		event.preventDefault();
 		refAnnouncementAction.current.element.setFocus();
 	};
+	const setField = (field) => (event) => {
+		const nextValue =
+			event?.target?.type === "checkbox"
+				? event.target.checked
+				: event?.target?.value;
+
+		setFormData((current) => ({
+			...current,
+			[field]: nextValue,
+		}));
+	};
 
 	return (
 		<div>
 			{/* Use the following modal code for the most atomic version of the hbr-modal component. */}
 			<hbr-modal
-				label="Modal Header"
+				data-theme="onecd"
+				label="Modal title"
 				open={open}
+				size="medium"
+				scrollAware={true}
+				style={{ "--height": "560px" }}
 				onhbr-after-hide={_onHide}
 				onhbr-after-show={_onShow}
 			>
-				<div>
-					Modals are overlays that focus a users attention on information or a
-					task without taking them out of context. They require an interaction
-					for the user to see the rest of the page.
+				<div className="hbr-css__layout-col-md">
+					<hbr-text type="secondary" size="sm">
+						This demo intentionally includes a longer, interactive form so the
+						modal body overflows and you can inspect the scroll-aware header and
+						footer treatments.
+					</hbr-text>
+
+					<FormSection
+						title="Profile Details"
+						subtitle="Primary information used for account and workspace settings."
+					>
+						<hbr-input
+							label="First Name"
+							value={formData.firstName}
+							onhbr-input={setField("firstName")}
+						/>
+						<hbr-input
+							label="Last Name"
+							value={formData.lastName}
+							onhbr-input={setField("lastName")}
+						/>
+						<hbr-input
+							label="Email"
+							type="email"
+							value={formData.email}
+							onhbr-input={setField("email")}
+						/>
+						<hbr-input
+							label="Job Title"
+							value={formData.title}
+							onhbr-input={setField("title")}
+						/>
+					</FormSection>
+
+					<FormSection
+						title="Workspace Preferences"
+						subtitle="Use a mix of controls so the scrolling state feels closer to a production modal."
+					>
+						<hbr-select
+							label="Department"
+							value={formData.department}
+							onhbr-change={setField("department")}
+						>
+							<hbr-option value="design">Design</hbr-option>
+							<hbr-option value="engineering">Engineering</hbr-option>
+							<hbr-option value="product">Product</hbr-option>
+							<hbr-option value="marketing">Marketing</hbr-option>
+						</hbr-select>
+
+						<hbr-radio-group
+							label="Workspace Type"
+							direction="column"
+							onhbr-change={setField("workspace")}
+						>
+							<hbr-radio
+								value="remote"
+								checked={formData.workspace === "remote"}
+							>
+								Remote
+							</hbr-radio>
+							<hbr-radio
+								value="hybrid"
+								checked={formData.workspace === "hybrid"}
+							>
+								Hybrid
+							</hbr-radio>
+							<hbr-radio
+								value="onsite"
+								checked={formData.workspace === "onsite"}
+							>
+								On-site
+							</hbr-radio>
+						</hbr-radio-group>
+
+						<hbr-switch
+							label="Notifications"
+							checked={formData.notifications}
+							onhbr-change={setField("notifications")}
+						>
+							Enable proactive workflow notifications
+							<hbr-text slot="rear" type="secondary" size="sm">
+								This control helps test multi-line supporting text inside the
+								scrollable body.
+							</hbr-text>
+						</hbr-switch>
+
+						<hbr-checkbox
+							checked={formData.weeklyDigest}
+							onhbr-change={setField("weeklyDigest")}
+						>
+							Send a weekly activity digest
+						</hbr-checkbox>
+					</FormSection>
+
+					<FormSection
+						title="Review Notes"
+						subtitle="Longer fields add more vertical space and make the scroll transition easier to inspect."
+					>
+						<hbr-input
+							label="Implementation Notes"
+							value={formData.reviewNotes}
+							onhbr-input={setField("reviewNotes")}
+						/>
+						<hbr-text type="secondary" size="sm">
+							Check the modal at the top, mid-scroll, and near the bottom. The
+							header and footer should stay visually integrated with the panel
+							surface as content moves beneath them.
+						</hbr-text>
+						<hbr-text type="secondary" size="sm">
+							The chart behind the overlay is also useful here because it makes
+							it easier to judge blur, contrast, and any unwanted seams that
+							appear only after the content area starts scrolling.
+						</hbr-text>
+					</FormSection>
+
+					<FormSection
+						title="Approval Checklist"
+						subtitle="Additional content to guarantee overflow for footer and header inspection."
+					>
+						<hbr-checkbox checked>
+							Border and panel surface feel consistent through the full scroll
+							range
+						</hbr-checkbox>
+						<hbr-checkbox checked>
+							Footer actions remain anchored and visually seamless
+						</hbr-checkbox>
+						<hbr-checkbox checked>
+							Header spacing and close affordance stay stable while scrolling
+						</hbr-checkbox>
+						<hbr-checkbox checked>
+							Overlay blur and panel translucency remain readable over chart
+							content
+						</hbr-checkbox>
+						<hbr-text type="secondary" size="sm">
+							This extra section is intentionally verbose so the modal body
+							exceeds the available height on typical laptop screens.
+						</hbr-text>
+					</FormSection>
 				</div>
 				<hbr-layout
 					slot="footer"

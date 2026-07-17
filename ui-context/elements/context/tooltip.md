@@ -5,6 +5,11 @@ Tooltip is implemented using the web component: <hbr-tooltip>.
 ## Description
 Brief contextual label that appears on hover or focus.
 
+## Generation Guidance
+- Use one hbr-tooltip per trigger. Do not pair hbr-tooltip with a second custom tooltip for the same icon or control.
+- When the trigger is inside a drawer, modal, table cell, or scrollable container, use hoist or the documented overlay-safe pattern so the tooltip is not clipped or rendered behind the containing overlay.
+- Use hbr-tooltip for short labels/help text. Use hbr-popover for richer explanatory content with multiple sentences or lists.
+
 ## Usage
 ```jsx
 export default function Tooltip() {

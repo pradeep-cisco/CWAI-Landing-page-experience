@@ -167,6 +167,10 @@ export function StatusCardExample() {
 // BEGIN: StatisticsCardExample
 // Purpose: Display a primary value with a directional trend & delta.
 // Guidance: Keep to a single concise value cluster; trend icon conveys direction.
+// Typography: Always render the primary KPI value with type="primary", size="lg", and weight="bold".
+// Do not replace this combination with a heading variant, raw HTML, or a custom font size.
+// Trend styling: Keep the icon at 16px and set sentiment by outcome: positive for a favorable
+// change and negative for an unfavorable change. Do not set icon color with inline or custom CSS.
 export function StatisticsCardExample() {
 	return (
 		<hbr-layout variant="dashboard:widgets:basic-statistics">
@@ -175,7 +179,7 @@ export function StatisticsCardExample() {
 					<hbr-text type="secondary" size="sm">Throughput</hbr-text>
 					<hbr-layout direction="row" gap="2xs" align="end">
 						<hbr-text type="primary" size="lg" weight="bold">100%</hbr-text>
-						<hbr-icon name="trend-up" style={{ fontSize: "16px", color: "var(--positive-icon-active)" }} />
+						<hbr-icon name="trend-up" sentiment="positive" size="16px" />
 						<hbr-text type="primary" size="xs" weight="semibold">+1%</hbr-text>
 						<hbr-text type="secondary" size="xs" weight="semibold">vs yesterday</hbr-text>
 					</hbr-layout>

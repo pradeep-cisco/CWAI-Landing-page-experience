@@ -11,7 +11,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@harbor/context": "^0.1.12",
+    "@harbor/context": "^0.2.4",
     "@harbor/elements": "^2.18.43",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
