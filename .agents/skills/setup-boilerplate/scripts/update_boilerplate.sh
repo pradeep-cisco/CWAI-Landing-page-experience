@@ -5,6 +5,45 @@ log() {
   printf '[setup-boilerplate] %s\n' "$*"
 }
 
+telemetry_emit() {
+  local action="$1"
+  shift
+  local milestone_args=()
+  if [[ "$action" == "step" ]]; then
+    milestone_args=("$1")
+    shift
+  fi
+
+  local helper_dir="$repo_root/.agents/skills/setup-boilerplate/resources"
+  local node_helper="$helper_dir/telemetry.mjs"
+  local python_helper="$helper_dir/telemetry.py"
+  local common_args=(
+    --run-id "$telemetry_run_id"
+    --source-repo magnetic/boilerplate-web
+    --distribution boilerplate-web
+    --editor codex
+    --framework react
+    --skill-invocations 1
+  )
+
+  if command -v node >/dev/null 2>&1 && [[ -f "$node_helper" ]]; then
+    node "$node_helper" "$action" setup-boilerplate "${milestone_args[@]}" "${common_args[@]}" "$@" >/dev/null 2>&1 || true
+  elif command -v python3 >/dev/null 2>&1 && [[ -f "$python_helper" ]]; then
+    python3 "$python_helper" "$action" setup-boilerplate "${milestone_args[@]}" "${common_args[@]}" "$@" >/dev/null 2>&1 || true
+  fi
+}
+
+setup_exit_handler() {
+  local exit_status="$?"
+  if [[ "$exit_status" -eq 0 ]]; then
+    telemetry_emit finish --task-kind update --status ok --quality verified --summary "Boilerplate setup completed" --chat-summary "Rebase build and dev server succeeded" --iterations 1
+  else
+    telemetry_emit finish --task-kind update --status error --issue "Setup workflow exited with status $exit_status" --issue-category runtime --summary "Boilerplate setup failed" --chat-summary "Setup did not complete" --iterations 1
+  fi
+  trap - EXIT
+  exit "$exit_status"
+}
+
 fail() {
   printf '[setup-boilerplate] ERROR: %s\n' "$*" >&2
   exit 1
@@ -51,6 +90,10 @@ disable_push_to_canonical_remote() {
 
 repo_root="$(git rev-parse --show-toplevel 2>/dev/null)" || fail "Run this from inside a Git repository."
 cd "$repo_root"
+
+telemetry_run_id="${SETUP_BOILERPLATE_RUN_ID:-$(date +%s)-$$}"
+trap setup_exit_handler EXIT
+telemetry_emit start --task-kind update
 
 require_command git
 require_command pnpm
@@ -106,6 +149,7 @@ fi
 
 log "Updating remotes."
 git remote update
+telemetry_emit step remote-update --task-kind update
 
 if ! git rev-parse --verify --quiet upstream/main >/dev/null; then
   fail "upstream/main was not found after remote update. Check whether the upstream default branch changed."
@@ -116,6 +160,7 @@ if ! git rebase upstream/main; then
   log "Rebase stopped with conflicts. Resolve conflicted files, run 'git add <files>', then 'git rebase --continue'."
   exit 2
 fi
+telemetry_emit step rebase --task-kind update
 
 if [[ -n "$stash_ref" ]]; then
   log "Restoring stashed local work."
@@ -148,9 +193,11 @@ fi
 
 log "Installing dependencies with pnpm."
 pnpm install
+telemetry_emit step dependencies --task-kind update
 
 log "Building the app."
 pnpm build
+telemetry_emit step build --task-kind update
 
 dev_port="${DEV_SERVER_PORT:-5173}"
 log_file="$repo_root/.setup-boilerplate-dev.log"
@@ -163,6 +210,7 @@ sleep 3
 if ! kill -0 "$new_pid" >/dev/null 2>&1; then
   fail "Dev server exited early. Check $log_file."
 fi
+telemetry_emit step dev-server --task-kind update
 
 log "Dev server started: http://127.0.0.1:$dev_port"
 log "PID file: $pid_file"

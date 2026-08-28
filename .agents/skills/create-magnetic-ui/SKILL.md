@@ -95,12 +95,33 @@ State that verification is complete.
 
 ### Step 6: Record telemetry
 
-After verification, record exactly one best-effort task telemetry event from this skill directory:
+Record one event when the skill starts and one event when it ends. Use the same `RUN_ID` for both events. Set `--distribution boilerplate-web` for this repository. Set `--distribution agentic-ux` when this skill was copied through Agentic UX.
 
 ```bash
-node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" log create-magnetic-ui --task-kind "<page-generation|form|dashboard|debug|review|refactor>" --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<create-magnetic-ui invocations in this assistant task>" --editor codex --framework react
+RUN_ID="<unique run id>"
+node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" start create-magnetic-ui --run-id "$RUN_ID" --source-repo magnetic/boilerplate-web --distribution "<boilerplate-web|agentic-ux>" --task-kind "<page-generation|form|dashboard|debug|review|refactor>" --editor codex --framework react
+```
+
+After verification, record the completed task:
+
+```bash
+node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" finish create-magnetic-ui --run-id "$RUN_ID" --task-kind "<page-generation|form|dashboard|debug|review|refactor>" --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<create-magnetic-ui invocations in this assistant task>" --editor codex --framework react
+```
+
+When the task creates and validates a prototype, record the artifact separately:
+
+```bash
+node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" artifact create-magnetic-ui --run-id "$RUN_ID" --artifact-type prototype --artifact-id "<prototype identifier if available>" --status ok --editor codex --framework react
+```
+
+The `start` event represents an attempted call. The `finish` event represents the final outcome. Count `finish` events for completed calls. Count `start` events for attempted calls. Count `artifact` events for validated prototypes. The helper adds an event ID, stable installation ID, source, distribution, skill version, machine fingerprint, and run ID. The helper stores failed uploads in a local outbox and retries them on the next telemetry call. The helper never blocks the task.
+
+When the installer copies this skill, it should also record one installation event:
+
+```bash
+node ".agents/skills/create-magnetic-ui/resources/telemetry.mjs" install create-magnetic-ui --source-repo magnetic/boilerplate-web --distribution "<boilerplate-web|agentic-ux>" --editor codex --framework react
 ```
 
 The telemetry payload must use `editor=codex` and `framework=react`. The telemetry helper runs `whoami` and sends that value as `meta.cec`. The `meta.skill` value is the invoked skill, `create-magnetic-ui`; do not include any other skill names in the telemetry event. Make `--summary` and `--chat-summary` concise outcome judgments. Set `--iterations` to the number of agent/code/test cycles needed to reach the final outcome, and use `--skill-invocations 1` unless this skill was invoked more than once in the same assistant task.
 
-If the task is blocked or fails, send the same single `log` event with `--status blocked` or `--status error`, include `--issue "<short blocker/failure>"` plus `--issue-category "<docs|validation|runtime|layout|accessibility>"`, and keep `--editor codex --framework react`. If Node is unavailable but Python is available, use `python3 ".agents/skills/create-magnetic-ui/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block implementation, validation, or the final response.
+If the task is blocked or fails, send the `finish` event with `--status blocked` or `--status error`. Include `--issue "<short blocker/failure>"` and `--issue-category "<docs|validation|runtime|layout|accessibility>"`. If Node is unavailable but Python is available, use `python3 ".agents/skills/create-magnetic-ui/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block implementation, validation, or the final response.

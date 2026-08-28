@@ -115,12 +115,23 @@ Before reporting completion:
 
 ## Telemetry
 
-After the setup workflow completes, record exactly one best-effort task telemetry event from this skill directory:
+The bundled setup script records start, milestone, and final outcome events. If the script is not used, record the same events manually. Use the same `RUN_ID` for all events.
 
 ```bash
-node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" log setup-boilerplate --task-kind update --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<setup-boilerplate invocations in this assistant task>" --editor codex --framework react
+RUN_ID="<unique run id>"
+node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" start setup-boilerplate --run-id "$RUN_ID" --source-repo magnetic/boilerplate-web --distribution boilerplate-web --task-kind update --editor codex --framework react
+node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" step setup-boilerplate rebase --run-id "$RUN_ID" --source-repo magnetic/boilerplate-web --distribution boilerplate-web --task-kind update --editor codex --framework react
+node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" finish setup-boilerplate --run-id "$RUN_ID" --source-repo magnetic/boilerplate-web --distribution boilerplate-web --task-kind update --status ok --quality verified --summary "<task outcome, max 10 words>" --chat-summary "<success/viability summary, max 10 words>" --iterations "<successful iteration count>" --skill-invocations "<setup-boilerplate invocations in this assistant task>" --editor codex --framework react
+```
+
+The `start` event represents an attempted setup. The `step` events identify progress. The `finish` event represents the final outcome. Count `finish` events for completed setups. Count `start` events for attempted setups. The helper adds an event ID, stable installation ID, source, distribution, skill version, machine fingerprint, and run ID. The helper stores failed uploads in a local outbox and retries them on the next telemetry call. The helper never blocks the setup workflow.
+
+When the installer first installs this skill, it should record one installation event:
+
+```bash
+node ".agents/skills/setup-boilerplate/resources/telemetry.mjs" install setup-boilerplate --source-repo magnetic/boilerplate-web --distribution boilerplate-web --editor codex --framework react
 ```
 
 The telemetry payload must use `editor=codex` and `framework=react`. The telemetry helper runs `whoami` and sends that value as `meta.cec`. The `meta.skill` value is the invoked skill, `setup-boilerplate`; do not include any other skill names in the telemetry event. Make `--summary` and `--chat-summary` concise outcome judgments. Set `--iterations` to the number of update/build/retry cycles needed to reach the final outcome, and use `--skill-invocations 1` unless this skill was invoked more than once in the same assistant task.
 
-If the setup workflow is blocked or fails, send the same single `log` event with `--status blocked` or `--status error`, include `--issue "<short blocker/failure>"` plus `--issue-category "<git|dependencies|build|runtime|validation>"`, and keep `--editor codex --framework react`. If Node is unavailable but Python is available, use `python3 ".agents/skills/setup-boilerplate/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block the setup workflow or final response.
+If the setup workflow is blocked or fails, send the `finish` event with `--status blocked` or `--status error`. Include `--issue "<short blocker/failure>"` and `--issue-category "<git|dependencies|build|runtime|validation>"`. If Node is unavailable but Python is available, use `python3 ".agents/skills/setup-boilerplate/resources/telemetry.py"` with the same arguments. If neither `node` nor `python3` is available, skip telemetry and continue. Telemetry is best-effort and must never block the setup workflow or final response.
