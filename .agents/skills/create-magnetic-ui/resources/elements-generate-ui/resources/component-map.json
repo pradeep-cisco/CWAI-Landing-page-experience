@@ -1,0 +1,825 @@
+{
+  "$schema": "./component-map.schema.json",
+  "schemaVersion": 1,
+  "id": "magnetic-harbor-elements-component-map",
+  "description": "Bidirectional mapping between Magnetic schema components and documented Harbor Elements context nodes.",
+  "reviewedOn": "2026-07-31",
+  "sources": {
+    "magnetic": {
+      "package": "@cisco-magnetic/schema",
+      "version": "0.0.52",
+      "catalog": "component nodes and Figma library sets",
+      "componentNodeCount": 65
+    },
+    "harbor": {
+      "package": "@harbor/elements-context",
+      "version": "0.0.25",
+      "catalog": "context-map.md and component usage documents"
+    }
+  },
+  "refreshPolicy": {
+    "triggers": [
+      "The Magnetic schema package version changes.",
+      "The Harbor Elements context package version changes.",
+      "A Magnetic component node or Figma library set is added, removed, or renamed.",
+      "A mapped Harbor context node or public API changes."
+    ],
+    "checks": [
+      "Compare the complete Magnetic component catalog with mappings[].magneticNode.",
+      "Validate every figmaTargets value against the current Magnetic Create catalog.",
+      "Validate every harborContextNodes value against the current Elements context map.",
+      "Review context-gap entries for newly documented Harbor targets.",
+      "Run the component-map and installer tests."
+    ]
+  },
+  "sourcePriority": [
+    "Current Magnetic schema component node",
+    "Harbor Elements component usage document",
+    "This component map",
+    "Magnetic Create reference or block as supplemental guidance",
+    "Visual inference"
+  ],
+  "contextDocumentPolicy": {
+    "requiredBeforeCodeGeneration": true,
+    "sharedPath": "./resources/shared/{contextNode}.md",
+    "frameworkPath": "./resources/{referencePath}/{contextNode}.md",
+    "fullDocsSkill": "elements-ask-ui-docs",
+    "rule": "After the agent selects a Harbor context node, it must read that node's shared and framework usage documents before it generates code. This rule also applies when Figma metadata identifies a Harbor-only primitive."
+  },
+  "figmaMetadata": {
+    "namespace": "@harbor/context/component-map",
+    "requiredKeys": [
+      "mapVersion",
+      "mappingId",
+      "sourceComponent",
+      "sourceContextNode",
+      "sourceProps",
+      "semanticRole",
+      "renderMode"
+    ],
+    "renderModes": [
+      "magnetic-instance",
+      "magnetic-composition",
+      "magnetic-primitive"
+    ],
+    "rule": "Write this metadata on every Magnetic-style primitive that represents a Harbor-only component. Preserve the source properties as JSON in sourceProps."
+  },
+  "globalRules": {
+    "semanticResolution": [
+      "Resolve behavior before appearance.",
+      "Treat hbr-link as navigation or download content.",
+      "Treat every hbr-button, including a link-styled or text variant, as an action button.",
+      "Never map hbr-link to Magnetic button only because both can have fill, outline, or text styling.",
+      "Map the outer documented component before its internal Shadow DOM components.",
+      "Use an attached Magnetic member when the parent component owns that member.",
+      "Do not create a duplicate standalone component for an attached member."
+    ],
+    "codeToFigma": [
+      "Use the requested viewport width only.",
+      "Extend the frame height to include the full vertical scroll content.",
+      "Load content that appears during vertical scrolling.",
+      "Render each fixed or sticky element once.",
+      "Use the selected Magnetic Figma target when a documented mapping exists.",
+      "Render a Magnetic-style primitive when a Harbor-only component has no Magnetic target.",
+      "Add figmaMetadata to every Harbor-only primitive.",
+      "Use blocks as flexible starting points. Adapt their structure to the user's request."
+    ],
+    "figmaToCode": [
+      "Read Magnetic instance data and Harbor figmaMetadata before visual inference.",
+      "Use structured Figma design context as the source for spacing. Use screenshots only for visual validation.",
+      "Record Auto Layout direction, wrapping, item gaps, four padding values, alignment, sizing, and child layout behavior before code generation.",
+      "Let explicit Figma spacing override generic code-generation spacing defaults.",
+      "Map Figma Auto Layout to flex or grid layout before considering absolute positioning.",
+      "Use scoped layout-only CSS when Harbor layout properties cannot express an explicit Figma value.",
+      "Do not override Harbor component internals to force a spacing match. Report a component parity gap.",
+      "Verify computed padding and gap values at the source viewport.",
+      "Resolve the mapping and its Harbor context nodes.",
+      "Read the selected Harbor context usage documents before code generation.",
+      "Use the detected framework and installation profile.",
+      "Preserve interaction semantics, content, state, hierarchy, and accessibility intent.",
+      "Do not generate a Harbor component when the mapping has context-gap status. Report the missing context document."
+    ],
+    "fromScratchToCode": [
+      "Read this map before selecting Harbor application components.",
+      "Infer the Magnetic component job from the user's goal, interaction, content, and data shape.",
+      "Select the mapping entry whose magneticNode, figmaTargets, and selection rule match that job.",
+      "Use harborContextNodes to locate the Harbor implementation documents.",
+      "Read every selected Harbor usage document before generating code.",
+      "Treat blocks and component families as flexible starting points, not fixed output structures.",
+      "Do not generate a Harbor component when the mapping has context-gap status. Report the missing context document."
+    ],
+    "notification": [
+      "Map a standalone Harbor notification indicator to Magnetic badge.",
+      "Use a status icon inside notification banners.",
+      "Keep the status icon attached to the banner."
+    ],
+    "cards": [
+      "Map hbr-card with container to container-card.",
+      "Map a non-container card with one status or KPI to status-card.",
+      "Map a non-container card with a value and trend or delta to statistics-card.",
+      "Map a non-container card with related health measures to health-card.",
+      "Map every other non-container card to basic-card.",
+      "Do not infer container-card from visual complexity when the source hbr-card does not use container.",
+      "Do not nest a container card inside another container card."
+    ]
+  },
+  "mappings": [
+    {
+      "id": "activity-timeline",
+      "magneticNode": "activity-timeline",
+      "figmaTargets": ["activity-timeline-section"],
+      "harborContextNodes": ["timeline", "timeline-panel"],
+      "harborElements": ["hbr-timeline", "hbr-timeline-panel"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map the timeline and its panels as one activity timeline composition."
+    },
+    {
+      "id": "anchor-link-menu",
+      "magneticNode": "anchor-link-menu",
+      "figmaTargets": ["anchor-link-menu"],
+      "harborContextNodes": ["anchor-link-menu", "list", "list-item", "link"],
+      "harborElements": ["hbr-list", "hbr-list-item", "hbr-link"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Use this mapping only for in-page anchor navigation. Map the complete composition, not each child as a standalone component."
+    },
+    {
+      "id": "badge",
+      "magneticNode": "badge",
+      "figmaTargets": ["badge", "badge-alert", "badge-dot"],
+      "harborContextNodes": ["notification-indicator"],
+      "harborElements": ["hbr-badge"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Use for counts, dots, and indicators attached to another object. Do not use it as a status icon inside a banner."
+    },
+    {
+      "id": "basic-card",
+      "magneticNode": "basic-card",
+      "figmaTargets": ["basic-card", "status-card", "statistics-card", "health-card"],
+      "harborContextNodes": ["card-basic"],
+      "harborElements": ["hbr-card"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Select the specialized target from content shape. Keep every target in the non-container hbr-card family."
+    },
+    {
+      "id": "breadcrumb",
+      "magneticNode": "breadcrumb",
+      "figmaTargets": ["breadcrumbs"],
+      "harborContextNodes": ["breadcrumb", "breadcrumb-item"],
+      "harborElements": ["hbr-breadcrumb", "hbr-breadcrumb-item"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Preserve item order and the current page semantics."
+    },
+    {
+      "id": "button",
+      "magneticNode": "button",
+      "figmaTargets": ["button"],
+      "harborContextNodes": ["button"],
+      "harborElements": ["hbr-button"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Use for actions. A link-styled or text hbr-button remains a button. It does not become hbr-link."
+    },
+    {
+      "id": "button-group",
+      "magneticNode": "button-group",
+      "figmaTargets": ["button-group"],
+      "harborContextNodes": ["button", "layout"],
+      "harborElements": ["hbr-button", "hbr-layout"],
+      "relationship": "composite",
+      "confidence": "medium",
+      "selection": "Generate a documented group of related action buttons."
+    },
+    {
+      "id": "charts",
+      "magneticNode": "charts",
+      "figmaTargets": ["chart", "donut-chart", "pie-chart", "legends"],
+      "harborContextNodes": ["bar-chart", "bar-chart-horizontal", "donut-chart", "line-chart", "pie-chart", "heatmap-chart"],
+      "harborElements": ["hbr-bar-chart", "hbr-donut-chart", "hbr-line-chart", "hbr-pie-chart", "hbr-heatmap-chart"],
+      "relationship": "family",
+      "confidence": "medium",
+      "selection": "Select the chart type from the data relationship and the documented Harbor chart node."
+    },
+    {
+      "id": "checkbox",
+      "magneticNode": "checkbox",
+      "figmaTargets": ["checkbox", "checkbox-with-text", "checkbox-group"],
+      "harborContextNodes": ["checkbox", "checkbox-group"],
+      "harborElements": ["hbr-checkbox", "hbr-checkbox-group"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Use the group target only when the controls form one named selection group."
+    },
+    {
+      "id": "code-snippet",
+      "magneticNode": "code-snippet",
+      "figmaTargets": ["block-code-snippet"],
+      "harborContextNodes": ["code-snippet"],
+      "harborElements": ["hbr-code-snippet"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve code content, language intent, line numbers, and copy behavior."
+    },
+    {
+      "id": "collapse",
+      "magneticNode": "collapse",
+      "figmaTargets": ["collapse", "collapse-group"],
+      "harborContextNodes": ["accordion"],
+      "harborElements": ["hbr-accordion"],
+      "relationship": "adapted",
+      "confidence": "medium",
+      "selection": "Use hbr-accordion for the equivalent progressive-disclosure behavior. Preserve open state and grouping."
+    },
+    {
+      "id": "container-card",
+      "magneticNode": "container-card",
+      "figmaTargets": ["container-card"],
+      "harborContextNodes": ["card-container"],
+      "harborElements": ["hbr-card"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Generate hbr-card with container. Preserve standard, left-title, or collapsible intent when the documents support it."
+    },
+    {
+      "id": "copy-to-clipboard",
+      "magneticNode": "copy-to-clipboard",
+      "figmaTargets": ["copy-to-clipboard"],
+      "harborContextNodes": ["copy-to-clipboard"],
+      "harborElements": ["hbr-copyclipboard"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve the copied value and its accessible label."
+    },
+    {
+      "id": "date-and-time-picker",
+      "magneticNode": "date-and-time-picker",
+      "figmaTargets": ["date-and-time-picker"],
+      "harborContextNodes": ["input"],
+      "harborElements": ["hbr-input"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Generate hbr-input with type datetime-local after reading the input document."
+    },
+    {
+      "id": "date-picker",
+      "magneticNode": "date-picker",
+      "figmaTargets": ["date-picker"],
+      "harborContextNodes": ["date-picker", "input"],
+      "harborElements": ["hbr-input"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Generate hbr-input with type date."
+    },
+    {
+      "id": "divider",
+      "magneticNode": "divider",
+      "figmaTargets": ["divider"],
+      "harborContextNodes": ["divider"],
+      "harborElements": ["hbr-divider"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve orientation and grouping purpose."
+    },
+    {
+      "id": "drawer",
+      "magneticNode": "drawer",
+      "figmaTargets": ["drawer"],
+      "harborContextNodes": ["drawer"],
+      "harborElements": ["hbr-drawer"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve header, body, footer, open state, and modal behavior."
+    },
+    {
+      "id": "dropdown",
+      "magneticNode": "dropdown",
+      "figmaTargets": ["dropdown"],
+      "harborContextNodes": ["dropdown", "menu", "menu-item", "menu-divider", "button"],
+      "harborElements": ["hbr-dropdown", "hbr-menu", "hbr-menu-item", "hbr-menu-divider", "hbr-button"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map the trigger and menu as one dropdown. Do not emit its internal buttons as separate top-level components."
+    },
+    {
+      "id": "empty-state",
+      "magneticNode": "empty-state",
+      "figmaTargets": ["empty-state", "empty-state-illustration"],
+      "harborContextNodes": ["empty-state", "illustration"],
+      "harborElements": ["hbr-illustration"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Treat hbr-illustration as the illustration member of the empty state when it appears in that context."
+    },
+    {
+      "id": "feature-highlight",
+      "magneticNode": "feature-highlight",
+      "figmaTargets": ["feature-highlight-popover"],
+      "harborContextNodes": ["popover"],
+      "harborElements": ["hbr-popover"],
+      "relationship": "adapted",
+      "confidence": "medium",
+      "selection": "Use only for anchored feature-discovery content. Never map hbr-highlight to this component."
+    },
+    {
+      "id": "filter-bar",
+      "magneticNode": "filter-bar",
+      "figmaTargets": ["filter-bar"],
+      "harborContextNodes": ["filter", "input", "select", "option", "button"],
+      "harborElements": ["hbr-filter-bar", "hbr-input", "hbr-select", "hbr-option", "hbr-button"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Preserve fixed filters, overflow filters, search, result count, and actions."
+    },
+    {
+      "id": "floating-action-button",
+      "magneticNode": "floating-action-button",
+      "figmaTargets": ["floating-action-button"],
+      "harborContextNodes": ["button"],
+      "harborElements": ["hbr-button"],
+      "relationship": "variant",
+      "confidence": "high",
+      "selection": "Generate a documented hbr-button with floating behavior. Keep button action semantics."
+    },
+    {
+      "id": "footer",
+      "magneticNode": "footer",
+      "figmaTargets": ["footer"],
+      "harborContextNodes": ["footer", "layout", "button", "link"],
+      "harborElements": ["hbr-layout", "hbr-button", "hbr-link"],
+      "relationship": "composite",
+      "confidence": "medium",
+      "selection": "Use links for navigation and legal destinations. Use buttons only for footer actions."
+    },
+    {
+      "id": "header",
+      "magneticNode": "header",
+      "figmaTargets": ["header", "profile-and-tenancy-menu"],
+      "harborContextNodes": ["header", "icon", "button", "dropdown", "tooltip"],
+      "harborElements": ["hbr-shell-header", "hbr-icon", "hbr-button", "hbr-dropdown", "hbr-tooltip"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map the complete shell header before its internal actions and menus."
+    },
+    {
+      "id": "inline-notification",
+      "magneticNode": "inline-notification",
+      "figmaTargets": ["inline-notification"],
+      "harborContextNodes": ["notifications", "link", "icon"],
+      "harborElements": ["hbr-banner", "hbr-link", "hbr-icon"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Use an inline hbr-banner composition. Keep its status icon and optional link attached to the banner."
+    },
+    {
+      "id": "input",
+      "magneticNode": "input",
+      "figmaTargets": ["input-field", "input-autocomplete"],
+      "harborContextNodes": ["input", "highlight"],
+      "harborElements": ["hbr-input", "hbr-highlight"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Use input-autocomplete only when suggestions exist. hbr-highlight can mark query matches inside suggestion content."
+    },
+    {
+      "id": "key-value-pairs",
+      "magneticNode": "key-value-pairs",
+      "figmaTargets": ["key-value-pairs"],
+      "harborContextNodes": ["key-value-pairs", "link"],
+      "harborElements": ["hbr-key-value-pairs", "hbr-link"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Keep value links as links. Map them as attached content when the Figma target supports them."
+    },
+    {
+      "id": "map",
+      "magneticNode": "map",
+      "figmaTargets": ["map"],
+      "harborContextNodes": [],
+      "harborElements": [],
+      "relationship": "context-gap",
+      "confidence": "high",
+      "selection": "The installed Harbor context has no documented map component. Do not generate a Harbor component until a context node exists."
+    },
+    {
+      "id": "matrix",
+      "magneticNode": "matrix",
+      "figmaTargets": ["matrix"],
+      "harborContextNodes": ["matrix"],
+      "harborElements": ["hbr-matrix-chart"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve axes, cell state, labels, and controls described by the Matrix documents."
+    },
+    {
+      "id": "modal",
+      "magneticNode": "modal",
+      "figmaTargets": ["modal", "overlay"],
+      "harborContextNodes": ["modal", "button"],
+      "harborElements": ["hbr-modal", "hbr-button"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map modal and overlay as one interaction. Preserve title, body, footer, size, and close behavior."
+    },
+    {
+      "id": "navigation-drawer",
+      "magneticNode": "navigation-drawer",
+      "figmaTargets": ["navigation-drawer"],
+      "harborContextNodes": ["navigation", "menu", "menu-item", "icon"],
+      "harborElements": ["hbr-shell-nav", "hbr-nav-item", "hbr-menu", "hbr-menu-item", "hbr-icon"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Use for the expanded drawer area of shell navigation."
+    },
+    {
+      "id": "navigation-menu",
+      "magneticNode": "navigation-menu",
+      "figmaTargets": ["navigation-menu"],
+      "harborContextNodes": ["navigation", "menu", "menu-item", "icon"],
+      "harborElements": ["hbr-shell-nav", "hbr-nav-item", "hbr-menu", "hbr-menu-item", "hbr-icon"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map the complete primary navigation structure before its internal items."
+    },
+    {
+      "id": "number-input",
+      "magneticNode": "number-input",
+      "figmaTargets": ["input-number"],
+      "harborContextNodes": ["input"],
+      "harborElements": ["hbr-input"],
+      "relationship": "variant",
+      "confidence": "high",
+      "selection": "Generate hbr-input with type number and preserve range and step values."
+    },
+    {
+      "id": "page-level-banner",
+      "magneticNode": "page-level-banner",
+      "figmaTargets": ["page-level-banner"],
+      "harborContextNodes": ["notifications", "link", "icon"],
+      "harborElements": ["hbr-banner", "hbr-link", "hbr-icon"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Use page placement and message scope to distinguish it from inline and product-level banners."
+    },
+    {
+      "id": "page-title",
+      "magneticNode": "page-title",
+      "figmaTargets": ["page-title"],
+      "harborContextNodes": ["page-title", "layout", "text", "breadcrumb", "tag", "tab-horizontal"],
+      "harborElements": ["hbr-layout", "hbr-text", "hbr-breadcrumb", "hbr-tag", "hbr-tab"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Select one documented page-title pattern. Do not mix every optional pattern into one title."
+    },
+    {
+      "id": "pagination",
+      "magneticNode": "pagination",
+      "figmaTargets": ["pagination"],
+      "harborContextNodes": ["pagination"],
+      "harborElements": ["hbr-pagination"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Map hbr-pagination as one component. Ignore its internal hbr-link Shadow DOM implementation."
+    },
+    {
+      "id": "password",
+      "magneticNode": "password",
+      "figmaTargets": ["input-field"],
+      "harborContextNodes": ["input"],
+      "harborElements": ["hbr-input"],
+      "relationship": "variant",
+      "confidence": "high",
+      "selection": "Generate hbr-input with type password and preserve password-toggle intent."
+    },
+    {
+      "id": "popover-default",
+      "magneticNode": "popover-default",
+      "figmaTargets": ["popover"],
+      "harborContextNodes": ["popover", "button", "link"],
+      "harborElements": ["hbr-popover", "hbr-button", "hbr-link"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Use the default popover for contextual anchored content. Keep navigation links and action buttons semantically distinct."
+    },
+    {
+      "id": "product-level-banner",
+      "magneticNode": "product-level-banner",
+      "figmaTargets": ["product-level-banner"],
+      "harborContextNodes": ["notifications", "link", "icon"],
+      "harborElements": ["hbr-banner", "hbr-link", "hbr-icon"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Use only for persistent product-wide messages below the shell header."
+    },
+    {
+      "id": "progress-and-loading-indicators",
+      "magneticNode": "progress-and-loading-indicators",
+      "figmaTargets": ["progress-bar", "skeleton-group", "skeleton-single", "spinner"],
+      "harborContextNodes": ["progress-loading-indicators"],
+      "harborElements": ["hbr-progress-bar", "hbr-spinner"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Select determinate progress, indeterminate spinner, or skeleton from the source loading state."
+    },
+    {
+      "id": "progress-bar",
+      "magneticNode": "progress-bar",
+      "figmaTargets": ["progress-bar"],
+      "harborContextNodes": ["progress-loading-indicators"],
+      "harborElements": ["hbr-progress-bar"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve percentage, label, and sentiment."
+    },
+    {
+      "id": "radio-button",
+      "magneticNode": "radio-button",
+      "figmaTargets": ["radio-button", "radio-group"],
+      "harborContextNodes": ["radio", "radio-group"],
+      "harborElements": ["hbr-radio", "hbr-radio-group"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Use hbr-radio for standard radio controls. Do not substitute the button-styled hbr-radio-button."
+    },
+    {
+      "id": "sankey",
+      "magneticNode": "sankey",
+      "figmaTargets": ["sankey"],
+      "harborContextNodes": [],
+      "harborElements": ["hbr-sankey-chart"],
+      "relationship": "context-gap",
+      "confidence": "high",
+      "selection": "Harbor Elements contains this component, but the installed context package has no usage document. Do not generate it until the context node exists."
+    },
+    {
+      "id": "search",
+      "magneticNode": "search",
+      "figmaTargets": ["search-input"],
+      "harborContextNodes": ["search", "input", "icon", "highlight"],
+      "harborElements": ["hbr-input", "hbr-icon", "hbr-highlight"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Use search input behavior. Use hbr-highlight only for matching query text in results or suggestions."
+    },
+    {
+      "id": "select",
+      "magneticNode": "select",
+      "figmaTargets": ["select-input", "select-menu"],
+      "harborContextNodes": ["select", "option", "highlight"],
+      "harborElements": ["hbr-select", "hbr-option", "hbr-highlight"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Map input and menu as one select. Use hbr-highlight only for query matches inside searchable options."
+    },
+    {
+      "id": "skeleton",
+      "magneticNode": "skeleton",
+      "figmaTargets": ["skeleton-group", "skeleton-single"],
+      "harborContextNodes": ["progress-loading-indicators"],
+      "harborElements": [],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Generate the documented Harbor skeleton classes and layout. There is no hbr-skeleton custom element in the context document."
+    },
+    {
+      "id": "slider",
+      "magneticNode": "slider",
+      "figmaTargets": ["slider"],
+      "harborContextNodes": ["slider"],
+      "harborElements": ["hbr-slider"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve range, current value, steps, marks, and disabled state."
+    },
+    {
+      "id": "spinner",
+      "magneticNode": "spinner",
+      "figmaTargets": ["spinner"],
+      "harborContextNodes": ["progress-loading-indicators"],
+      "harborElements": ["hbr-spinner"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Use for indeterminate progress. Keep an attached button spinner inside its button."
+    },
+    {
+      "id": "stepper",
+      "magneticNode": "stepper",
+      "figmaTargets": ["stepper-container", "stepped-modal"],
+      "harborContextNodes": ["stepper", "modal", "button", "icon"],
+      "harborElements": ["hbr-stepper", "hbr-modal", "hbr-button", "hbr-icon"],
+      "relationship": "family",
+      "confidence": "medium",
+      "selection": "Select stepped-modal only when the workflow is modal. Otherwise use stepper-container."
+    },
+    {
+      "id": "sticky-action-bar",
+      "magneticNode": "sticky-action-bar",
+      "figmaTargets": ["sticky-action-bar-footer"],
+      "harborContextNodes": ["sticky-action-bar", "button"],
+      "harborElements": ["hbr-sticky-action-bar", "hbr-button"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Preserve placement in its form or page scope and preserve action order."
+    },
+    {
+      "id": "tab-primary",
+      "magneticNode": "tab-primary",
+      "figmaTargets": ["tab-primary"],
+      "harborContextNodes": ["tab-horizontal"],
+      "harborElements": ["hbr-tab"],
+      "relationship": "variant",
+      "confidence": "high",
+      "selection": "Use the documented horizontal primary-tab composition."
+    },
+    {
+      "id": "tab-secondary-horizontal",
+      "magneticNode": "tab-secondary-horizontal",
+      "figmaTargets": ["tab-secondary-horizontal"],
+      "harborContextNodes": ["tab-horizontal"],
+      "harborElements": ["hbr-tab"],
+      "relationship": "variant",
+      "confidence": "high",
+      "selection": "Use the documented horizontal secondary-tab composition."
+    },
+    {
+      "id": "tab-secondary-vertical",
+      "magneticNode": "tab-secondary-vertical",
+      "figmaTargets": ["tab-secondary-vertical"],
+      "harborContextNodes": ["tab-vertical"],
+      "harborElements": ["hbr-tab-vertical"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve vertical orientation and selected state."
+    },
+    {
+      "id": "table",
+      "magneticNode": "table",
+      "figmaTargets": ["cell", "cell-header", "cell-text", "cell-checkbox", "cell-tag", "cell-action", "cell-form", "cell-chart"],
+      "harborContextNodes": ["table", "table-basic", "table-filtering-sorting-search-paging-selection", "table-tree"],
+      "harborElements": ["hbr-dom-table"],
+      "relationship": "composite",
+      "confidence": "medium",
+      "selection": "Map documented cell semantics. Detailed table and long-collection generation guidance is intentionally deferred."
+    },
+    {
+      "id": "tag",
+      "magneticNode": "tag",
+      "figmaTargets": ["tag"],
+      "harborContextNodes": ["tag"],
+      "harborElements": ["hbr-tag"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve category or status purpose, sentiment, selection, and removal behavior."
+    },
+    {
+      "id": "text",
+      "magneticNode": "text",
+      "figmaTargets": ["text"],
+      "harborContextNodes": ["text"],
+      "harborElements": ["hbr-text"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve semantic text role before exact visual size."
+    },
+    {
+      "id": "text-area",
+      "magneticNode": "text-area",
+      "figmaTargets": ["text-area"],
+      "harborContextNodes": ["textarea"],
+      "harborElements": ["hbr-textarea"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve label, help, validation, resize, and value behavior."
+    },
+    {
+      "id": "time-picker",
+      "magneticNode": "time-picker",
+      "figmaTargets": ["time-picker"],
+      "harborContextNodes": ["input"],
+      "harborElements": ["hbr-input"],
+      "relationship": "adapted",
+      "confidence": "high",
+      "selection": "Generate hbr-input with type time after reading the input document."
+    },
+    {
+      "id": "toast",
+      "magneticNode": "toast",
+      "figmaTargets": ["toast"],
+      "harborContextNodes": ["notifications", "link", "icon"],
+      "harborElements": ["hbr-banner", "hbr-link", "hbr-icon"],
+      "relationship": "adapted",
+      "confidence": "medium",
+      "selection": "Use transient overlay placement to distinguish a toast from an inline banner. Keep status icon and optional link attached."
+    },
+    {
+      "id": "toggle",
+      "magneticNode": "toggle",
+      "figmaTargets": ["toggle", "toggle-with-text"],
+      "harborContextNodes": ["toggle"],
+      "harborElements": ["hbr-switch"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Preserve immediate on-off behavior, label, help, and disabled state."
+    },
+    {
+      "id": "tooltip",
+      "magneticNode": "tooltip",
+      "figmaTargets": ["tooltip"],
+      "harborContextNodes": ["tooltip"],
+      "harborElements": ["hbr-tooltip"],
+      "relationship": "direct",
+      "confidence": "high",
+      "selection": "Keep tooltip text short and associate it with one trigger."
+    },
+    {
+      "id": "transfer",
+      "magneticNode": "transfer",
+      "figmaTargets": ["transfer"],
+      "harborContextNodes": ["transfer", "button", "checkbox", "icon", "illustration"],
+      "harborElements": ["hbr-transfer", "hbr-button", "hbr-checkbox", "hbr-icon", "hbr-illustration"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Preserve source and destination lists, selection, movement actions, and empty state."
+    },
+    {
+      "id": "tree-view",
+      "magneticNode": "tree-view",
+      "figmaTargets": ["tree-view", "tree-select-menu"],
+      "harborContextNodes": [],
+      "harborElements": ["hbr-tree", "hbr-tree-item"],
+      "relationship": "context-gap",
+      "confidence": "high",
+      "selection": "Harbor Elements contains these components, but the installed context package has no standalone tree usage document. Do not generate them until the context node exists."
+    },
+    {
+      "id": "upload",
+      "magneticNode": "upload",
+      "figmaTargets": ["upload-button-trigger", "upload-drag-and-drop"],
+      "harborContextNodes": ["uploader", "button", "icon", "illustration"],
+      "harborElements": ["hbr-uploader", "hbr-button", "hbr-icon", "hbr-illustration"],
+      "relationship": "family",
+      "confidence": "high",
+      "selection": "Select button trigger or drag-and-drop from the source interaction. Preserve file state and restrictions."
+    },
+    {
+      "id": "view-switcher",
+      "magneticNode": "view-switcher",
+      "figmaTargets": ["view-switcher-with-labels"],
+      "harborContextNodes": ["view-switcher", "radio-button"],
+      "harborElements": ["hbr-view-switcher", "hbr-radio-button"],
+      "relationship": "composite",
+      "confidence": "high",
+      "selection": "Use hbr-radio-button only as the button-styled child of hbr-view-switcher."
+    }
+  ],
+  "harborOnlyAndAttached": [
+    {
+      "id": "harbor-highlight",
+      "sourceComponent": "hbr-highlight",
+      "harborContextNodes": ["highlight"],
+      "magneticTarget": null,
+      "renderMode": "magnetic-primitive",
+      "semanticRole": "query-match-highlight",
+      "rule": "Use for matched query text in components such as search, select, autocomplete, and input results. Do not map it to Magnetic feature-highlight."
+    },
+    {
+      "id": "harbor-link",
+      "sourceComponent": "hbr-link",
+      "harborContextNodes": ["link"],
+      "magneticTarget": null,
+      "renderMode": "magnetic-primitive",
+      "semanticRole": "navigation-link",
+      "rule": "Use an attached parent link member when available. Otherwise render a Magnetic-style text-link primitive with metadata. Never convert it to Magnetic button or hbr-button."
+    },
+    {
+      "id": "harbor-list",
+      "sourceComponent": "hbr-list",
+      "harborContextNodes": ["list", "list-item"],
+      "magneticTarget": null,
+      "renderMode": "magnetic-primitive",
+      "semanticRole": "semantic-list",
+      "rule": "Map anchor navigation to anchor-link-menu. Render every other documented list as flexible Magnetic-style text and layout primitives with metadata."
+    },
+    {
+      "id": "harbor-list-item",
+      "sourceComponent": "hbr-list-item",
+      "harborContextNodes": ["list-item", "list"],
+      "magneticTarget": null,
+      "renderMode": "magnetic-primitive",
+      "semanticRole": "semantic-list-item",
+      "rule": "Keep the item inside its list. Preserve nesting, active state, disabled state, and prefix or suffix content."
+    },
+    {
+      "id": "harbor-illustration",
+      "sourceComponent": "hbr-illustration",
+      "harborContextNodes": ["illustration", "empty-state"],
+      "magneticTarget": "empty-state-illustration",
+      "renderMode": "magnetic-composition",
+      "semanticRole": "empty-state-illustration",
+      "rule": "Use the attached Magnetic empty-state illustration when the illustration belongs to an empty state. Use a metadata-bearing primitive when it is standalone."
+    }
+  ]
+}

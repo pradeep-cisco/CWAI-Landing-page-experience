@@ -1,0 +1,220 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hbr.cisco.com/context/component-map.schema.json",
+  "title": "Magnetic and Harbor Elements Component Map",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "sources",
+    "sourcePriority",
+    "contextDocumentPolicy",
+    "figmaMetadata",
+    "globalRules",
+    "mappings",
+    "harborOnlyAndAttached"
+  ],
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "schemaVersion": {
+      "const": 1
+    },
+    "id": {
+      "const": "magnetic-harbor-elements-component-map"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reviewedOn": {
+      "type": "string",
+      "format": "date"
+    },
+    "sources": {
+      "type": "object"
+    },
+    "refreshPolicy": {
+      "type": "object"
+    },
+    "sourcePriority": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "contextDocumentPolicy": {
+      "type": "object",
+      "required": [
+        "requiredBeforeCodeGeneration",
+        "sharedPath",
+        "frameworkPath",
+        "rule"
+      ],
+      "properties": {
+        "requiredBeforeCodeGeneration": {
+          "const": true
+        },
+        "sharedPath": {
+          "type": "string"
+        },
+        "frameworkPath": {
+          "type": "string"
+        },
+        "fullDocsSkill": {
+          "type": "string"
+        },
+        "rule": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "figmaMetadata": {
+      "type": "object",
+      "required": [
+        "namespace",
+        "requiredKeys",
+        "renderModes",
+        "rule"
+      ]
+    },
+    "globalRules": {
+      "type": "object"
+    },
+    "mappings": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/mapping"
+      }
+    },
+    "harborOnlyAndAttached": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/harborOnlyMapping"
+      }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "required": [
+        "id",
+        "magneticNode",
+        "figmaTargets",
+        "harborContextNodes",
+        "harborElements",
+        "relationship",
+        "confidence",
+        "selection"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "magneticNode": {
+          "type": "string",
+          "minLength": 1
+        },
+        "figmaTargets": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/stringArray"
+            },
+            {
+              "minItems": 1,
+              "uniqueItems": true
+            }
+          ]
+        },
+        "harborContextNodes": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "harborElements": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "relationship": {
+          "enum": [
+            "direct",
+            "variant",
+            "family",
+            "composite",
+            "adapted",
+            "context-gap"
+          ]
+        },
+        "confidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ]
+        },
+        "selection": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "harborOnlyMapping": {
+      "type": "object",
+      "required": [
+        "id",
+        "sourceComponent",
+        "harborContextNodes",
+        "magneticTarget",
+        "renderMode",
+        "semanticRole",
+        "rule"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "sourceComponent": {
+          "type": "string",
+          "pattern": "^hbr-"
+        },
+        "harborContextNodes": {
+          "$ref": "#/$defs/stringArray"
+        },
+        "magneticTarget": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "renderMode": {
+          "enum": [
+            "magnetic-composition",
+            "magnetic-primitive"
+          ]
+        },
+        "semanticRole": {
+          "type": "string",
+          "minLength": 1
+        },
+        "rule": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}
