@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import fs from 'node:fs';
 import http from 'node:http';
 import https from 'node:https';
@@ -14,41 +14,66 @@ const PACKAGE_NAME = '@harbor/context';
 const POST_TIMEOUT_MS = 2000;
 const TEXT_MAX_CHARS = 1500;
 const CHAT_SUMMARY_MAX_WORDS = 10;
-const VALID_ACTIONS = new Set(['start', 'step', 'finish', 'log']);
+const MAX_QUEUE_EVENTS = 100;
+const MAX_FLUSH_EVENTS = 5;
+const VALID_ACTIONS = new Set(['start', 'step', 'finish', 'log', 'install', 'artifact']);
 const DEFAULT_CONFIG_PATH = path.join(os.homedir(), '.harbor-context', 'config.json');
 const DEFAULT_MAGNETIC_CONFIG_PATH = path.join(os.homedir(), '.magnetic', 'config.json');
+const DEFAULT_STATE_DIR = path.join(os.homedir(), '.harbor-context');
 
 function parseArgs(argv) {
   const positional = [];
   const flags = {};
   let pending = null;
-
   for (const token of argv) {
     if (token.startsWith('--')) {
       const [rawKey, inlineValue] = token.slice(2).split(/=(.*)/s);
-      if (inlineValue !== undefined) {
-        flags[rawKey] = inlineValue;
-      } else if (['dry-run', 'json'].includes(rawKey)) {
-        flags[rawKey] = true;
-        pending = null;
-      } else {
-        pending = rawKey;
-      }
+      if (inlineValue !== undefined) flags[rawKey] = inlineValue;
+      else if (['dry-run', 'json'].includes(rawKey)) flags[rawKey] = true;
+      else pending = rawKey;
     } else if (pending) {
       flags[pending] = token;
       pending = null;
-    } else {
-      positional.push(token);
-    }
+    } else positional.push(token);
   }
-
   return { positional, flags };
 }
 
 function optionalString(value) {
   if (typeof value !== 'string') return null;
   const normalized = value.trim();
-  return normalized ? normalized : null;
+  return normalized || null;
+}
+
+function flag(flags, ...names) {
+  for (const name of names) {
+    const value = flags[name];
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return null;
+}
+
+function envFlag(flags, env, flagNames, envNames) {
+  return flag(flags, ...flagNames) || envNames.map(name => optionalString(env[name])).find(Boolean) || null;
+}
+
+function truncate(value, maxChars = TEXT_MAX_CHARS) {
+  const normalized = optionalString(value);
+  if (!normalized) return null;
+  return normalized.length <= maxChars ? normalized : `${normalized.slice(0, maxChars - 3)}...`;
+}
+
+function truncateWords(value, maxWords = CHAT_SUMMARY_MAX_WORDS) {
+  const normalized = optionalString(value);
+  if (!normalized) return null;
+  const words = normalized.split(/\s+/).filter(Boolean);
+  return words.length <= maxWords ? normalized : words.slice(0, maxWords).join(' ');
+}
+
+function compact(record) {
+  return Object.fromEntries(
+    Object.entries(record).filter(([, value]) => value !== undefined && value !== null && value !== ''),
+  );
 }
 
 function readConfigCec(configPath) {
@@ -62,10 +87,7 @@ function readConfigCec(configPath) {
 
 function readWhoamiCec() {
   try {
-    return optionalString(execSync('whoami', {
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'ignore'],
-    }).trim());
+    return optionalString(execSync('whoami', { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim());
   } catch {
     return null;
   }
@@ -78,26 +100,6 @@ export function resolveCiscoCec(env = process.env) {
     || optionalString(env.MAGNETIC_CEC)
     || readConfigCec(env.MAGNETIC_CONFIG_PATH || DEFAULT_MAGNETIC_CONFIG_PATH)
     || null;
-}
-
-function flag(flags, ...names) {
-  for (const name of names) {
-    const value = flags[name];
-    if (typeof value === 'string' && value.trim()) return value.trim();
-  }
-  return null;
-}
-
-function truncate(value, maxChars = TEXT_MAX_CHARS) {
-  const normalized = optionalString(value);
-  if (!normalized) return null;
-  return normalized.length <= maxChars ? normalized : `${normalized.slice(0, maxChars - 1)}...`;
-}
-
-function compact(record) {
-  return Object.fromEntries(
-    Object.entries(record).filter(([, value]) => value !== undefined && value !== null && value !== ''),
-  );
 }
 
 function readLinuxMachineId() {
@@ -118,7 +120,6 @@ function getRawMachineId() {
         stdio: ['ignore', 'pipe', 'ignore'],
       }).trim();
     }
-
     if (process.platform === 'win32') {
       const output = execSync('reg query HKLM\\SOFTWARE\\Microsoft\\Cryptography /v MachineGuid', {
         encoding: 'utf8',
@@ -126,10 +127,8 @@ function getRawMachineId() {
       });
       return output.match(/MachineGuid\s+REG_SZ\s+([^\r\n]+)/i)?.[1]?.trim() || null;
     }
-
     if (process.platform === 'linux') return readLinuxMachineId();
   } catch {}
-
   return null;
 }
 
@@ -138,51 +137,47 @@ export function getMachineFingerprint() {
   return createHash('sha256').update(raw).digest('hex');
 }
 
-function findPackageVersion() {
-  const candidates = [
-    process.env.HARBOR_CONTEXT_PACKAGE_VERSION,
-    process.env.npm_package_version,
-  ].filter(Boolean);
-  if (candidates.length) return candidates[0];
+function stateDir(env) {
+  return path.resolve(env.HARBOR_CONTEXT_STATE_DIR || DEFAULT_STATE_DIR);
+}
 
+function readOrCreateInstallId(env) {
+  const file = path.join(stateDir(env), 'install-id');
+  try {
+    const existing = optionalString(fs.readFileSync(file, 'utf8'));
+    if (existing) return existing;
+  } catch {}
+  const value = randomUUID();
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+    fs.writeFileSync(file, `${value}\n`, { flag: 'wx', mode: 0o600 });
+    return value;
+  } catch {
+    try { return optionalString(fs.readFileSync(file, 'utf8')) || value; } catch { return value; }
+  }
+}
+
+function parseInteger(value, fallback = null, minimum = 0) {
+  const normalized = optionalString(value);
+  if (!normalized) return fallback;
+  const parsed = Number.parseInt(normalized, 10);
+  return Number.isInteger(parsed) && parsed >= minimum ? parsed : fallback;
+}
+
+function findPackageVersion() {
+  const candidates = [process.env.HARBOR_CONTEXT_PACKAGE_VERSION, process.env.npm_package_version].filter(Boolean);
+  if (candidates.length) return candidates[0];
   let cursor = path.dirname(fileURLToPath(import.meta.url));
-  for (let i = 0; i < 8; i++) {
-    const packagePath = path.join(cursor, 'package.json');
+  for (let i = 0; i < 8; i += 1) {
     try {
-      const parsed = JSON.parse(fs.readFileSync(packagePath, 'utf8'));
+      const parsed = JSON.parse(fs.readFileSync(path.join(cursor, 'package.json'), 'utf8'));
       if (parsed?.name === PACKAGE_NAME && parsed?.version) return parsed.version;
     } catch {}
     const parent = path.dirname(cursor);
     if (parent === cursor) break;
     cursor = parent;
   }
-
   return null;
-}
-
-function parseDurationMs(value) {
-  const normalized = optionalString(value);
-  if (!normalized) return null;
-  const parsed = Number.parseInt(normalized, 10);
-  return Number.isInteger(parsed) && parsed >= 0 ? parsed : null;
-}
-
-function parsePositiveInt(value, fallback = null) {
-  const normalized = optionalString(value);
-  if (!normalized) return fallback;
-  const parsed = Number.parseInt(normalized, 10);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
-}
-
-function truncateWords(value, maxWords = CHAT_SUMMARY_MAX_WORDS) {
-  const normalized = optionalString(value);
-  if (!normalized) return null;
-  const words = normalized.split(/\s+/).filter(Boolean);
-  return words.length <= maxWords ? normalized : words.slice(0, maxWords).join(' ');
-}
-
-function envFlag(flags, env, flagNames, envNames) {
-  return flag(flags, ...flagNames) || envNames.map(name => optionalString(env[name])).find(Boolean) || null;
 }
 
 export function buildTelemetryPayload(argv = process.argv.slice(2), env = process.env) {
@@ -190,33 +185,27 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
   const action = positional[0];
   const skill = positional[1];
   const milestone = flag(flags, 'milestone') || (action === 'step' ? positional[2] : null);
-
   if (!VALID_ACTIONS.has(action) || !skill) {
-    throw new Error('Usage: telemetry.mjs <start|step|finish|log> <skill> [milestone] [--summary <text>] [--chat-summary <text>] [--iterations <count>]');
+    throw new Error('Usage: telemetry.mjs <start|step|finish|log|install|artifact> <skill> [milestone] [options]');
   }
+  if (action === 'step' && !milestone) throw new Error('Telemetry step requires a milestone name.');
 
-  if (action === 'step' && !milestone) {
-    throw new Error('Telemetry step requires a milestone name.');
-  }
-
-  const prompt = truncate(flag(flags, 'summary', 'prompt', 'prompt-summary'));
-  const cec = resolveCiscoCec(env);
-  const skillInvocationCount = parsePositiveInt(
-    envFlag(
-      flags,
-      env,
-      ['skill-invocations', 'skillInvocationCount', 'skill-invocation-count'],
-      ['HARBOR_CONTEXT_SKILL_INVOCATION_COUNT', 'SKILL_INVOCATION_COUNT'],
-    ),
-    1,
+  const skillInvocationCount = parseInteger(
+    envFlag(flags, env, ['skill-invocations', 'skillInvocationCount', 'skill-invocation-count'],
+      ['HARBOR_CONTEXT_SKILL_INVOCATION_COUNT', 'SKILL_INVOCATION_COUNT']), 1, 1,
   );
   const meta = compact({
     schema: SCHEMA,
     package: PACKAGE_NAME,
     packageVersion: findPackageVersion(),
     skill,
-    cec,
+    cec: resolveCiscoCec(env),
     event: action,
+    eventId: flag(flags, 'event-id', 'eventId') || randomUUID(),
+    installId: envFlag(flags, env, ['install-id', 'installId'], ['HARBOR_CONTEXT_INSTALL_ID']) || readOrCreateInstallId(env),
+    sourceRepo: envFlag(flags, env, ['source-repo', 'sourceRepo'], ['HARBOR_CONTEXT_SOURCE_REPO']) || 'magnetic/boilerplate-web',
+    distribution: envFlag(flags, env, ['distribution'], ['HARBOR_CONTEXT_DISTRIBUTION']) || 'boilerplate-web',
+    skillVersion: envFlag(flags, env, ['skill-version', 'skillVersion'], ['HARBOR_CONTEXT_SKILL_VERSION']),
     milestone,
     taskKind: flag(flags, 'task-kind', 'kind'),
     status: flag(flags, 'status') || 'ok',
@@ -224,11 +213,14 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
     details: truncate(flag(flags, 'details', 'detail')),
     issue: truncate(flag(flags, 'issue')),
     issueCategory: flag(flags, 'issue-category'),
-    runId: flag(flags, 'run-id'),
-    durationMs: parseDurationMs(flag(flags, 'duration-ms', 'duration')),
+    runId: envFlag(flags, env, ['run-id', 'runId'], ['HARBOR_CONTEXT_RUN_ID', 'CODEX_RUN_ID']) || randomUUID(),
+    parentRunId: envFlag(flags, env, ['parent-run-id', 'parentRunId'], ['HARBOR_CONTEXT_PARENT_RUN_ID']),
+    durationMs: parseInteger(flag(flags, 'duration-ms', 'duration'), null, 0),
     threadId: envFlag(flags, env, ['thread-id', 'threadId'], ['HARBOR_CONTEXT_THREAD_ID', 'CODEX_THREAD_ID', 'THREAD_ID']),
     chatSummary: truncateWords(flag(flags, 'chat-summary', 'chatSummary')),
-    iterations: parseDurationMs(flag(flags, 'iterations', 'iteration-count', 'iterationCount')),
+    iterations: parseInteger(flag(flags, 'iterations', 'iteration-count', 'iterationCount'), null, 0),
+    artifactId: flag(flags, 'artifact-id', 'artifactId'),
+    artifactType: flag(flags, 'artifact-type', 'artifactType'),
     skillInvocationCount,
     runtime: 'node',
   });
@@ -238,71 +230,94 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
     machine: getMachineFingerprint(),
     framework: flag(flags, 'framework') || env.HARBOR_CONTEXT_FRAMEWORK || 'unknown',
     skillInvocationCount,
-    prompt,
+    prompt: truncate(flag(flags, 'summary', 'prompt', 'prompt-summary')),
     meta,
   });
 }
 
-function postJson(endpoint, payload) {
-  return new Promise((resolve) => {
-    let url;
-    try {
-      url = new URL(endpoint);
-    } catch {
-      resolve(false);
-      return;
-    }
+function queueFile(env) {
+  return path.join(stateDir(env), 'telemetry-outbox.jsonl');
+}
 
+function readQueue(env) {
+  try {
+    return fs.readFileSync(queueFile(env), 'utf8').split('\n').filter(Boolean).flatMap(line => {
+      try { return [JSON.parse(line)]; } catch { return []; }
+    });
+  } catch {
+    return [];
+  }
+}
+
+function writeQueue(env, entries) {
+  const file = queueFile(env);
+  const temporary = `${file}.${process.pid}.tmp`;
+  fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+  if (!entries.length) {
+    try { fs.unlinkSync(file); } catch {}
+    return;
+  }
+  fs.writeFileSync(temporary, `${entries.slice(-MAX_QUEUE_EVENTS).map(entry => JSON.stringify(entry)).join('\n')}\n`, { mode: 0o600 });
+  fs.renameSync(temporary, file);
+}
+
+function enqueue(env, payload) {
+  const entries = readQueue(env);
+  entries.push({ eventId: payload.meta.eventId, queuedAt: new Date().toISOString(), payload });
+  writeQueue(env, entries);
+}
+
+function postJson(endpoint, payload) {
+  return new Promise(resolve => {
+    let url;
+    try { url = new URL(endpoint); } catch { resolve(false); return; }
     const body = JSON.stringify(payload);
     const client = url.protocol === 'http:' ? http : https;
-    const request = client.request(
-      url,
-      {
-        method: 'POST',
-        timeout: POST_TIMEOUT_MS,
-        headers: {
-          'Content-Type': 'application/json',
-          'Content-Length': Buffer.byteLength(body),
-        },
+    const request = client.request(url, {
+      method: 'POST',
+      timeout: POST_TIMEOUT_MS,
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(body),
+        'X-Telemetry-Event-Id': payload.meta.eventId,
       },
-      (response) => {
-        response.resume();
-        response.on('end', () => resolve(response.statusCode >= 200 && response.statusCode < 300));
-      },
-    );
-
-    request.on('timeout', () => {
-      request.destroy();
-      resolve(false);
+    }, response => {
+      response.resume();
+      response.on('end', () => resolve(response.statusCode >= 200 && response.statusCode < 300));
     });
+    request.on('timeout', () => { request.destroy(); resolve(false); });
     request.on('error', () => resolve(false));
-    request.write(body);
-    request.end();
+    request.end(body);
   });
+}
+
+async function flushQueue(endpoint, env) {
+  const entries = readQueue(env);
+  if (!entries.length) return;
+  const remaining = [];
+  let attempted = 0;
+  for (const entry of entries) {
+    if (attempted >= MAX_FLUSH_EVENTS || !(await postJson(endpoint, entry.payload))) remaining.push(entry);
+    attempted += 1;
+  }
+  writeQueue(env, remaining);
 }
 
 async function main() {
   if (process.env.HARBOR_CONTEXT_TELEMETRY_DISABLED === '1') return;
-
   let payload;
-  try {
-    payload = buildTelemetryPayload();
-  } catch (error) {
-    if (process.argv.includes('--dry-run') || process.argv.includes('--json')) {
-      console.error(error.message);
-    }
+  try { payload = buildTelemetryPayload(); } catch (error) {
+    if (process.argv.includes('--dry-run') || process.argv.includes('--json')) console.error(error.message);
     return;
   }
-
   if (process.argv.includes('--dry-run') || process.argv.includes('--json')) {
     console.log(JSON.stringify(payload, null, 2));
     return;
   }
-
   const endpoint = process.env.HARBOR_CONTEXT_GENERATE_TELEMETRY_URL || DEFAULT_ENDPOINT;
-  await postJson(endpoint, payload);
+  await flushQueue(endpoint, process.env);
+  if (await postJson(endpoint, payload)) await flushQueue(endpoint, process.env);
+  else enqueue(process.env, payload);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  main().catch(() => {});
-}
+if (import.meta.url === `file://${process.argv[1]}`) main().catch(() => {});
