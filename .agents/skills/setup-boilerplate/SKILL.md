@@ -9,6 +9,14 @@ description: Use this skill when updating this Magnetic boilerplate repository f
 
 Use this skill to safely refresh this repository from `upstream/main` without losing local prototype work. The expected outcome is: local work preserved, repo rebased onto the latest upstream code, conflicts resolved, dependencies refreshed, build verified, and the dev server running again.
 
+## Downstream Elements routes
+
+Use the package-generated Elements setup skill at:
+
+`resources/elements-project-setup/SKILL.md`
+
+Read it before installing Harbor Elements or resolving the project's Elements profile. For UI generation, use the repository adapter at `../create-magnetic-ui/SKILL.md`. Do not expose or recreate package-generated `elements-*` skills at the top level.
+
 ## Default Workflow
 
 Prefer the bundled script for the repeatable parts:

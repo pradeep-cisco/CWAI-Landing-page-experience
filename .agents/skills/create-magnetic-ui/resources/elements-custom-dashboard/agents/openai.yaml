@@ -1,0 +1,4 @@
+interface:
+  display_name: "Elements Custom Dashboard"
+  short_description: "Generate config-driven Harbor Elements custom dashboards."
+  default_prompt: "Generate a Harbor Elements custom dashboard for the target framework using the bundled custom dashboard samples."

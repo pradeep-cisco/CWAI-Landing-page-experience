@@ -54,7 +54,6 @@ automatically.
 | `src/main.jsx` | App entry point. |
 | `public/harbor-elements/` | Vendored Harbor Elements assets, regenerated on every install/build from `node_modules/@harbor/elements`. Not committed; safe to delete. |
 | `.agents/skills/create-magnetic-ui/SKILL.md` | Instructions for AI coding assistants on how to use Magnetic components in this repo. |
-| `ui-context/` | Per-component reference docs the skill points agents at. |
 
 ## Available scripts
 
@@ -64,6 +63,7 @@ automatically.
 | `pnpm build` | Copies the Harbor Elements assets, then builds to `dist/`. |
 | `pnpm preview` | Serves the built `dist/` for local sanity checks. |
 | `pnpm copy-elements` | Manually re-copy Harbor Elements from `node_modules/` into `public/` (also run automatically by `dev` and `build`). |
+| `pnpm context:update` | Regenerates the package-managed Elements skill resources and Magnetic component map. |
 
 ## Generating UI with an AI assistant
 
@@ -74,6 +74,21 @@ frontend tasks. Try:
 ```
 Generate a network health dashboard for this app.
 ```
+
+The `create-magnetic-ui` skill is a repository adapter for the canonical
+`elements-generate-ui` skill. Update `@harbor/context`, then run:
+
+```bash
+pnpm context:update
+```
+
+The command generates the canonical Elements skills and their resources under
+`.agents/skills/create-magnetic-ui/resources/`. This includes the
+Magnetic-to-Harbor component map and Figma layout guidance. The
+`setup-boilerplate` routes to its package-generated Elements setup resource.
+Other `elements-*` skills are not exposed as top-level repository skills. The
+generated resource bundles are managed by `@harbor/context` and tracked in
+Git.
 
 For paste-from-Figma workflows, see
 <https://magnetic-web.cisco.com/docs/ai/guides/code-generation>.
