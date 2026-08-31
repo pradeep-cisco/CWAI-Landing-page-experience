@@ -1,15 +1,10 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import Root from "./components/root";
 import Home from "./pages/home";
-import NetworkHealth from "./pages/network-health";
+import TeaSales from "./pages/tea-sales";
+import USCNetworkHealth from "./pages/usc-network-health";
 
 const navConfig = [
-  {
-    value: "/network-health",
-    type: "item",
-    icon: "nav-network-devices",
-    label: "Network Health",
-  },
   {
     value: "/home",
     type: "item",
@@ -26,11 +21,15 @@ const router = createBrowserRouter(
       children: [
         {
           index: true,
-          element: <Navigate to="/network-health" replace />,
+          element: <Navigate to="/home" replace />,
         },
         {
-          path: "network-health",
-          element: <NetworkHealth />,
+          path: "usc-network-health",
+          element: <USCNetworkHealth />,
+        },
+        {
+          path: "tea-sales",
+          element: <TeaSales />,
         },
         {
           path: "home",
