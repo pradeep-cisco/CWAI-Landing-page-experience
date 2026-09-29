@@ -7,6 +7,7 @@
   "scripts": {
     "copy-elements": "cpy './node_modules/@harbor/elements/dist/harbor-elements/**/*' './public/harbor-elements' --parents",
     "context:update": "node scripts/update-context.mjs",
+    "test": "node --test tests/telemetry.test.mjs",
     "dev": "npm run copy-elements && vite",
     "build": "npm run copy-elements && vite build",
     "preview": "vite preview"

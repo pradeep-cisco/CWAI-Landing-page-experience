@@ -9,7 +9,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DEFAULT_ENDPOINT = 'https://harbor.cisco.com/api/telemetry/context-generate';
-const SCHEMA = 'harbor.context.generate.v1';
+const SCHEMA = 'harbor.context.generate.v2';
+const SCHEMA_VERSION = 2;
+const SOURCE = 'boilerplate_web';
 const PACKAGE_NAME = '@harbor/context';
 const POST_TIMEOUT_MS = 2000;
 const TEXT_MAX_CHARS = 1500;
@@ -17,6 +19,27 @@ const CHAT_SUMMARY_MAX_WORDS = 10;
 const MAX_QUEUE_EVENTS = 100;
 const MAX_FLUSH_EVENTS = 5;
 const VALID_ACTIONS = new Set(['start', 'step', 'finish', 'log', 'install', 'artifact']);
+const EVENT_TYPES = {
+  start: 'run_started',
+  step: 'run_progress',
+  finish: 'run_finished',
+  log: 'run_recorded',
+  install: 'installation_recorded',
+  artifact: 'artifact_recorded',
+};
+const RUN_STATUS_ALIASES = {
+  ok: 'completed',
+  success: 'completed',
+  succeeded: 'completed',
+  complete: 'completed',
+  completed: 'completed',
+  error: 'failed',
+  failure: 'failed',
+  failed: 'failed',
+  blocked: 'blocked',
+  canceled: 'cancelled',
+  cancelled: 'cancelled',
+};
 const DEFAULT_CONFIG_PATH = path.join(os.homedir(), '.harbor-context', 'config.json');
 const DEFAULT_MAGNETIC_CONFIG_PATH = path.join(os.homedir(), '.magnetic', 'config.json');
 const DEFAULT_STATE_DIR = path.join(os.homedir(), '.harbor-context');
@@ -55,6 +78,11 @@ function flag(flags, ...names) {
 
 function envFlag(flags, env, flagNames, envNames) {
   return flag(flags, ...flagNames) || envNames.map(name => optionalString(env[name])).find(Boolean) || null;
+}
+
+function normalizeRunStatus(action, status) {
+  if (!['finish', 'log'].includes(action)) return null;
+  return RUN_STATUS_ALIASES[optionalString(status)?.toLowerCase()] || null;
 }
 
 function truncate(value, maxChars = TEXT_MAX_CHARS) {
@@ -194,8 +222,16 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
     envFlag(flags, env, ['skill-invocations', 'skillInvocationCount', 'skill-invocation-count'],
       ['HARBOR_CONTEXT_SKILL_INVOCATION_COUNT', 'SKILL_INVOCATION_COUNT']), 1, 1,
   );
+  const legacyStatus = flag(flags, 'status') || 'ok';
+  const runId = envFlag(flags, env, ['run-id', 'runId'], ['HARBOR_CONTEXT_RUN_ID', 'CODEX_RUN_ID']) || randomUUID();
+  const eventType = EVENT_TYPES[action];
+  const runStatus = normalizeRunStatus(action, legacyStatus);
   const meta = compact({
     schema: SCHEMA,
+    schemaVersion: SCHEMA_VERSION,
+    source: SOURCE,
+    eventType,
+    runStatus,
     package: PACKAGE_NAME,
     packageVersion: findPackageVersion(),
     skill,
@@ -208,12 +244,12 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
     skillVersion: envFlag(flags, env, ['skill-version', 'skillVersion'], ['HARBOR_CONTEXT_SKILL_VERSION']),
     milestone,
     taskKind: flag(flags, 'task-kind', 'kind'),
-    status: flag(flags, 'status') || 'ok',
+    status: legacyStatus,
     quality: flag(flags, 'quality'),
     details: truncate(flag(flags, 'details', 'detail')),
     issue: truncate(flag(flags, 'issue')),
     issueCategory: flag(flags, 'issue-category'),
-    runId: envFlag(flags, env, ['run-id', 'runId'], ['HARBOR_CONTEXT_RUN_ID', 'CODEX_RUN_ID']) || randomUUID(),
+    runId,
     parentRunId: envFlag(flags, env, ['parent-run-id', 'parentRunId'], ['HARBOR_CONTEXT_PARENT_RUN_ID']),
     durationMs: parseInteger(flag(flags, 'duration-ms', 'duration'), null, 0),
     threadId: envFlag(flags, env, ['thread-id', 'threadId'], ['HARBOR_CONTEXT_THREAD_ID', 'CODEX_THREAD_ID', 'THREAD_ID']),
@@ -226,6 +262,11 @@ export function buildTelemetryPayload(argv = process.argv.slice(2), env = proces
   });
 
   return compact({
+    schema_version: SCHEMA_VERSION,
+    source: SOURCE,
+    event_type: eventType,
+    run_status: runStatus,
+    run_id: runId,
     editor: flag(flags, 'editor') || env.HARBOR_CONTEXT_EDITOR || env.EDITOR || 'unknown',
     machine: getMachineFingerprint(),
     framework: flag(flags, 'framework') || env.HARBOR_CONTEXT_FRAMEWORK || 'unknown',
