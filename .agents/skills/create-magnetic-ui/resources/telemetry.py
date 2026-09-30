@@ -13,7 +13,9 @@ import uuid
 from pathlib import Path
 
 DEFAULT_ENDPOINT = "https://harbor.cisco.com/api/telemetry/context-generate"
-SCHEMA = "harbor.context.generate.v1"
+SCHEMA = "harbor.context.generate.v2"
+SCHEMA_VERSION = 2
+SOURCE = "boilerplate_web"
 PACKAGE_NAME = "@harbor/context"
 POST_TIMEOUT_SECONDS = 2
 TEXT_MAX_CHARS = 1500
@@ -21,6 +23,27 @@ CHAT_SUMMARY_MAX_WORDS = 10
 MAX_QUEUE_EVENTS = 100
 MAX_FLUSH_EVENTS = 5
 VALID_ACTIONS = {"start", "step", "finish", "log", "install", "artifact"}
+EVENT_TYPES = {
+    "start": "run_started",
+    "step": "run_progress",
+    "finish": "run_finished",
+    "log": "run_recorded",
+    "install": "installation_recorded",
+    "artifact": "artifact_recorded",
+}
+RUN_STATUS_ALIASES = {
+    "ok": "completed",
+    "success": "completed",
+    "succeeded": "completed",
+    "complete": "completed",
+    "completed": "completed",
+    "error": "failed",
+    "failure": "failed",
+    "failed": "failed",
+    "blocked": "blocked",
+    "canceled": "cancelled",
+    "cancelled": "cancelled",
+}
 DEFAULT_CONFIG_PATH = Path.home() / ".harbor-context" / "config.json"
 DEFAULT_MAGNETIC_CONFIG_PATH = Path.home() / ".magnetic" / "config.json"
 DEFAULT_STATE_DIR = Path.home() / ".harbor-context"
@@ -98,6 +121,12 @@ def resolve_cisco_cec(env=None):
         env.get("MAGNETIC_CEC"),
         read_config_cec(env.get("MAGNETIC_CONFIG_PATH") or DEFAULT_MAGNETIC_CONFIG_PATH),
     )
+
+
+def normalize_run_status(action, status):
+    if action not in {"finish", "log"}:
+        return None
+    return RUN_STATUS_ALIASES.get((optional(status) or "").lower())
 
 
 def machine_fingerprint():
@@ -180,8 +209,15 @@ def build_payload(argv=None, env=None):
     skill_invocations = args.skill_invocation_count or positive_int(
         first_present(env.get("HARBOR_CONTEXT_SKILL_INVOCATION_COUNT"), env.get("SKILL_INVOCATION_COUNT")), 1, 1
     )
+    run_id = args.run_id or optional(env.get("HARBOR_CONTEXT_RUN_ID")) or optional(env.get("CODEX_RUN_ID")) or str(uuid.uuid4())
+    event_type = EVENT_TYPES[args.action]
+    run_status = normalize_run_status(args.action, args.status)
     meta = compact({
         "schema": SCHEMA,
+        "schemaVersion": SCHEMA_VERSION,
+        "source": SOURCE,
+        "eventType": event_type,
+        "runStatus": run_status,
         "package": PACKAGE_NAME,
         "packageVersion": optional(env.get("HARBOR_CONTEXT_PACKAGE_VERSION")),
         "skill": args.skill,
@@ -199,7 +235,7 @@ def build_payload(argv=None, env=None):
         "details": truncate(args.details),
         "issue": truncate(args.issue),
         "issueCategory": optional(args.issue_category),
-        "runId": args.run_id or optional(env.get("HARBOR_CONTEXT_RUN_ID")) or str(uuid.uuid4()),
+        "runId": run_id,
         "parentRunId": args.parent_run_id or optional(env.get("HARBOR_CONTEXT_PARENT_RUN_ID")),
         "durationMs": args.duration_ms,
         "threadId": first_present(args.thread_id, env.get("HARBOR_CONTEXT_THREAD_ID"), env.get("CODEX_THREAD_ID"), env.get("THREAD_ID")),
@@ -211,6 +247,11 @@ def build_payload(argv=None, env=None):
         "runtime": "python",
     })
     return compact({
+        "schema_version": SCHEMA_VERSION,
+        "source": SOURCE,
+        "event_type": event_type,
+        "run_status": run_status,
+        "run_id": run_id,
         "editor": optional(args.editor) or optional(env.get("HARBOR_CONTEXT_EDITOR")) or optional(env.get("EDITOR")) or "unknown",
         "machine": machine_fingerprint(),
         "framework": optional(args.framework) or optional(env.get("HARBOR_CONTEXT_FRAMEWORK")) or "unknown",
