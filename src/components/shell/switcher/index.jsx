@@ -246,7 +246,7 @@ function Tree({ selected }) {
               library="phosphor"
               size="20px"
               src={item.icon}
-              style={{ color: "var(--hbr-color-neutral-icon, #7E868F)" }}
+              style={{ color: "var(--brand-accent-icon-default)" }}
             />
             <hbr-highlight
               variant="underline"
@@ -282,7 +282,7 @@ function Tree({ selected }) {
         placeholder="Search hierarchy"
         onhbr-input={handleInput}
         clearable={true}
-        style={{ padding: "12px", backgroundColor: "var(--hbr-color-neutral-bg, #F2F4F7)" }}
+        style={{ padding: "12px", backgroundColor: "var(--base-bg-weak-default)" }}
       >
         <div
           slot="prefix"
@@ -296,7 +296,7 @@ function Tree({ selected }) {
             size="20px"
             name="magnifying-glass"
             className="search-sample-icon"
-            style={{ color: "var(--hbr-color-neutral-icon, #7E868F)" }}
+            style={{ color: "var(--brand-accent-icon-default)" }}
           />
         </div>
       </hbr-input>
@@ -304,7 +304,7 @@ function Tree({ selected }) {
         selection="single"
         style={{
           "--color-bg-selected":
-            "var(--control-background-weak-active, #E3EEFF)",
+            "var(--control-bg-weak-active)",
         }}
       >
         {renderTreeItems(data, query)}
