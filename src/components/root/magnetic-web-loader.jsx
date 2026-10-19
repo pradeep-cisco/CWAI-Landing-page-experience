@@ -1,6 +1,7 @@
 import { bootstrap, loadThemeStylesheets } from "@harbor/elements";
+import { initializeAppearance } from "../../theme/appearance";
 
-document.body.setAttribute("data-theme", "onecd");
+initializeAppearance();
 
 bootstrap({
 	base: `${import.meta.env.BASE_URL}harbor-elements/`,
