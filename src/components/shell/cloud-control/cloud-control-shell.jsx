@@ -32,9 +32,9 @@ export default function CloudControlShell({ children, navConfig }) {
 
   const handleScroll = useCallback((event) => {
     const target = event.currentTarget;
-    const header = document.querySelector(
-      ".cloud-control-header hbr-shell-header",
-    );
+    const header = target
+      .closest(".cloud-control-root")
+      ?.querySelector("hbr-shell-header");
 
     header?.classList.toggle("scrolled", target.scrollTop > 160);
   }, []);

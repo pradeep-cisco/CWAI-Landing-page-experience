@@ -35,26 +35,14 @@
 
 .cloud-control-header hbr-shell-header {
   --color: var(--cloud-control-text);
+  --header-bg-gradient-end: rgb(59 70 83 / 70%);
+  --header-bg-gradient-start: rgb(59 70 83 / 80%);
   --min-width: 0;
 }
 
 .cloud-control-header hbr-shell-header::part(base) {
   gap: 8px;
   padding: 8px 16px;
-}
-
-.cloud-control-header hbr-shell-header:not(.scrolled)::part(base)::before {
-  -webkit-backdrop-filter: none;
-  backdrop-filter: none;
-  background: transparent;
-}
-
-.cloud-control-header hbr-shell-header.scrolled::part(base)::before {
-  background: linear-gradient(
-    180deg,
-    rgb(59 70 83 / 80%) 0%,
-    rgb(59 70 83 / 70%) 100%
-  );
 }
 
 .cloud-control-header a[slot="logo-name"] {
@@ -310,6 +298,7 @@
   flex-direction: column;
   height: 100vh;
   min-height: 100vh;
+  overflow-x: hidden;
   overflow-y: auto;
   padding: var(--hbr-app-shift-top) 36px 0 24px;
   position: relative;
@@ -375,6 +364,8 @@
 
 .cloud-control-page {
   flex: 1;
+  min-height: 0;
+  overflow: visible;
 }
 
 .cloud-control-platform-navigator {

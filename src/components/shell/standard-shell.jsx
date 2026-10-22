@@ -16,14 +16,11 @@ export default function StandardShell({ children, navConfig }) {
 
   const handleOneCdScroll = useCallback((event) => {
     const target = event.currentTarget;
-    const header = document.querySelector("hbr-shell-header");
-    const glowLayer = target.querySelector(".hbr-css__glow-layer");
+    const header = target
+      .closest(".n-root")
+      ?.querySelector("hbr-shell-header");
 
     header?.classList.toggle("scrolled", target.scrollTop > 160);
-
-    if (glowLayer) {
-      glowLayer.style.top = `-${target.scrollTop}px`;
-    }
   }, []);
 
   return (
