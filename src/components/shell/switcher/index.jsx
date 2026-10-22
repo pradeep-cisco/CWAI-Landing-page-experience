@@ -313,8 +313,8 @@ function Tree({ selected }) {
   );
 }
 
-export default function Switcher() {
-  const [selected, setSelected] = useState({ name: "Global", id: null });
+export default function Switcher({ initialLabel = "Global" }) {
+  const [selected, setSelected] = useState({ name: initialLabel, id: null });
   return (
     <hbr-nav-item
       id="my-nav-item-id"
