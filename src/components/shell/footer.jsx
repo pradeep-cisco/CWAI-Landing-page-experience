@@ -6,7 +6,7 @@ export default function Footer() {
       gap="md"
       style={{
         justifyContent: "space-between",
-        borderTop: "1px solid var(--hbr-color-neutral-border-weak)",
+        borderTop: "1px solid var(--base-border-medium-default)",
         paddingTop: "var(--hbr-spacing-md)",
         marginTop: "var(--hbr-spacing-sm)",
       }}

@@ -4,6 +4,7 @@ import buildingIcon from "./building.svg";
 import houseLineIcon from "./house-line.svg";
 import stackSimpleIcon from "./stack-simple.svg";
 import checkIcon from "./check-circle-bold.svg";
+import { useShellState } from "../shell-state-context";
 
 const globalBranchesData = {
   label: "Global",
@@ -246,7 +247,7 @@ function Tree({ selected }) {
               library="phosphor"
               size="20px"
               src={item.icon}
-              style={{ color: "var(--hbr-color-neutral-icon, #7E868F)" }}
+              style={{ color: "var(--brand-accent-icon-default)" }}
             />
             <hbr-highlight
               variant="underline"
@@ -282,7 +283,7 @@ function Tree({ selected }) {
         placeholder="Search hierarchy"
         onhbr-input={handleInput}
         clearable={true}
-        style={{ padding: "12px", backgroundColor: "var(--hbr-color-neutral-bg, #F2F4F7)" }}
+        style={{ padding: "12px", backgroundColor: "var(--base-bg-weak-default)" }}
       >
         <div
           slot="prefix"
@@ -296,7 +297,7 @@ function Tree({ selected }) {
             size="20px"
             name="magnifying-glass"
             className="search-sample-icon"
-            style={{ color: "var(--hbr-color-neutral-icon, #7E868F)" }}
+            style={{ color: "var(--brand-accent-icon-default)" }}
           />
         </div>
       </hbr-input>
@@ -304,7 +305,7 @@ function Tree({ selected }) {
         selection="single"
         style={{
           "--color-bg-selected":
-            "var(--control-background-weak-active, #E3EEFF)",
+            "var(--control-bg-weak-active)",
         }}
       >
         {renderTreeItems(data, query)}
@@ -314,7 +315,7 @@ function Tree({ selected }) {
 }
 
 export default function Switcher() {
-  const [selected, setSelected] = useState({ name: "Global", id: null });
+  const { organization: selected, setOrganization } = useShellState();
   return (
     <hbr-nav-item
       id="my-nav-item-id"
@@ -342,7 +343,7 @@ export default function Switcher() {
           id="my-dropdown"
           onhbr-selection-change={(e) => {
             const selected = e.detail.selection[0];
-            setSelected(selected);
+            setOrganization(selected);
             selected.closest("hbr-dropdown").hide();
           }}
         >

@@ -1,0 +1,881 @@
+.cloud-control-root {
+  --cloud-control-bg: #111418;
+  --cloud-control-surface: #181c21;
+  --cloud-control-surface-raised: #20252b;
+  --cloud-control-surface-hover: #292f36;
+  --cloud-control-border: #3f464f;
+  --cloud-control-border-strong: #59616b;
+  --cloud-control-text: #f4f6f8;
+  --cloud-control-text-muted: #c1c6cc;
+  --cloud-control-text-weak: #929aa4;
+  --cloud-control-accent: #29a9e0;
+  --cloud-control-accent-strong: #6d5ce7;
+  --cloud-control-button-border: rgb(255 255 255 / 20%);
+  --cloud-control-header-button-default-sheen: radial-gradient(
+    ellipse 38% 45% at 50% 0%,
+    rgb(255 255 255 / 10%) 0%,
+    rgb(255 255 255 / 2.5%) 100%
+  );
+  --cloud-control-header-button-hover-sheen: radial-gradient(
+    ellipse 48.3% 57.3% at 50% 0%,
+    rgb(255 255 255 / 10%) 0%,
+    rgb(255 255 255 / 2.5%) 100%
+  );
+  --cloud-control-header-button-hover-glow: linear-gradient(
+    71.5026deg,
+    rgb(2 200 255 / 45%) 3.2922%,
+    rgb(128 0 64 / 0%) 29.386%,
+    rgb(0 0 0 / 0%) 81.572%
+  );
+  --cloud-control-header-button-active-glow: linear-gradient(
+    67.5731deg,
+    rgb(2 200 255 / 45%) 1.1514%,
+    rgb(128 0 64 / 0%) 23.749%,
+    rgb(191 0 95 / 0%) 28.268%,
+    rgb(0 0 0 / 0%) 68.943%
+  );
+  --cloud-control-button-sheen: radial-gradient(
+    ellipse 140% 220% at 50% -115%,
+    rgb(255 255 255 / 15%) 0%,
+    rgb(255 255 255 / 4%) 72%
+  );
+  --cloud-control-button-hover-glow: linear-gradient(
+    71.5026deg,
+    rgb(2 200 255 / 45%) 3%,
+    rgb(128 0 64 / 0%) 10%,
+    rgb(0 0 0 / 0%) 82%
+  );
+  --cloud-control-button-active-border: linear-gradient(
+    105deg,
+    #02c8ff 0%,
+    #7467ff 58%,
+    #b45cff 100%
+  );
+  --cloud-control-button-active-surface: linear-gradient(
+    var(--cloud-control-surface-raised),
+    var(--cloud-control-surface-raised)
+  );
+  --hbr-app-shift-top: 56px;
+  --hbr-app-shift-left: 280px;
+  --hbr-app-shift-right: 0px;
+  background: var(--cloud-control-bg);
+  color: var(--cloud-control-text);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.cloud-control-root.navCollapsed {
+  --hbr-app-shift-left: 136px;
+}
+
+.cloud-control-header {
+  inset: 0 0 auto;
+  min-height: 56px;
+  position: fixed;
+  width: 100%;
+  z-index: var(--hbr-z-index-header, 1000);
+}
+
+.cloud-control-header hbr-shell-header {
+  --color: var(--cloud-control-text);
+  --header-bg-gradient-end: rgb(59 70 83 / 70%);
+  --header-bg-gradient-start: rgb(59 70 83 / 80%);
+  --min-width: 0;
+}
+
+.cloud-control-header hbr-shell-header::part(base) {
+  gap: 8px;
+  padding: 8px 16px;
+}
+
+.cloud-control-header a[slot="logo-name"] {
+  color: var(--cloud-control-text);
+  flex: 0 0 auto;
+  font-family: var(--hbr-font-heading);
+  font-size: 18px;
+  font-weight: var(--hbr-font-weight-bold, 700);
+  gap: 10px;
+  letter-spacing: -0.01em;
+  line-height: 24px;
+  margin-right: 0;
+}
+
+.cloud-control-header a[slot="logo-name"] hbr-icon {
+  color: var(--cloud-control-text);
+  font-size: 42px;
+  width: 44px;
+}
+
+.cloud-control-brand-divider {
+  align-self: center;
+  background: var(--cloud-control-border);
+  height: 24px;
+  margin-inline: 2px;
+  width: 1px;
+}
+
+.cloud-control-header-tools,
+.cloud-control-pinned-products {
+  align-items: center;
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.cloud-control-header-tools {
+  flex: 1 1 auto;
+}
+
+.cloud-control-header .cloud-control-pinned-product,
+.cloud-control-platform-navigator .cloud-control-platform-item {
+  --label-affix-padding-sm: 4px;
+  --label-font-size: 14px;
+  --label-font-weight: var(--hbr-font-weight-semibold, 600);
+}
+
+.cloud-control-header .cloud-control-pinned-product::part(base),
+.cloud-control-platform-navigator .cloud-control-platform-item::part(base) {
+  border: 1px solid var(--cloud-control-button-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  color: var(--cloud-control-text, #f7f7f7);
+  font-size: 14px;
+  font-weight: var(--hbr-font-weight-semibold, 600);
+  height: 34px;
+  line-height: 20px;
+  padding: 0 12px;
+  transition:
+    background 140ms ease,
+    border-color 140ms ease,
+    box-shadow 140ms ease,
+    color 140ms ease;
+}
+
+.cloud-control-header .cloud-control-pinned-product::part(base) {
+  background: var(--cloud-control-header-button-default-sheen);
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item::part(base) {
+  background: var(--cloud-control-button-sheen);
+}
+
+.cloud-control-header .cloud-control-pinned-product:hover::part(base) {
+  background:
+    var(--cloud-control-header-button-hover-glow),
+    var(--cloud-control-header-button-hover-sheen);
+  border-color: var(--cloud-control-button-border);
+  color: var(--cloud-control-text, #f7f7f7);
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item:hover::part(base) {
+  background:
+    var(--cloud-control-button-hover-glow) padding-box,
+    var(--cloud-control-button-sheen) padding-box;
+  border-color:
+    var(--cloud-control-button-border)
+    var(--cloud-control-button-border)
+    var(--cloud-control-button-border)
+    rgb(2 200 255 / 52%);
+  color: var(--cloud-control-text, #f7f7f7);
+}
+
+.cloud-control-header .cloud-control-pinned-product:active::part(base),
+.cloud-control-header .cloud-control-pinned-product[data-focused]::part(base),
+.cloud-control-header .cloud-control-pinned-product[data-active="true"]::part(base) {
+  background:
+    var(--cloud-control-header-button-active-glow) padding-box,
+    var(--cloud-control-header-button-hover-sheen) padding-box,
+    var(--cloud-control-button-active-surface) padding-box,
+    var(--cloud-control-button-active-border) border-box;
+  border-color: transparent;
+  box-shadow: none;
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item:active::part(base),
+.cloud-control-platform-navigator .cloud-control-platform-item[data-focused]::part(base),
+.cloud-control-platform-navigator .cloud-control-platform-item[data-active="true"]::part(base) {
+  background:
+    var(--cloud-control-button-hover-glow) padding-box,
+    var(--cloud-control-button-sheen) padding-box,
+    var(--cloud-control-button-active-surface) padding-box,
+    var(--cloud-control-button-active-border) border-box;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgb(2 200 255 / 18%);
+}
+
+.cloud-control-header .cloud-control-pinned-product > hbr-icon,
+.cloud-control-platform-navigator .cloud-control-platform-item > hbr-icon {
+  --path-color-default: var(--cloud-control-text-weak);
+  --path-color-medium: var(--cloud-control-text-weak);
+  --path-color-strong: var(--cloud-control-text-weak);
+  --path-color-weak: var(--cloud-control-text-weak);
+  color: var(--cloud-control-text-weak);
+}
+
+.cloud-control-header .cloud-control-pinned-product:is(:hover, :active, [data-focused], [data-active="true"]) > hbr-icon,
+.cloud-control-platform-navigator .cloud-control-platform-item:is(:hover, :active, [data-focused], [data-active="true"]) > hbr-icon {
+  --path-color-default: #16BAE8;
+  --path-color-medium: #1F92B7;
+  --path-color-strong: #16BAE8;
+  --path-color-weak: #1B6F8E;
+  color: #02c8ff;
+}
+
+.cloud-control-pinned-products {
+  flex: 1 1 auto;
+  overflow: hidden;
+}
+
+.cloud-control-pinned-product::part(base) {
+  max-width: 132px;
+}
+
+.cloud-control-pinned-product[data-active="true"]::part(base) {
+  color: var(--cloud-control-text);
+}
+
+.cloud-control-container {
+  background: linear-gradient(180deg, #0b1118 0%, #04070b 100%);
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+  height: 100vh;
+  min-height: 100vh;
+  min-width: 100vw;
+  overflow: hidden;
+}
+
+.cloud-control-nav {
+  flex: 0 0 var(--hbr-app-shift-left);
+  padding-top: var(--hbr-app-shift-top);
+  position: relative;
+  width: var(--hbr-app-shift-left);
+  z-index: 1;
+}
+
+.cloud-control-nav hbr-shell-nav {
+  --collapse-btn-color: var(--cloud-control-text-muted);
+  --collapse-btn-hover-color: var(--cloud-control-text);
+  --sentiment-color: var(--cloud-control-accent);
+  height: calc(100vh - var(--hbr-app-shift-top));
+}
+
+.cloud-control-nav hbr-shell-nav::part(base) {
+  width: 280px;
+}
+
+.cloud-control-root.navCollapsed .cloud-control-nav hbr-shell-nav::part(base) {
+  width: 136px;
+}
+
+.cloud-control-nav hbr-shell-nav::part(nav-container) {
+  padding: 16px;
+  position: relative;
+}
+
+.cloud-control-nav hbr-shell-nav::part(collapsible-icon) {
+  height: 40px;
+  left: 16px;
+  padding: 0;
+  position: absolute;
+  top: 16px;
+  width: 40px;
+  z-index: 2;
+}
+
+.cloud-control-nav hbr-shell-nav::part(collapse-button) {
+  align-items: center;
+  border-radius: 8px;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  padding: 8px;
+  width: 40px;
+}
+
+.cloud-control-nav hbr-shell-nav::part(collapse-button):hover {
+  background: var(--cloud-control-surface-hover);
+}
+
+.cloud-control-nav hbr-shell-nav::part(nav-items) {
+  gap: 8px;
+}
+
+.cloud-control-product-identity {
+  align-items: center;
+  color: var(--cloud-control-text);
+  display: flex;
+  gap: 8px;
+  height: 40px;
+  margin-bottom: 8px;
+  padding: 0 8px 0 48px;
+}
+
+.cloud-control-product-identity hbr-icon {
+  --path-color-default: #16BAE8;
+  --path-color-medium: #1F92B7;
+  --path-color-strong: #16BAE8;
+  --path-color-weak: #1B6F8E;;
+  color: var(--cloud-control-accent);
+  flex: 0 0 auto;
+}
+
+.cloud-control-product-identity hbr-text {
+  color: var(--cloud-control-text);
+  min-width: 0;
+}
+
+.cloud-control-root.navCollapsed .cloud-control-nav hbr-shell-nav::part(collapsible-icon) {
+  left: 48px;
+}
+
+.cloud-control-root.navCollapsed .cloud-control-product-identity {
+  flex-direction: column;
+  gap: 4px;
+  height: auto;
+  margin-top: 48px;
+  min-height: 54px;
+  padding: 0;
+  text-align: center;
+}
+
+.cloud-control-root.navCollapsed .cloud-control-product-identity hbr-text {
+  font-size: 14px;
+  line-height: 18px;
+  max-width: 104px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-control-switcher {
+  margin-bottom: 24px;
+}
+
+.cloud-control-nav hbr-nav-item {
+  --nav-item-active-bg: var(--cloud-control-surface-raised);
+  --nav-item-active-box-shadow: none;
+  --nav-item-active-extra-box-shadow: none;
+  --nav-item-hover-bg: var(--cloud-control-surface-hover);
+  --nav-item-selected-bg: var(--cloud-control-surface-raised);
+  --pointer-bg-color: var(--cloud-control-accent);
+  color: var(--cloud-control-text-muted);
+}
+
+.cloud-control-nav hbr-nav-item::part(base) {
+  border-radius: 8px;
+  color: var(--cloud-control-text-muted);
+  min-height: 40px;
+}
+
+.cloud-control-nav hbr-nav-item[selected]::part(base) {
+  color: var(--cloud-control-text);
+}
+
+.cloud-control-nav hbr-nav-item::part(pointer) {
+  background: var(--cloud-control-accent);
+  border-radius: 8px 0 0 8px;
+  width: 4px;
+}
+
+.cloud-control-switcher hbr-nav-item::part(base) {
+  border: 2px solid var(--cloud-control-border-strong);
+  color: var(--cloud-control-text);
+  min-height: 70px;
+  padding-block: 8px;
+}
+
+.cloud-control-root.navCollapsed .cloud-control-switcher hbr-nav-item::part(base) {
+  min-height: 70px;
+}
+
+.cloud-control-content {
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  min-height: 100vh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: var(--hbr-app-shift-top) 36px 0 24px;
+  position: relative;
+  width: calc(100vw - var(--hbr-app-shift-left));
+  z-index: 0;
+}
+
+.cloud-control-root .cloud-control-content .cloud-control-background-glow {
+  background: none;
+  bottom: 0;
+  left: 0;
+  overflow: hidden;
+  pointer-events: none;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+.cloud-control-background-glow-shape {
+  align-items: center;
+  bottom: calc(50vh - 986.75px);
+  display: flex;
+  height: 593px;
+  justify-content: center;
+  position: absolute;
+  transform: translateX(-50%);
+  width: 1697px;
+}
+
+.cloud-control-background-glow-shape--left {
+  left: calc(50% - 130.5px);
+}
+
+.cloud-control-background-glow-shape--right {
+  left: calc(50% + 129.5px);
+}
+
+.cloud-control-background-glow-rotation {
+  flex: none;
+  transform: rotate(-90deg);
+}
+
+.cloud-control-background-glow-canvas {
+  height: 1697px;
+  position: relative;
+  width: 593px;
+}
+
+.cloud-control-background-glow-image-frame {
+  inset: -400px;
+  position: absolute;
+}
+
+.cloud-control-background-glow-image-frame img {
+  display: block;
+  max-width: none;
+}
+
+.cloud-control-page,
+.cloud-control-content > [variant="page:footer"] {
+  position: relative;
+  z-index: 1;
+}
+
+.cloud-control-page {
+  flex: 1 0 auto;
+  overflow: visible;
+}
+
+.cloud-control-platform-navigator {
+  --width: calc(100vw - 16px);
+}
+
+.cloud-control-platform-navigator::part(base) {
+  align-items: flex-start;
+  padding: 8px;
+  top: 56px;
+}
+
+.cloud-control-platform-navigator::part(overlay) {
+  background: rgb(6 9 12 / 72%);
+  top: 56px;
+}
+
+/* Keep Harbor's transition events, but make opening and closing imperceptible. */
+.cloud-control-platform-navigator::part(overlay),
+.cloud-control-platform-navigator::part(panel) {
+  transition-duration: 1ms;
+}
+
+.cloud-control-platform-navigator::part(panel) {
+  background: var(--cloud-control-surface, #181c21);
+  border: 1px solid var(--cloud-control-border, #3f464f);
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 45%);
+  height: calc(100vh - 72px);
+  max-height: calc(100vh - 72px);
+  max-width: none;
+  width: calc(100vw - 16px);
+}
+
+.cloud-control-platform-navigator::part(body) {
+  background: var(--cloud-control-surface, #181c21);
+  height: 100%;
+  overflow: auto;
+  padding: 0;
+}
+
+.cloud-control-platform-navigator::part(footer) {
+  display: none;
+}
+
+.cloud-control-platform-content {
+  box-sizing: border-box;
+  color: var(--cloud-control-text, #f4f6f8);
+  min-height: 100%;
+  padding: 16px 24px 28px;
+}
+
+.cloud-control-platform-toolbar {
+  align-items: center;
+  display: grid;
+  gap: 16px;
+  grid-template-columns: 40px minmax(320px, 670px) 40px;
+  justify-content: space-between;
+  margin-bottom: 28px;
+}
+
+.cloud-control-platform-search {
+  --border-color: transparent;
+  --border-color-focus: transparent;
+  --border-color-hover: transparent;
+  --border-width: 2px;
+  --box-bg-color: #20252b;
+  --box-bg-color-hover: #161b21;
+  --color: #f0f1f2;
+  --focus-ring: none;
+  --height-large: 55px;
+  --input-bg-color: transparent;
+  --placeholder-color: #f7f7f7;
+  --placeholder-font-weight: 400;
+  width: min(670px, 100%);
+}
+
+.cloud-control-platform-search::part(base) {
+  background:
+    linear-gradient(#20252b, #20252b) padding-box,
+    linear-gradient(90deg, transparent, transparent) border-box;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  box-shadow: none;
+  min-height: 55px;
+  transition:
+    background 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.cloud-control-platform-search:hover::part(base) {
+  background:
+    linear-gradient(#161b21, #161b21) padding-box,
+    linear-gradient(#59616b, #59616b) border-box;
+  box-shadow: inset 0 4px 9px rgb(0 0 0 / 33%);
+}
+
+.cloud-control-platform-search:focus-within::part(base) {
+  background:
+    linear-gradient(#161b21, #161b21) padding-box,
+    linear-gradient(90deg, #02c8ff 0%, #4777f5 52%, #ad57d9 100%) border-box;
+  box-shadow: inset 0 4px 9px rgb(0 0 0 / 33%);
+  outline: none;
+}
+
+.cloud-control-platform-search::part(input) {
+  color: #f0f1f2;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  margin: 0 8px 0 22px;
+}
+
+.cloud-control-platform-search::part(clear-button) {
+  color: #929aa4;
+  font-size: 20px;
+  margin-right: 20px;
+}
+
+.cloud-control-platform-search-shortcut {
+  color: #c1c6cc;
+  font-family: Inter, sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 24px;
+  margin-right: 20px;
+  white-space: nowrap;
+}
+
+.cloud-control-platform-close {
+  justify-self: end;
+}
+
+.cloud-control-platform-grid {
+  display: grid;
+  column-gap: 80px;
+  grid-template-columns: repeat(4, minmax(0, 260px));
+  margin: 0 auto;
+  max-width: 1296px;
+  row-gap: 24px;
+}
+
+.cloud-control-platform-section {
+  min-width: 0;
+}
+
+.cloud-control-platform-section > hbr-text {
+  color: var(--cloud-control-text, #f4f6f8);
+  display: block;
+  margin: 0 0 20px;
+}
+
+.cloud-control-platform-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cloud-control-platform-item {
+  --label-affix-padding-sm: 8px;
+  display: block;
+  width: 100%;
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item::part(base) {
+  height: 48px;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item::part(prefix) {
+  margin-right: 8px;
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item::part(label) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cloud-control-platform-navigator .cloud-control-platform-item::part(suffix) {
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.cloud-control-platform-item-label {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-control-platform-item > hbr-icon[slot="prefix"] {
+  --path-color-default: #7e868f;
+  --path-color-medium: #7e868f;
+  --path-color-strong: #7e868f;
+  --path-color-weak: #7e868f;
+  color: #7e868f;
+}
+
+.cloud-control-platform-item > hbr-icon[slot="suffix"] {
+  --path-color-default: #c1c6cc;
+  --path-color-medium: #c1c6cc;
+  --path-color-strong: #c1c6cc;
+  --path-color-weak: #c1c6cc;
+  color: #c1c6cc;
+}
+
+.cloud-control-platform-item[data-active="true"] > hbr-icon[slot="prefix"] {
+  --path-color-default: #16BAE8;
+  --path-color-medium: #1F92B7;
+  --path-color-strong: #16BAE8;
+  --path-color-weak: #1B6F8E;
+  color: #16BAE8;
+}
+
+.cloud-control-platform-item[data-active="true"] > hbr-icon[slot="suffix"] {
+  visibility: hidden;
+}
+
+.cloud-control-more-products {
+  border-top: 1px solid var(--cloud-control-border, #3f464f);
+  margin: 28px auto 0;
+  max-width: 1296px;
+  padding: 24px 0 32px;
+}
+
+.cloud-control-more-products-toggle {
+  align-items: center;
+  appearance: none;
+  background: none;
+  border: 0;
+  color: var(--cloud-control-text-weak, #929aa4);
+  cursor: pointer;
+  display: inline-flex;
+  gap: 8px;
+  padding: 0;
+}
+
+.cloud-control-more-products-toggle hbr-text {
+  color: inherit;
+}
+
+.cloud-control-more-products-toggle hbr-icon {
+  --path-color-default: currentColor;
+  --path-color-medium: currentColor;
+  --path-color-strong: currentColor;
+  --path-color-weak: currentColor;
+  color: currentColor;
+}
+
+.cloud-control-more-products-toggle:focus-visible {
+  border-radius: 4px;
+  box-shadow: var(--hbr-focus-ring);
+  outline: var(--hbr-focus-outline);
+  outline-offset: var(--hbr-focus-ring-width);
+}
+
+.cloud-control-more-product-items {
+  display: grid;
+  column-gap: 85px;
+  grid-template-columns: repeat(2, 252px);
+  margin-top: 24px;
+  width: 100%;
+}
+
+.cloud-control-more-product-column {
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-width: 0;
+  width: 252px;
+}
+
+.cloud-control-more-product-column > hbr-text {
+  color: var(--cloud-control-text-weak, #929aa4);
+}
+
+.cloud-control-more-product-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cloud-control-more-product-link {
+  --align-items: center;
+  --bg-color-hover: transparent;
+  --display: flex;
+  --font-weight: var(--hbr-font-weight-semibold, 600);
+  --justify-content: space-between;
+  --link-interact-color: var(--cloud-control-text, #f7f7f7);
+  --link-interact-color-active: #02c8ff;
+  --link-interact-color-hover: #02c8ff;
+  --padding: 7px 12px;
+  --white-space: nowrap;
+  --width: 100%;
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.cloud-control-more-product-link::part(base) {
+  box-sizing: border-box;
+  min-height: 34px;
+}
+
+.cloud-control-more-product-link::part(label) {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+}
+
+.cloud-control-more-product-link::part(suffix) {
+  flex: 0 0 auto;
+  margin-left: 12px;
+}
+
+.cloud-control-more-product-link-label {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cloud-control-more-product-link > hbr-icon {
+  --path-color-default: #7e868f;
+  --path-color-medium: #7e868f;
+  --path-color-strong: #7e868f;
+  --path-color-weak: #7e868f;
+  color: #7e868f;
+}
+
+@media (max-width: 1200px) {
+  .cloud-control-pinned-products {
+    display: none;
+  }
+
+  .cloud-control-platform-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 980px) {
+  .cloud-control-root {
+    --hbr-app-shift-left: 136px;
+  }
+
+  .cloud-control-nav hbr-shell-nav::part(base) {
+    width: 136px;
+  }
+
+  .cloud-control-nav hbr-shell-nav::part(collapsible-icon) {
+    left: 48px;
+  }
+
+  .cloud-control-product-identity {
+    flex-direction: column;
+    gap: 4px;
+    height: auto;
+    margin-top: 48px;
+    min-height: 54px;
+    padding: 0;
+    text-align: center;
+  }
+
+  .cloud-control-product-identity hbr-text {
+    font-size: 14px;
+    line-height: 18px;
+    max-width: 104px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 720px) {
+  .cloud-control-brand-divider,
+  .cloud-control-tenant {
+    display: none;
+  }
+
+  .cloud-control-platform-content {
+    padding-inline: 16px;
+  }
+
+  .cloud-control-platform-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cloud-control-platform-toolbar {
+    grid-template-columns: minmax(0, 1fr) 40px;
+  }
+
+  .cloud-control-platform-toolbar > [aria-hidden="true"] {
+    display: none;
+  }
+
+  .cloud-control-platform-search {
+    width: 100%;
+  }
+
+  .cloud-control-more-product-items {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cloud-control-more-product-column {
+    width: 100%;
+  }
+}

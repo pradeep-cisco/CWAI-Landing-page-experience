@@ -111,7 +111,7 @@ const Nav = ({ selected, setSelected, config = [], collapsed, setCollapsed }) =>
 
   // Handle collapse/expand button click
   const handleCollapseClick = () => {
-    setCollapsed(!collapsed);
+    setCollapsed((current) => !current);
   };
 
   // Recursive function to render navigation items
@@ -162,8 +162,10 @@ const Nav = ({ selected, setSelected, config = [], collapsed, setCollapsed }) =>
         class="side-nav"
         onhbr-nav-item-click={handleNavItemClick}
         collapsed={collapsed}
-        collapseTooltipLabel={collapsed ? "Expand" : "Collapse"}
+        collapse-tooltip-label={collapsed ? "Expand" : "Collapse"}
+        onhbr-collapse={() => setCollapsed(true)}
         onhbr-collapse-click={handleCollapseClick}
+        onhbr-expand={() => setCollapsed(false)}
       >
         <div>
           <div>

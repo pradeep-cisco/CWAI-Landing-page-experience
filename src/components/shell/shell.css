@@ -45,6 +45,7 @@
     width: calc(100vw - calc(var(--hbr-app-shift-left, 0px) + var(--hbr-app-shift-right, 0px)));
     min-height: 100vh;
     height: 100vh;
+    overflow-x: hidden;
     overflow-y: auto;
     padding: var(--hbr-app-shift-top, 0px) 36px 0 24px;
     z-index: 0;
@@ -62,5 +63,6 @@
 }
 
 .n-page {
-  flex:1;
+  flex: 1 0 auto;
+  overflow: visible;
 }

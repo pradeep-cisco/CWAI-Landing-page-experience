@@ -1,7 +1,7 @@
 import { bootstrap, loadThemeStylesheets } from "@harbor/elements";
+import { initializeAppearance } from "../../theme/appearance";
 
-document.body.setAttribute("data-theme", "onecd");
-loadThemeStylesheets();
+initializeAppearance();
 
 bootstrap({
 	base: `${import.meta.env.BASE_URL}harbor-elements/`,
@@ -9,17 +9,10 @@ bootstrap({
 	nonce: "r4nd0m",
 	injectScript: true,
 	injectStyle: true,
-	injectTokens: true,
-	injectDarkTokens: true,
-	injectMagneticTheme: true,
-	injectMagneticDarkTheme: true,
-	injectMagneticClassicTheme: true,
-	injectOneCDTokens: true,
-	injectOneCDDarkTokens: true,
+	injectBaseTokens: true,
+	injectBaseMagneticTheme: true,
 	injectOneCDTheme: true,
 	injectOneCDDarkTheme: true,
-	/**
-   * Uncomment to get blue brand theme
-   */
-	// injectMagneticBrandAltTheme: true,
 });
+
+loadThemeStylesheets();

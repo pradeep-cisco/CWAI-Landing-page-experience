@@ -20,7 +20,12 @@ body {
   font-family: var(--hbr-font-body);
   height: 100vh;
   overflow: hidden;
-  background-color: var(--hbr-color-neutral-bg-medium);
+  color: var(--base-text-default);
+  background-color: var(--base-bg-default);
+}
+
+#root {
+  height: 100%;
 }
 
 * {
