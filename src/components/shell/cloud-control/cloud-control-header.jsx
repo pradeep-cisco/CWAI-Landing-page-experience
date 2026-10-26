@@ -1,15 +1,18 @@
 import { useRef, useState } from "react";
 import AppearanceSelector from "../appearance-selector";
 import PlatformNavigator from "./platform-navigator";
+import navMeraki from "./assets/nav-meraki.svg?raw";
 
 const pinnedProducts = [
   { label: "Home", icon: "nav-home" },
-  { label: "Meraki", icon: "nav-meraki-insight" },
+  { label: "Meraki", iconAsset: navMeraki },
   { label: "Security", icon: "nav-security" },
 ];
 
-export default function CloudControlHeader() {
-  const [activeProduct, setActiveProduct] = useState("Home");
+export default function CloudControlHeader({
+  activeProduct,
+  onProductSelect,
+}) {
   const [navigatorOpen, setNavigatorOpen] = useState(false);
   const [tenant, setTenant] = useState("APJ Production");
   const launcherRef = useRef(null);
@@ -44,7 +47,7 @@ export default function CloudControlHeader() {
               caret
               sentiment="header"
               slot="trigger"
-              variant="context"
+              variant="text"
             >
               {tenant}
             </hbr-button>
@@ -56,63 +59,54 @@ export default function CloudControlHeader() {
           </hbr-dropdown>
 
           <hbr-button
-            aria-label="Open platform navigator"
+            aria-expanded={navigatorOpen ? "true" : "false"}
+            aria-label={
+              navigatorOpen
+                ? "Close platform navigator"
+                : "Open platform navigator"
+            }
             className="cloud-control-launcher"
             data-testid="platform-navigator-trigger"
             no-padding
-            onClick={() => setNavigatorOpen(true)}
+            onClick={() => setNavigatorOpen((current) => !current)}
             ref={launcherRef}
             sentiment="header"
-            variant="context"
+            size="small"
+            variant="text"
           >
             <hbr-icon
-              library="phosphor"
               size="20px"
-              src="https://hbr.cisco.com/packages/phosphor/dots-nine-bold.svg"
+              name="dots-nine"
             />
           </hbr-button>
 
           <div className="cloud-control-pinned-products">
-            {pinnedProducts.map(({ icon, label }) => (
+            {pinnedProducts.map(({ icon, iconAsset, label }) => (
               <hbr-button
                 aria-pressed={activeProduct === label}
                 className="cloud-control-pinned-product"
                 data-active={activeProduct === label ? "true" : "false"}
                 key={label}
-                onClick={() => setActiveProduct(label)}
+                onClick={() => onProductSelect({ icon, iconAsset, label })}
                 sentiment="header"
                 size="small"
-                variant={activeProduct === label ? "outline" : "context"}
               >
-                <hbr-icon name={icon} size="16px" slot="prefix" />
+                {icon && <hbr-icon name={icon} size="16px" slot="prefix" />}
+                {iconAsset && <hbr-icon asset={iconAsset} size="16px" slot="prefix" />}
                 {label}
               </hbr-button>
             ))}
           </div>
-
-          <hbr-dropdown hoist menu sentiment="header" distance="12">
-            <hbr-button
-              aria-label="Notifications"
-              className="cloud-control-notifications"
-              no-padding
-              sentiment="header"
-              slot="trigger"
-              variant="context"
-            >
-              <hbr-icon name="bell" size="20px" />
-            </hbr-button>
-            <hbr-menu>
-              <hbr-menu-item noninteractive>No new notifications</hbr-menu-item>
-            </hbr-menu>
-          </hbr-dropdown>
         </div>
 
-        <AppearanceSelector compact />
+        <AppearanceSelector compact triggerVariant="text" />
       </hbr-shell-header>
 
       <PlatformNavigator
+        activeProduct={activeProduct}
         onAfterHide={restoreLauncherFocus}
         onClose={() => setNavigatorOpen(false)}
+        onProductSelect={onProductSelect}
         open={navigatorOpen}
       />
     </div>

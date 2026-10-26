@@ -1,34 +1,25 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { useMatches } from "react-router-dom";
 import Footer from "../footer";
 import CloudControlHeader from "./cloud-control-header";
 import CloudControlNav from "./cloud-control-nav";
 import backgroundGlowLeft from "./assets/background-glow-left.svg";
 import backgroundGlowRight from "./assets/background-glow-right.svg";
+import navMeraki from "./assets/nav-meraki.svg?raw";
+import { useShellState } from "../shell-state-context";
 import "./cloud-control.css";
 
 export default function CloudControlShell({ children, navConfig }) {
   const matches = useMatches();
   const currentPath = matches[matches.length - 1]?.pathname || "/";
-  const [navCollapsed, setNavCollapsed] = useState(() =>
-    window.matchMedia("(max-width: 980px)").matches,
-  );
+  const { navCollapsed, setNavCollapsed } = useShellState();
+  const [selectedProduct, setSelectedProduct] = useState({
+    iconAsset: navMeraki,
+    label: "Meraki",
+  });
   const [selected, setSelected] = useState(
     currentPath || (navConfig.length > 0 ? navConfig[0].value : null),
   );
-
-  useEffect(() => {
-    const compactNavigation = window.matchMedia("(max-width: 980px)");
-    const syncNavigationToViewport = (event) => {
-      setNavCollapsed(event.matches);
-    };
-
-    compactNavigation.addEventListener("change", syncNavigationToViewport);
-
-    return () => {
-      compactNavigation.removeEventListener("change", syncNavigationToViewport);
-    };
-  }, []);
 
   const handleScroll = useCallback((event) => {
     const target = event.currentTarget;
@@ -44,11 +35,15 @@ export default function CloudControlShell({ children, navConfig }) {
       className={`cloud-control-root ${navCollapsed ? "navCollapsed" : ""}`}
       data-testid="cloud-control-shell"
     >
-      <CloudControlHeader />
+      <CloudControlHeader
+        activeProduct={selectedProduct.label}
+        onProductSelect={setSelectedProduct}
+      />
       <div className="cloud-control-container hbr-css__base-bg-gradient-layer">
         <CloudControlNav
           collapsed={navCollapsed}
           config={navConfig}
+          product={selectedProduct}
           selected={selected}
           setCollapsed={setNavCollapsed}
           setSelected={setSelected}

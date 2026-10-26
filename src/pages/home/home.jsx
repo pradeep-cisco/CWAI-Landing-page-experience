@@ -54,7 +54,7 @@ export default function Home() {
       <hbr-layout variant="page:header" align="start">
         <hbr-layout direction="row" gap="sm">
           <hbr-text variant="page-title">Magnetic Starter Template</hbr-text>
-          <hbr-tag sentiment="positive" size="small">
+          <hbr-tag sentiment="positive" size="small" status>
             <hbr-icon
               slot="prefix"
               name="status-positive"

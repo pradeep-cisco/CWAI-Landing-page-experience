@@ -3,12 +3,13 @@ import { useMatches } from "react-router-dom";
 import Header from "./header";
 import Footer from "./footer";
 import Nav from "./nav";
+import { useShellState } from "./shell-state-context";
 import "./shell.css";
 
 export default function StandardShell({ children, navConfig }) {
   const matches = useMatches();
   const currentPath = matches[matches.length - 1]?.pathname || "/";
-  const [navCollapsed, setNavCollapsed] = useState(true);
+  const { navCollapsed, setNavCollapsed } = useShellState();
   const [selected, setSelected] = useState(
     currentPath || (navConfig.length > 0 ? navConfig[0].value : null),
   );

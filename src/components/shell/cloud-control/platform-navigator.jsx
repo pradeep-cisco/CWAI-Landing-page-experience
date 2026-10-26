@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import navMeraki from "./assets/nav-meraki.svg?raw";
 
 const navigatorSections = [
   {
@@ -19,7 +20,7 @@ const navigatorSections = [
     items: [
       { label: "Collaboration Control Hub", icon: "nav-applications" },
       { label: "Intersight", icon: "nav-monitor" },
-      { label: "Meraki", icon: "nav-meraki-insight" },
+      { label: "Meraki", iconAsset: navMeraki },
       { label: "Nexus Dashboard", icon: "nav-overview" },
       { label: "Nexus Hyperfabric", icon: "nav-fabrics" },
       { label: "Security", icon: "nav-security" },
@@ -43,13 +44,45 @@ const navigatorSections = [
   },
 ];
 
-const moreProducts = [
-  { label: "Cisco IQ", icon: "nav-intelligence" },
-  { label: "Splunk", icon: "nav-analytics" },
-  { label: "AppDynamics", icon: "nav-monitor" },
+const moreProductSections = [
+  {
+    title: "Networking",
+    items: [
+      {
+        label: "IoT Operations Dashboard",
+        href: "https://www.cisco.com/c/en/us/support/cloud-systems-management/iot-operations-dashboard/series.html",
+      },
+      { label: "Spaces", href: "https://spaces.cisco.com/" },
+    ],
+  },
+  {
+    title: "Security",
+    items: [
+      { label: "Application Portal", href: "https://apps.security.cisco.com/" },
+      { label: "Duo Security", href: "https://duo.com/" },
+      {
+        label: "Email Threat Defense",
+        href: "https://www.cisco.com/site/us/en/products/security/secure-email/index.html",
+      },
+      {
+        label: "XDR",
+        href: "https://www.cisco.com/site/us/en/products/security/xdr/index.html",
+      },
+      {
+        label: "Secure Endpoint",
+        href: "https://www.cisco.com/site/us/en/products/security/endpoint-security/secure-endpoint/index.html",
+      },
+    ],
+  },
 ];
 
-export default function PlatformNavigator({ onAfterHide, onClose, open }) {
+export default function PlatformNavigator({
+  activeProduct,
+  onAfterHide,
+  onClose,
+  onProductSelect,
+  open,
+}) {
   const [query, setQuery] = useState("");
   const [showMoreProducts, setShowMoreProducts] = useState(false);
 
@@ -72,6 +105,11 @@ export default function PlatformNavigator({ onAfterHide, onClose, open }) {
     onAfterHide();
   };
 
+  const handleProductSelect = (product) => {
+    onProductSelect(product);
+    onClose();
+  };
+
   return (
     <hbr-modal
       className="cloud-control-platform-navigator"
@@ -90,11 +128,17 @@ export default function PlatformNavigator({ onAfterHide, onClose, open }) {
             className="cloud-control-platform-search"
             clearable
             onhbr-input={(event) => setQuery(event.currentTarget.value)}
+            pill
             placeholder="Search for products and favorites..."
+            size="large"
             type="search"
             value={query}
           >
-            <hbr-icon name="magnifying-glass" slot="prefix" />
+            {!query && (
+              <span className="cloud-control-platform-search-shortcut" slot="suffix">
+                ⌘+F
+              </span>
+            )}
           </hbr-input>
 
           <hbr-button
@@ -102,7 +146,8 @@ export default function PlatformNavigator({ onAfterHide, onClose, open }) {
             className="cloud-control-platform-close"
             no-padding
             onClick={onClose}
-            variant="context"
+            size="small"
+            variant="text"
           >
             <hbr-icon name="x" size="20px" />
           </hbr-button>
@@ -118,14 +163,30 @@ export default function PlatformNavigator({ onAfterHide, onClose, open }) {
               <div className="cloud-control-platform-items">
                 {section.items.map((item) => (
                   <hbr-button
+                    aria-pressed={activeProduct === item.label}
                     className="cloud-control-platform-item"
+                    data-active={activeProduct === item.label ? "true" : "false"}
                     key={item.label}
-                    onClick={onClose}
+                    onClick={() => handleProductSelect(item)}
                     size="small"
-                    variant="context"
                   >
-                    <hbr-icon name={item.icon} size="16px" slot="prefix" />
-                    {item.label}
+                    {item.icon && (
+                      <hbr-icon name={item.icon} size="16px" slot="prefix" />
+                    )}
+                    {item.iconAsset && (
+                      <hbr-icon
+                        asset={item.iconAsset}
+                        size="16px"
+                        slot="prefix"
+                      />
+                    )}
+                    <span
+                      className="cloud-control-platform-item-label"
+                      title={item.label}
+                    >
+                      {item.label}
+                    </span>
+                    <hbr-icon name="push-pin-simple" size="16px" slot="suffix" />
                   </hbr-button>
                 ))}
                 {section.items.length === 0 && (
@@ -138,36 +199,58 @@ export default function PlatformNavigator({ onAfterHide, onClose, open }) {
           ))}
         </div>
 
-        <hbr-divider className="cloud-control-platform-divider" />
-
-        <div className="cloud-control-more-products">
-          <hbr-button
+        <div
+          className="cloud-control-more-products"
+          data-expanded={showMoreProducts ? "true" : "false"}
+        >
+          <button
+            aria-controls="cloud-control-more-product-items"
             aria-expanded={showMoreProducts}
+            className="cloud-control-more-products-toggle"
             onClick={() => setShowMoreProducts((current) => !current)}
-            size="small"
-            variant="text"
+            type="button"
           >
-            More Cisco products
+            <hbr-text variant="smallest-title">
+              <span>More Cisco products</span>
+            </hbr-text>
             <hbr-icon
               name={showMoreProducts ? "caret-up" : "caret-down"}
               size="16px"
-              slot="suffix"
             />
-          </hbr-button>
+          </button>
 
           {showMoreProducts && (
-            <div className="cloud-control-more-product-items">
-              {moreProducts.map((item) => (
-                <hbr-button
-                  className="cloud-control-platform-item"
-                  key={item.label}
-                  onClick={onClose}
-                  size="small"
-                  variant="context"
+            <div
+              className="cloud-control-more-product-items"
+              id="cloud-control-more-product-items"
+            >
+              {moreProductSections.map((section) => (
+                <section
+                  className="cloud-control-more-product-column"
+                  key={section.title}
                 >
-                  <hbr-icon name={item.icon} size="16px" slot="prefix" />
-                  {item.label}
-                </hbr-button>
+                  <hbr-text variant="smallest-title">{section.title}</hbr-text>
+                  <div className="cloud-control-more-product-links">
+                    {section.items.map((item) => (
+                      <hbr-link
+                        className="cloud-control-more-product-link"
+                        href={item.href}
+                        key={item.label}
+                        size="medium"
+                        target="_blank"
+                      >
+                        <span className="cloud-control-more-product-link-label">
+                          {item.label}
+                        </span>
+                        <hbr-icon
+                          name="arrow-square-out"
+                          size="16px"
+                          slot="suffix"
+                        />
+                      </hbr-link>
+                    ))}
+                  </div>
+                </section>
               ))}
             </div>
           )}

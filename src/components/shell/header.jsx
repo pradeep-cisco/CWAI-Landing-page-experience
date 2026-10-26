@@ -12,7 +12,8 @@ export default function Header() {
       <hbr-shell-header>
         <a href="/" slot="logo-name">
           <hbr-icon name="cisco" />
-          <div>Meraki</div>
+          {/* Note to Agent: Update the name according to the current branding */}
+          <div>Magnetic</div>
         </a>
 
         <AppearanceSelector />

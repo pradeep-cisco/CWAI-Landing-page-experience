@@ -70,6 +70,7 @@ const Section = ({ item, selected }) => (
 export default function CloudControlNav({
   collapsed,
   config = [],
+  product,
   selected,
   setCollapsed,
   setSelected,
@@ -134,12 +135,15 @@ export default function CloudControlNav({
         onhbr-nav-item-click={handleNavItemClick}
       >
         <div className="cloud-control-product-identity">
-          <hbr-icon name="nav-security" size="24px" />
-          <hbr-text variant="section-title">Product name</hbr-text>
+          {product.icon && <hbr-icon name={product.icon} size="24px" />}
+          {product.iconAsset && (
+            <hbr-icon asset={product.iconAsset} size="24px" />
+          )}
+          <hbr-text variant="section-title">{product.label}</hbr-text>
         </div>
 
         <div className="cloud-control-switcher">
-          <Switcher initialLabel="Magnetic Co." />
+          <Switcher />
         </div>
 
         {renderNavItems(config)}

@@ -4,6 +4,7 @@ import buildingIcon from "./building.svg";
 import houseLineIcon from "./house-line.svg";
 import stackSimpleIcon from "./stack-simple.svg";
 import checkIcon from "./check-circle-bold.svg";
+import { useShellState } from "../shell-state-context";
 
 const globalBranchesData = {
   label: "Global",
@@ -313,8 +314,8 @@ function Tree({ selected }) {
   );
 }
 
-export default function Switcher({ initialLabel = "Global" }) {
-  const [selected, setSelected] = useState({ name: initialLabel, id: null });
+export default function Switcher() {
+  const { organization: selected, setOrganization } = useShellState();
   return (
     <hbr-nav-item
       id="my-nav-item-id"
@@ -342,7 +343,7 @@ export default function Switcher({ initialLabel = "Global" }) {
           id="my-dropdown"
           onhbr-selection-change={(e) => {
             const selected = e.detail.selection[0];
-            setSelected(selected);
+            setOrganization(selected);
             selected.closest("hbr-dropdown").hide();
           }}
         >

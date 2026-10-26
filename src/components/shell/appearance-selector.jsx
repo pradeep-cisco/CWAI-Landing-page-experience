@@ -23,8 +23,9 @@ const profileStyles = {
   },
 };
 
-export default function AppearanceSelector({ compact = false }) {
+export default function AppearanceSelector({ compact = false, triggerVariant }) {
   const { mode, preset, setMode, setPreset } = useAppearance();
+  const modeSelectionDisabled = preset === "cloud-control";
 
   return (
     <hbr-dropdown
@@ -40,7 +41,9 @@ export default function AppearanceSelector({ compact = false }) {
         data-testid="appearance-selector-trigger"
         no-padding
         sentiment="header"
+        size={compact ? "small" : undefined}
         slot="trigger"
+        variant={triggerVariant}
       >
         <hbr-icon name="user" size="24px" slot="prefix" />
         {!compact && (
@@ -53,7 +56,7 @@ export default function AppearanceSelector({ compact = false }) {
 
       <hbr-menu
         data-testid="appearance-selector-popover"
-        style={{ "--minwidth": "min(520px, calc(100vw - 24px))" }}
+        style={{ "--minwidth": "min(380px, calc(100vw - 24px))" }}
       >
         <hbr-menu-item noninteractive style={{ "--align-items": "center" }}>
           <hbr-icon
@@ -63,13 +66,19 @@ export default function AppearanceSelector({ compact = false }) {
           />
           <div style={profileStyles.labelBold}>Theme</div>
           <hbr-view-switcher
+            disabled={modeSelectionDisabled}
             name="theme"
             onhbr-change={(event) => setMode(event.currentTarget.value)}
             slot="suffix"
             value={mode}
           >
             {colorModes.map(({ label, name }) => (
-              <hbr-radio-button key={name} size="small" value={name}>
+              <hbr-radio-button
+                disabled={modeSelectionDisabled}
+                key={name}
+                size="small"
+                value={name}
+              >
                 {label}
               </hbr-radio-button>
             ))}

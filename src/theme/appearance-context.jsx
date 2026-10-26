@@ -20,11 +20,20 @@ const AppearanceContext = createContext(null);
 export function AppearanceProvider({ children }) {
   const [initialPreset] = useState(getPreset);
   const [preset, setPresetState] = useState(initialPreset);
-  const [mode, setMode] = useState(() => getColorMode(initialPreset));
+  const [mode, setModeState] = useState(() => getColorMode(initialPreset));
+
+  const setMode = useCallback(
+    (nextMode) => {
+      setModeState(preset === "cloud-control" ? "dark" : nextMode);
+    },
+    [preset],
+  );
 
   const setPreset = useCallback((nextPreset) => {
     setPresetState(nextPreset);
-    setMode(getColorMode(nextPreset));
+    setModeState(
+      nextPreset === "cloud-control" ? "dark" : getColorMode(nextPreset),
+    );
   }, []);
 
   useEffect(() => {

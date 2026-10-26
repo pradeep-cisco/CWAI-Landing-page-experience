@@ -5,11 +5,6 @@ export const colorModes = [
 ];
 
 export const presetDefinitions = {
-  magnetic: {
-    label: "Magnetic",
-    shell: "standard",
-    theme: "magnetic",
-  },
   onecd: {
     label: "oneCD",
     shell: "standard",
@@ -19,6 +14,11 @@ export const presetDefinitions = {
     label: "Cloud Control",
     shell: "cloud-control",
     theme: "onecd",
+  },
+  magnetic: {
+    label: "Magnetic",
+    shell: "standard",
+    theme: "magnetic",
   },
 };
 
@@ -52,6 +52,8 @@ function getColorModePreference(preset) {
 }
 
 export function getColorMode(preset = getPreset()) {
+  if (preset === "cloud-control") return "dark";
+
   const { fallback, storageKey } = getColorModePreference(preset);
   return getStoredPreference(storageKey, colorModeNames, fallback);
 }
@@ -68,7 +70,10 @@ export function applyColorMode(mode) {
 
 export function persistColorMode(mode, preset = getPreset()) {
   const { storageKey } = getColorModePreference(preset);
-  window.localStorage.setItem(storageKey, mode);
+  window.localStorage.setItem(
+    storageKey,
+    preset === "cloud-control" ? "dark" : mode,
+  );
 }
 
 export function getPreset() {
