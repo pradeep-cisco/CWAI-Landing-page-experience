@@ -10,6 +10,7 @@
     "test": "node --test tests/telemetry.test.mjs",
     "dev": "npm run copy-elements && vite",
     "build": "npm run copy-elements && vite build",
+    "deploy:pages": "bash scripts/publish-pages.sh",
     "preview": "vite preview"
   },
   "dependencies": {
