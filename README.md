@@ -65,6 +65,22 @@ automatically.
 | `pnpm copy-elements` | Manually re-copy Harbor Elements from `node_modules/` into `public/` (also run automatically by `dev` and `build`). |
 | `pnpm context:update` | Regenerates the package-managed Elements skill resources and Magnetic component map. |
 
+## Deploying to GitHub Pages
+
+This GitHub Enterprise Server publishes Pages from a branch. To build the app
+and publish it to the root of the `gh-pages` branch, run:
+
+```bash
+npm run deploy:pages -- git@cto-github.cisco.com:magnetic/boilerplate-web.git
+```
+
+In **Settings → Pages**, select `gh-pages` and `/ (root)`, then save. The
+site URL is <https://cto-github.cisco.com/pages/magnetic/boilerplate-web/>.
+The publish script sets the Vite base path to `/pages/magnetic/boilerplate-web/`, adds a
+`404.html` fallback for React Router routes, and includes `.nojekyll` so Pages
+serves all generated assets. Repeat the command after app changes to update
+the site. Publishing requires write access to the target repository.
+
 ## Generating UI with an AI assistant
 
 Open this repo in Cursor (or any agent that reads `.agents/skills/`),
