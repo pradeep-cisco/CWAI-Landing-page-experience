@@ -12,8 +12,8 @@ importers:
         specifier: ^0.2.7
         version: 0.2.13(hono@4.13.13)(zod@4.6.7)
       '@harbor/elements':
-        specifier: ^2.18.43
-        version: 2.19.2
+        specifier: ^2.19.7
+        version: 2.19.7
       react:
         specifier: ^19.1.1
         version: 19.3.1
@@ -197,8 +197,8 @@ packages:
     resolution: {integrity: sha512-YruJCHooEGH5KQ6FZ9E7680TsSWcQWm40ABzZLpJBeomTFinkVA80p0+ewsShvFJfJ5GfEkQ+VIPdhevD1Ks7g==}
     hasBin: true
 
-  '@harbor/elements@2.19.2':
-    resolution: {integrity: sha512-qWWrIOYi1J+2tdijNlsnrAqQDCgZS2JyOhJMfmK1e28MFv0C3GHIxr4sCicTyTp2cSVf95T/BtMFr8eoZiUHCA==}
+  '@harbor/elements@2.19.7':
+    resolution: {integrity: sha512-YG6TkjiYC46zs5duLLn5d2I7vm5VlNJEkJ9JgSvwklAo8H+aS+GnDYq8swu0s8X/B3ialfydYt4En6HXRFCzUw==}
 
   '@hono/node-server@1.19.17':
     resolution: {integrity: sha512-dSneS5qhiauZWGDCeK4o695Xd9nUNjviSZCMQrj10eetr8Uln1ucn6bbphOM6UynAMMtNIzZNSpL9vnASJwrPQ==}
@@ -1510,8 +1510,8 @@ dependencies:
     specifier: ^0.2.7
     version: 0.2.7(hono@4.12.18)(zod@4.4.3)
   '@harbor/elements':
-    specifier: ^2.18.43
-    version: 2.18.43
+    specifier: ^2.19.7
+    version: 2.19.7
   react:
     specifier: ^19.1.1
     version: 19.2.6
@@ -1751,7 +1751,7 @@ snapshots:
       - supports-color
       - zod
 
-  '@harbor/elements@2.19.2':
+  '@harbor/elements@2.19.7':
     dependencies:
       '@stencil/core': 4.12.3
 
