@@ -6,7 +6,7 @@ export const colorModes = [
 
 export const presetDefinitions = {
   onecd: {
-    label: "oneCD",
+    label: "Magnetic 2.0",
     shell: "standard",
     theme: "onecd",
   },
@@ -16,7 +16,7 @@ export const presetDefinitions = {
     theme: "onecd",
   },
   magnetic: {
-    label: "Magnetic",
+    label: "Original",
     shell: "standard",
     theme: "magnetic",
   },

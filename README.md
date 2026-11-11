@@ -12,7 +12,7 @@ All three branches use committed Elements and Context snapshots:
 
 | Branch | UI profile | Agent reporting |
 |--------|------------|-----------------|
-| `main` | Full oneCD, Magnetic, and Cloud Control presets | Retained |
+| `main` | Full Magnetic 2.0, Original, and Cloud Control presets | Retained |
 | `external` | Full appearance presets | Removed |
 | `wireframe` | oneCD only, grayscale, sharp corners | Removed |
 
