@@ -1,0 +1,2 @@
+# Generated package snapshots retain upstream formatting.
+vendor/** linguist-vendored -whitespace

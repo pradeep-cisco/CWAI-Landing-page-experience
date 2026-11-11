@@ -53,20 +53,20 @@ require_command() {
   command -v "$1" >/dev/null 2>&1 || fail "Missing required command: $1"
 }
 
-canonical_upstream_url="https://wwwin-github.cisco.com/kabimany/magnetic-boilerplate"
+canonical_upstream_url="https://cto-github.cisco.com/magnetic/boilerplate-web"
 disabled_push_url="DISABLED_PUSH_TO_CANONICAL_REPO"
 
 normalize_remote_url() {
   local url="$1"
   url="${url%.git}"
   case "$url" in
-    git@wwwin-github.cisco.com:kabimany/magnetic-boilerplate)
+    git@cto-github.cisco.com:magnetic/boilerplate-web)
       printf '%s\n' "$canonical_upstream_url"
       ;;
-    git@github-cisco-wwwin:kabimany/magnetic-boilerplate)
+    git@github-cisco-cto:magnetic/boilerplate-web)
       printf '%s\n' "$canonical_upstream_url"
       ;;
-    ssh://git@wwwin-github.cisco.com/kabimany/magnetic-boilerplate)
+    ssh://git@cto-github.cisco.com/magnetic/boilerplate-web)
       printf '%s\n' "$canonical_upstream_url"
       ;;
     *)
@@ -192,7 +192,7 @@ else
 fi
 
 log "Installing dependencies with pnpm."
-pnpm install
+pnpm install --frozen-lockfile
 telemetry_emit step dependencies --task-kind update
 
 log "Building the app."

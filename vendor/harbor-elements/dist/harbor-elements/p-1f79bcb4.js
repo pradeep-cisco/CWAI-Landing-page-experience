@@ -1,0 +1,1 @@
+function n(n){if(typeof n.attachInternals!=="function"){return undefined}try{return n.attachInternals()}catch(n){if(typeof n==="object"&&n!==null&&"name"in n&&n.name==="NotSupportedError"){return undefined}throw n}}export{n as a};

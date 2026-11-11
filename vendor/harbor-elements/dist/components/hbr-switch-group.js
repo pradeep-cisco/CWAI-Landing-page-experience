@@ -1,0 +1,94 @@
+import { proxyCustomElement, HTMLElement, h } from '@stencil/core/internal/client';
+import { F as FormControlGroup } from './form-control-group.js';
+import { h as hasSlot } from './slot.js';
+
+const switchGroupCss = ":host{position:relative;box-sizing:border-box}:host *,:host *:before,:host *:after{box-sizing:inherit}:host{--label-margin:0;--label-font-size:var(--hbr-font-size-sm);--label-font-weight:var(--hbr-control-font-weight-label);--label-color:var(--base-text-default);--label-error-color:var(--negative-text-default);--help-text-margin:var(--hbr-spacing-sm) 0 0 0;--help-text-font-size:var(--hbr-font-size-sm);--help-text-font-weight:var(--hbr-control-font-weight);--help-text-color:var(--base-text-medium-default);--asterisk-color:var(--negative-text-default);--asterisk-margin:0 2px;--asterisk-font-weight:600;--help-text-align:var(--help-text-align-text, end);--width:100%;--display:block;display:var(--display)}.form-control-group{border:none;padding:0;margin:0;width:var(--width);display:var(--display)}.form-control-group__label-legend{font-family:var(--hbr-font-body);font-size:var(--label-font-size);font-weight:var(--label-font-weight);color:var(--label-color);padding:0px;white-space:normal;display:flex;flex-direction:row;margin:var(--label-margin)}.form-control-group--hide-fieldset .form-control-group__label-legend,.form-control-group--hide-label .form-control-group__label-legend{clip:rect(0 0 0 0);clip-path:inset(50%);height:0px;position:absolute;width:0px}.form-control-group__label-asterisk{color:var(--asterisk-color);margin:var(--asterisk-margin);font-weight:var(--asterisk-font-weight);display:var(--form-control-asterisk-display)}.form-control-group--has-rear .form-control__rear{padding-bottom:var(--hbr-spacing-sm)}.form-control-group--has-rear .form-control__rear{padding-top:var(--hbr-spacing-xs)}.form-control-group__children{display:flex}.form-control-group__children.form-control-group__direction-row{flex-direction:row;flex-wrap:wrap}.form-control-group__children.form-control-group__direction-column{flex-direction:column}.form-control-group__help-text{margin:var(--help-text-margin);font-size:var(--help-text-font-size);font-weight:var(--help-text-font-weight);color:var(--help-text-color);text-align:var(--help-text-align)}.form-control-group--label.form-control-group--xsmall .form-control-group__label-legend{font-size:var(--hbr-control-font-size-label-xs)}.form-control-group--label.form-control-group--small .form-control-group__label-legend{font-size:var(--hbr-control-font-size-label-sm)}.form-control-group--label.form-control-group--medium .form-control-group__label-legend{font-size:var(--hbr-control-font-size-label-md)}.form-control-group--label.form-control-group--large .form-control-group__label-legend{font-size:var(--hbr-control-font-size-label-lg)}.form-control-group--has-help-text.form-control-group--xsmall .form-control-group__help-text{font-size:var(--hbr-control-font-size-label-xs)}.form-control-group--has-help-text.form-control-group--small .form-control-group__help-text{font-size:var(--hbr-control-font-size-label-sm)}.form-control-group--has-help-text.form-control-group--medium .form-control-group__help-text{font-size:var(--hbr-control-font-size-label-md)}.form-control-group--has-help-text.form-control-group--large .form-control-group__help-text{font-size:var(--hbr-control-font-size-label-lg)}.form-control-group--error.form-control-group--label .form-control-group__label-legend,.form-control-group--error.form-control-group--has-help-text .form-control-group__help-text{color:var(--label-error-color)}.form-control-group--disabled.form-control-group--label .form-control-group__label-legend{color:var(--base-text-disabled)}:host{--switch-margin-row:var(--hbr-spacing-sm) var(--hbr-spacing-lg) 0 0;--switch-margin-column:var(--hbr-spacing-sm) 0 0 0;--display:block}.form-control-group__direction-row ::slotted(hbr-switch){margin:var(--switch-margin-row)}fieldset:not(.form-control-group--label) div.form-control-group__direction-column ::slotted(hbr-switch),fieldset:not(.form-control-group--hide-fieldset) div.form-control-group__direction-column ::slotted(hbr-switch){margin:var(--switch-margin-column)}fieldset.form-control-group--label div.form-control-group__direction-column ::slotted(hbr-switch:not(:first-child)),fieldset.form-control-group--hide-fieldset div.form-control-group__direction-column ::slotted(hbr-switch:not(:first-child)){margin:var(--switch-margin-column)}";
+const HbrSwitchGroupStyle0 = switchGroupCss;
+
+let id = 0;
+const SwitchGroup = /*@__PURE__*/ proxyCustomElement(class SwitchGroup extends HTMLElement {
+    constructor() {
+        super();
+        this.__registerHost();
+        this.__attachShadow();
+        this.labelId = `radio-group-label-${++id}`;
+        this.hasLabel = false;
+        this.hasHelpTextSlot = false;
+        this.hasFrontSlot = false;
+        this.hasRearSlot = false;
+        this.noFieldset = false;
+        this.label = "";
+        this.helpText = "";
+        this.helpTextId = "";
+        this.required = false;
+        this.disabled = false;
+        this.error = false;
+        this.size = "medium";
+        this.direction = "row";
+    }
+    handleLabelChange() {
+        this.handleSlotChange();
+    }
+    connectedCallback() {
+        this.handleSlotChange = this.handleSlotChange.bind(this);
+        this.host.shadowRoot.addEventListener("slotchange", this.handleSlotChange);
+    }
+    componentWillLoad() {
+        this.handleSlotChange();
+    }
+    disconnectedCallback() {
+        this.host.shadowRoot.removeEventListener("slotchange", this.handleSlotChange);
+    }
+    handleSlotChange() {
+        this.hasLabel = hasSlot(this.host, "label");
+        this.hasHelpTextSlot = hasSlot(this.host, "help-text");
+        this.hasFrontSlot = hasSlot(this.host, "front");
+        this.hasRearSlot = hasSlot(this.host, "rear");
+    }
+    render() {
+        return (h(FormControlGroup, { key: 'd09f2a0876e9b9a1203505ff37a56f04514901a5', hasHelpTextSlot: this.hasHelpTextSlot, label: this.label, labelId: this.labelId, hasLabelSlot: this.hasLabel, hasError: this.error, size: this.size, direction: this.direction, helpTextId: this.helpTextId, helpText: this.helpText, isRequired: this.required, isDisabled: this.disabled, noFieldset: this.noFieldset, role: "group", hasFrontSlot: this.hasFrontSlot, hasRearSlot: this.hasRearSlot }, h("slot", { key: '5bb8b9337d67b05f974689c0a512f28db76aee0d' })));
+    }
+    static get formAssociated() { return true; }
+    get host() { return this; }
+    static get watchers() { return {
+        "helpText": ["handleLabelChange"],
+        "label": ["handleLabelChange"]
+    }; }
+    static get style() { return HbrSwitchGroupStyle0; }
+}, [65, "hbr-switch-group", {
+        "noFieldset": [4, "no-fieldset"],
+        "label": [1],
+        "helpText": [1, "help-text"],
+        "helpTextId": [1, "help-text-id"],
+        "required": [4],
+        "disabled": [4],
+        "error": [4],
+        "size": [1],
+        "direction": [1],
+        "hasLabel": [32],
+        "hasHelpTextSlot": [32],
+        "hasFrontSlot": [32],
+        "hasRearSlot": [32]
+    }, undefined, {
+        "helpText": ["handleLabelChange"],
+        "label": ["handleLabelChange"]
+    }]);
+function defineCustomElement$1() {
+    if (typeof customElements === "undefined") {
+        return;
+    }
+    const components = ["hbr-switch-group"];
+    components.forEach(tagName => { switch (tagName) {
+        case "hbr-switch-group":
+            if (!customElements.get(tagName)) {
+                customElements.define(tagName, SwitchGroup);
+            }
+            break;
+    } });
+}
+
+const HbrSwitchGroup = SwitchGroup;
+const defineCustomElement = defineCustomElement$1;
+
+export { HbrSwitchGroup, defineCustomElement };
+

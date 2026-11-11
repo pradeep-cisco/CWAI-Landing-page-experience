@@ -1,0 +1,5 @@
+{
+  "@harbor/elements": "2.19.7",
+  "@harbor/context": "0.2.13",
+  "@stencil/core": "4.12.3"
+}

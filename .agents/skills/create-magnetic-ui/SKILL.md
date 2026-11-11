@@ -13,7 +13,7 @@ Before any UI work, read and apply the embedded canonical skill at:
 
 Treat the complete canonical skill as the base workflow. This includes its component map, design reference, Figma workflow, documentation routing, framework guidance, accessibility rules, CSS policy, screenshot-based visual review, spacing rules, verification rules, custom-dashboard routing, and escalation rules.
 
-If the canonical skill is missing, stop and ask the user to run `pnpm context:update`. Do not recreate its instructions from memory and do not fall back to a manually maintained component map.
+If the canonical skill is missing, restore the tracked Context resources from Git or have a maintainer refresh the cached snapshot. Do not recreate its instructions from memory and do not fall back to a manually maintained component map.
 
 ## Downstream routes
 
@@ -46,6 +46,9 @@ Use the same modes defined by `elements-generate-ui`:
 Apply the canonical mode-specific workflow and then apply the repository rules below.
 
 ## Boilerplate Repository Profile
+
+- Elements modules are cached in `vendor/harbor-elements/`; keep documented `@harbor/elements` imports, which Vite resolves locally. Do not add private Harbor dependencies or registries.
+- For version and API checks, read `vendor/harbor-elements/package.json`, `vendor/harbor-elements/dist/docs.json`, and `vendor/harbor-elements/dist/types/components.d.ts`.
 
 - Assume React with raw Harbor custom elements such as `<hbr-button>` and `<hbr-dom-table>`.
 - Do not use React wrapper components unless the user explicitly changes the project installation profile.

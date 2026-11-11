@@ -5,17 +5,17 @@
   "type": "module",
   "description": "React 19 + Vite 8 + Harbor Elements (Magnetic) starter. Rename after scaffolding.",
   "scripts": {
-    "copy-elements": "cpy './node_modules/@harbor/elements/dist/harbor-elements/**/*' './public/harbor-elements' --parents",
+    "copy-elements": "node scripts/copy-elements.mjs",
     "context:update": "node scripts/update-context.mjs",
-    "test": "node --test tests/telemetry.test.mjs",
+    "test": "node --test tests/*.test.mjs",
     "dev": "npm run copy-elements && vite",
     "build": "npm run copy-elements && vite build",
     "deploy:pages": "bash scripts/publish-pages.sh",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "vendor:update": "node scripts/update-vendor.mjs"
   },
   "dependencies": {
-    "@harbor/context": "^0.2.7",
-    "@harbor/elements": "^2.19.7",
+    "@stencil/core": "4.12.3",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-router": "^7.9.3",
@@ -26,7 +26,6 @@
     "@types/react": "^19.1.13",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.3",
-    "cpy-cli": "^7.0.0",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",

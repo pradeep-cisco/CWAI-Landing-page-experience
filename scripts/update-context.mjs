@@ -1,18 +1,16 @@
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { mkdtemp, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
+import { access, mkdtemp, cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const skillsRoot = path.join(repoRoot, ".agents", "skills");
-const packageCli = path.join(repoRoot, "node_modules", "@harbor", "context", "bin", "harbor-context.js");
-const generatedSkillNames = [
-  "elements-generate-ui",
-  "elements-ask-ui-docs",
-  "elements-custom-dashboard",
-  "elements-project-setup",
-];
+if (!process.argv[2]) {
+  throw new Error("Pass the path to an internally installed @harbor/context package, or use npm run vendor:update -- /path/to/internal-install/node_modules.");
+}
+const packageCli = path.resolve(process.argv[2], "bin", "harbor-context.js");
+await access(packageCli);
 
 const resourceBundles = {
   "create-magnetic-ui": [
@@ -113,8 +111,14 @@ async function refreshBundle(ownerName, skillNames) {
   for (const skillName of skillNames) {
     const source = path.join(temporaryRoot, skillName);
     const destination = path.join(ownerResources, skillName);
+    const reviewPath = path.join(destination, "resources/visual-review.md");
+    const visualReview = await readFile(reviewPath, "utf8").catch(error => {
+      if (error.code !== "ENOENT") throw error;
+      return null;
+    });
     await rm(destination, { recursive: true, force: true });
     await cp(source, destination, { recursive: true });
+    if (visualReview) await writeFile(reviewPath, visualReview);
     await normalizeGeneratedFiles(skillName, destination, ownerName);
   }
 }

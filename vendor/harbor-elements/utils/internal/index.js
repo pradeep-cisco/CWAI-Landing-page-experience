@@ -1,0 +1,1 @@
+const t="hbr__default-portal";function a(){if(!!(typeof window<"u"&&window.document&&window.document.createElement)){const e=document.querySelector(`.${t}`)||Object.assign(document.createElement("div"),{className:t});return document.body.appendChild(e),e}return null}export{t as PORTAL_CLASSNAME,a as createDefaultPortalContainer};
