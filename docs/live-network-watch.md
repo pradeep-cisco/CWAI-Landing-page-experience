@@ -59,11 +59,11 @@ Verified on 2026-11-12:
 
 Screenshots:
 
-- [Quiet desktop](screenshots/live-watch-quiet-desktop.png)
-- [Major incident desktop](screenshots/live-watch-major-desktop.png)
-- [Verified recovery desktop](screenshots/live-watch-recovery-desktop.png)
-- [Quiet mobile](screenshots/live-watch-quiet-mobile.png)
-- [Critical attention mobile](screenshots/live-watch-critical-mobile.png)
-- [Expanded updates mobile](screenshots/live-watch-updates-mobile.png)
+- [Quiet desktop](screenshots/live-watch-quiet-desktop.jpg)
+- [Major incident desktop](screenshots/live-watch-major-desktop.jpg)
+- [Verified recovery desktop](screenshots/live-watch-recovery-desktop.jpg)
+- [Quiet mobile](screenshots/live-watch-quiet-mobile.jpg)
+- [Critical attention mobile](screenshots/live-watch-critical-mobile.jpg)
+- [Expanded updates mobile](screenshots/live-watch-updates-mobile.jpg)
 
 The original dashboard remains clean at `36bae06`. The prior Magnetic implementation remains recoverable from `milestone/08-magnetic-dashboard`.
