@@ -1,17 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { useNavigate, useParams } from 'react-router-dom';
+import { AdminSummary, IncidentList } from '../../features/wan/ProductSections.jsx';
 import { useAppearance } from '../../theme/appearance-context.jsx';
 import WanOverview from '../../features/wan/WanOverview.jsx';
 import AgentWorkspace from '../../features/wan/AgentWorkspace.jsx';
 import NetworkWatch, { WatchPulse } from '../../features/wan/NetworkWatch.jsx';
 import { networkWatch } from '../../features/wan/watch-model.js';
 import EvidenceModal from '../../features/wan/EvidenceModal.jsx';
-import { FRAMES, MATCHES, INTERFACE, currentFrame, activeAlarms, observations, reduce } from '../../features/wan/model/model.js';
-import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentResponse, agentFrameTitle, agentHandover } from '../../features/wan/model/agentic-model.js';
-import { WAN_SETUPS, ACTIVE_WAN, MONITORING_CONTEXT, setActiveWanSetup, domainLabel, groupLabel, summarize, navigateScope, searchDevices, networkHandoverPrefix } from '../../features/wan/model/scale.js';
+import { FRAMES, MATCHES, INTERFACE, currentFrame, activeAlarms, reduce } from '../../features/wan/model/model.js';
+import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentResponse, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
+import { WAN_SETUPS, ACTIVE_WAN, MONITORING_CONTEXT, setActiveWanSetup, domainLabel, groupLabel, navigateScope } from '../../features/wan/model/scale.js';
 import './network-monitoring.css';
 
 const inputValue = e => e.currentTarget?.value ?? e.target?.value ?? '';
-const count = n => Number(n).toLocaleString('en-US');
 const context = () => ({ ...MONITORING_CONTEXT, mainDomainLabel: domainLabel(MONITORING_CONTEXT.mainDomain), mainGroupLabel: groupLabel(MONITORING_CONTEXT.mainGroup), criticalDomainLabel: domainLabel(MONITORING_CONTEXT.criticalDomain), transitDomainLabel: domainLabel(MONITORING_CONTEXT.transitDomain) });
 const initial = () => createAgentState({networkContext:context(), interfacePage:0, groupConnectionsPage:0});
 
@@ -50,58 +52,81 @@ function ReviewModal({state, onClose, onFrame, onSource, onAgent, onPlay}) {
 }
 
 export default function NetworkMonitoring() {
-  const {setMode,setPreset}=useAppearance();
-  const [setup,setSetup]=useState(ACTIVE_WAN.id), [state,setState]=useState(initial), [playing,setPlaying]=useState(false);
-  const [reviewVisible,setReviewVisible]=useState(true), [dialog,setDialog]=useState(null), [evidence,setEvidence]=useState(null);
-  const [query,setQuery]=useState(''), [searchPage,setSearchPage]=useState(0), [copied,setCopied]=useState(false);
-  const [handover,setHandover]=useState(''), [capturedAt,setCapturedAt]=useState(''), [delivered,setDelivered]=useState(null);
-  const sessions=useRef(new Map()), workspaceRef=useRef(null);
-  const [spotlight,setSpotlight]=useState(null);
-  useEffect(()=>{const previous=document.title;document.title='Network Monitoring · CW AI';return()=>{document.title=previous;};},[]);
-  useEffect(()=>{if(state.agentic.open)workspaceRef.current?.scrollIntoView({block:'start',behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});},[state.agentic.open]);
-  useEffect(()=>{setPreset('onecd');},[setPreset]);
-  useEffect(()=>{setMode('dark'); document.body.classList.add('wan-monitoring-route');return()=>document.body.classList.remove('wan-monitoring-route');},[setMode]);
-  useEffect(()=>{
-    if(!playing||state.history!==null||state.frame>=11)return;
-    const timer=setTimeout(()=>setState(previous=>enterAgentFrame(previous,previous.frame+1)),6200);
-    return()=>clearTimeout(timer);
-  },[playing,state.frame,state.history,setup]);
-  useEffect(()=>{if(state.frame===11)setPlaying(false);},[state.frame]);
-  const sourceAction=action=>setState(s=>syncAgentResponse(action.type==='JOB_OUTCOME'?{...s,runOutcome:action.value}:reduce(s,action)));
-  const openResponse=id=>setState(s=>reduceAgent({...s,history:null,liveContext:null},{type:'AGENT_OPEN',incident:id}));
-  const agentAction=action=>{
-    if(action.type==='SHOW_HANDOFF'){setDelivered(agentResponse(state,action.incident||state.agentic.selected).handoff);setDialog('delivered');return;}
-    if(action.type==='AGENT_OPEN'||action.type==='AGENT_SELECT'){openResponse(action.incident||action.id||state.agentic.selected);return;}
-    setState(s=>reduceAgent(s,action));
+  const { setMode, setPreset } = useAppearance();
+  const { section } = useParams();
+  const navigate = useNavigate();
+  const view = section === 'admin' || section === 'incidents' ? section : 'home';
+  const [setup, setSetup] = useState(ACTIVE_WAN.id);
+  const [state, setState] = useState(initial);
+  const [playing, setPlaying] = useState(false);
+  const [reviewVisible, setReviewVisible] = useState(true);
+  const [dialog, setDialog] = useState(null);
+  const [evidence, setEvidence] = useState(null);
+  const [delivered, setDelivered] = useState(null);
+  const [spotlight, setSpotlight] = useState(null);
+  const sessions = useRef(new Map()), workspaceRef = useRef(null);
+
+  useEffect(() => { const previous = document.title; document.title = 'Crosswork AI'; return () => { document.title = previous; }; }, []);
+  useEffect(() => {
+    if (state.agentic.open) workspaceRef.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+  }, [state.agentic.open]);
+  useEffect(() => { setPreset('onecd'); }, [setPreset]);
+  useEffect(() => { setMode('dark'); document.body.classList.add('wan-monitoring-route'); return () => document.body.classList.remove('wan-monitoring-route'); }, [setMode]);
+  useEffect(() => {
+    if (!playing || state.history !== null || state.frame >= 11) return;
+    const timer = setTimeout(() => setState(previous => enterAgentFrame(previous, previous.frame + 1)), 6200);
+    return () => clearTimeout(timer);
+  }, [playing, state.frame, state.history, setup]);
+  useEffect(() => { if (state.frame === 11) setPlaying(false); }, [state.frame]);
+
+  const sourceAction = action => setState(s => syncAgentResponse(action.type === 'JOB_OUTCOME' ? { ...s, runOutcome: action.value } : reduce(s, action)));
+  const openResponse = id => {
+    if (view === 'admin') navigate('/network-monitoring/incidents');
+    setState(s => reduceAgent({ ...s, history: null, liveContext: null }, { type: 'AGENT_OPEN', incident: id }));
   };
-  const frameChange=(frame,auto=true)=>{setState(s=>enterAgentFrame(s,frame));setPlaying(auto&&frame>=2&&frame<11);};
-  const switchSetup=id=>{
-    if(id===setup)return;
-    sessions.current.set(setup,{state,playing,query,searchPage});
-    setActiveWanSetup(id);const saved=sessions.current.get(id);
-    setSetup(ACTIVE_WAN.id);setState(saved?{...saved.state,networkContext:context()}:initial());setPlaying(saved?.playing||false);setQuery(saved?.query||'');setSearchPage(saved?.searchPage||0);setEvidence(null);setDialog(null);setSpotlight(null);
+  const agentAction = action => {
+    if (action.type === 'SHOW_HANDOFF') { setDelivered(agentResponse(state, action.incident || state.agentic.selected).handoff); setDialog('delivered'); return; }
+    if (action.type === 'AGENT_OPEN' || action.type === 'AGENT_SELECT') { openResponse(action.incident || action.id || state.agentic.selected); return; }
+    setState(s => reduceAgent(s, action));
   };
-  const summary=summarize(state), o=observations(state), frame=currentFrame(state), watch=networkWatch(state);
-  const visibleState=state.history===null?state:{...state,frame:state.history,gap:'none',critical:state.critical&&state.criticalDetected<=FRAMES[state.history].time};
-  const search=searchDevices(query,searchPage);
-  const readHandover=()=>{setHandover(networkHandoverPrefix(state)+agentHandover({...state,history:null}));setCapturedAt(frame.time);setCopied(false);setDialog('handover');};
+  const frameChange = (frame, auto = false) => { setState(s => enterAgentFrame(s, frame)); setPlaying(auto && frame >= 2 && frame < 11); };
+  const switchSetup = id => {
+    if (id === setup) return;
+    sessions.current.set(setup, { state, playing });
+    setActiveWanSetup(id);
+    const saved = sessions.current.get(id);
+    setSetup(ACTIVE_WAN.id); setState(saved ? { ...saved.state, networkContext: context() } : initial());
+    setPlaying(saved?.playing || false); setEvidence(null); setDialog(null); setSpotlight(null);
+  };
+  const frame = currentFrame(state), watch = networkWatch(state);
+  const showAgent = view !== 'admin' && state.agentic.open;
+
   return <div className="wan-page">
     <header className="wan-page-heading">
-      <div className="wan-title-row"><div><hbr-text variant="page-title">Network Monitoring</hbr-text><hbr-text type="secondary" size="sm">Crosswork Network Controller</hbr-text></div><div className="wan-title-actions"><StatusTag sentiment="info">Concept · Simulated</StatusTag><hbr-button variant="text" size="small" onClick={()=>{setDialog('search');setSearchPage(0);}}>Find router</hbr-button><hbr-button variant="outline" size="small" onClick={readHandover}>Watch handover</hbr-button></div></div>
+      <hbr-text variant="page-title">{view === 'home' ? 'Crosswork AI' : view === 'admin' ? 'Admin' : 'Incidents'}</hbr-text>
     </header>
-    <div className="wan-scope-toolbar"><hbr-select label="WAN setup" size="small" value={setup} onhbr-change={e=>switchSetup(inputValue(e))}>{WAN_SETUPS.map(wan=><hbr-option key={wan.id} value={wan.id}>{wan.label}</hbr-option>)}</hbr-select><div className="wan-source-clock"><span data-stale={summary.stale>0} className={playing&&!summary.stale?'wan-live-dot playing':'wan-live-dot'} /><hbr-text size="sm">Observed {frame.time}</hbr-text><hbr-text type="secondary" size="xs">{summary.stale?'Telemetry gap':'Sources current'}</hbr-text></div><hbr-button variant="text" size="small" onClick={()=>setDialog('history')}>Observation history</hbr-button></div>
     <WatchPulse watch={watch} onOpen={openResponse}/>
-    {state.history!==null&&<div className="wan-history-notice"><hbr-text>Historical network observation · {FRAMES[state.history].time}. Global alarms and agent records retain the current {frame.time} snapshot.</hbr-text><hbr-button size="small" variant="outline" onClick={()=>setState(s=>({...s,history:null}))}>Return to current</hbr-button></div>}
-    <div ref={workspaceRef} className={`wan-workspace-grid ${state.agentic.open?'response-open':''} ${watch.incidents.length?'has-attention':''}`}>
-      <div className="wan-monitoring-main"><WanOverview state={visibleState} spotlight={spotlight} onNavigate={(kind,value)=>setState(s=>navigateScope(s,kind,value))} onInspect={setEvidence} onConnection={selection=>setEvidence({kind:'connections',level:selection.kind,id:selection.id})} onPatch={patch=>setState(s=>({...s,...patch}))} onOpenResponse={openResponse}/><SourceAlarms state={state} onInspect={setEvidence} onOpen={openResponse}/></div>
-      {state.agentic.open?<AgentWorkspace state={state} onAction={agentAction} onInspect={setEvidence} onClose={()=>agentAction({type:'AGENT_CLOSE'})}/>:<NetworkWatch state={{...state,history:null}} watch={watch} spotlight={spotlight} onLocate={id=>{setSpotlight(previous=>previous===id?null:id);setState(s=>navigateScope(s,'network'));}} onOpen={openResponse} onInspect={setEvidence}/>}</div>
-    <div className="wan-source-footnote"><hbr-text size="xs" type="secondary">BGP-LS topology · Independent reachability · Interface telemetry · Source alarms</hbr-text><hbr-text size="xs" type="secondary">{o.fresh?`Interface observation ${o.observedAt}`:`Interface metrics last observed ${o.observedAt}`}</hbr-text></div>
-    {reviewVisible?<div className="wan-review-controller" aria-label="Concept review controls"><span className="wan-review-label">Review</span><hbr-button variant="text" size="small" disabled={state.frame===0} onClick={()=>frameChange(state.frame-1,false)} aria-label="Previous observation">Prev</hbr-button><hbr-button variant="text" size="small" onClick={()=>{setPlaying(false);setDialog('review');}}>{frame.time}</hbr-button><hbr-button variant="text" size="small" disabled={state.frame===11} onClick={()=>setPlaying(p=>!p)}>{playing?'Pause':'Play'}</hbr-button><hbr-button variant="text" size="small" disabled={state.frame===11} onClick={()=>frameChange(state.frame+1,false)}>Next</hbr-button><hbr-button variant="text" size="small" onClick={()=>setReviewVisible(false)} aria-label="Dismiss review controls">Hide</hbr-button></div>:<hbr-button className="wan-review-reopen" size="small" variant="outline" onClick={()=>setReviewVisible(true)}>Review</hbr-button>}
-    <EvidenceModal state={state} selection={evidence} onClose={()=>setEvidence(null)} onInspect={setEvidence}/>
-    {dialog==='review'&&<ReviewModal state={state} onClose={()=>setDialog(null)} onFrame={frameChange} onSource={sourceAction} onAgent={agentAction} onPlay={()=>{setState(s=>({...s,history:null}));setPlaying(true);setDialog(null);}}/>}
+    <div ref={workspaceRef} className={`wan-workspace-grid ${showAgent ? 'response-open' : view !== 'home' ? 'section-only' : ''} ${watch.incidents.length ? 'has-attention' : ''}`}>
+      <div className="wan-monitoring-main">
+        {view === 'home' ? <>
+          <WanOverview state={state} spotlight={spotlight} onNavigate={(kind, value) => setState(s => navigateScope(s, kind, value))} onInspect={setEvidence} onConnection={selection => setEvidence({ kind: 'connections', level: selection.kind, id: selection.id })} onPatch={patch => setState(s => ({ ...s, ...patch }))} onOpenResponse={openResponse}/>
+          <SourceAlarms state={state} onInspect={setEvidence} onOpen={openResponse}/>
+        </> : view === 'admin' ? <AdminSummary state={state}/> : <IncidentList watch={watch} onOpen={openResponse} onInspect={setEvidence}/>}
+      </div>
+      {showAgent ? <AgentWorkspace state={state} onAction={agentAction} onInspect={setEvidence} onClose={() => agentAction({ type: 'AGENT_CLOSE' })}/> : view === 'home' ? <NetworkWatch state={{ ...state, history: null }} watch={watch} spotlight={spotlight} onLocate={id => { setSpotlight(previous => previous === id ? null : id); setState(s => navigateScope(s, 'network')); }} onOpen={openResponse} onInspect={setEvidence}/> : null}
+    </div>
+    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label="Preview controls" data-preview-controls="true">
+      <div className="wan-preview-selector"><span className="wan-review-label">Preview</span><hbr-select label="WAN setup" size="small" value={setup} onhbr-change={e => switchSetup(inputValue(e))}>{WAN_SETUPS.map(wan => <hbr-option key={wan.id} value={wan.id}>{wan.label}</hbr-option>)}</hbr-select></div>
+      <div className="wan-review-transport">
+        <hbr-button variant="text" size="small" disabled={state.frame === 0} onClick={() => frameChange(state.frame - 1)} aria-label="Previous observation">Prev</hbr-button>
+        <hbr-button variant="text" size="small" onClick={() => { setPlaying(false); setDialog('review'); }}>{frame.time}</hbr-button>
+        <hbr-button variant="text" size="small" disabled={state.frame === 11} onClick={() => setPlaying(p => !p)}>{playing ? 'Pause' : 'Play'}</hbr-button>
+        <hbr-button variant="text" size="small" disabled={state.frame === 11} onClick={() => frameChange(state.frame + 1)}>Next</hbr-button>
+        <hbr-button variant="text" size="small" onClick={() => setReviewVisible(false)}>Hide</hbr-button>
+      </div>
+    </div> : <hbr-button className="wan-review-reopen" size="small" variant="outline" onClick={() => setReviewVisible(true)}>Preview</hbr-button>, document.body)}
+    <EvidenceModal state={state} selection={evidence} onClose={() => setEvidence(null)} onInspect={setEvidence}/>
+    {dialog === 'review' && <ReviewModal state={state} onClose={() => setDialog(null)} onFrame={frameChange} onSource={sourceAction} onAgent={agentAction} onPlay={() => { setState(s => ({ ...s, history: null })); setPlaying(true); setDialog(null); }}/>}
     {dialog==='delivered'&&delivered&&<hbr-modal open label="Delivered engineering handoff" size="medium" onhbr-after-hide={e=>{if(e.target===e.currentTarget)setDialog(null);}}><hbr-layout direction="column" gap="lg"><StatusTag sentiment="info">Delivered by {delivered.actor} · {delivered.sent}</StatusTag><hbr-text>{delivered.route} · {delivered.status==='accepted'?`Accepted by ${delivered.acceptedBy} at ${delivered.accepted}`:'Acceptance pending'}</hbr-text><hbr-key-value-pairs><dl><dt>Delivered scope</dt><dd>{delivered.snapshot.scope}</dd><dt>Reason</dt><dd>{delivered.snapshot.reason.title}</dd><dt>Source observation</dt><dd>{delivered.snapshot.observedAt}</dd><dt>Source alarm</dt><dd>{delivered.snapshot.alarm||'Not applicable'}</dd><dt>Controller result at delivery</dt><dd>{delivered.snapshot.jobStatus}</dd><dt>Operator context at delivery</dt><dd>{delivered.snapshot.notes||'No additional context.'}</dd></dl></hbr-key-value-pairs><hbr-text type="secondary" size="sm">This is the context captured at delivery. Subsequent observations are retained in the current response.</hbr-text></hbr-layout><hbr-button slot="footer" variant="outline" onClick={()=>setDialog(null)}>Close</hbr-button></hbr-modal>}
-    {dialog==='search'&&<hbr-modal open label="Find router" size="medium" onhbr-after-hide={e=>{if(e.target===e.currentTarget)setDialog(null);}}><hbr-layout direction="column" gap="lg"><hbr-input label="Router, address, domain, or device group" placeholder="Search this WAN" value={query} onhbr-input={e=>{setQuery(inputValue(e));setSearchPage(0);}}/><hbr-text type="secondary" size="sm">{count(search.total)} {search.total===1?'router':'routers'} · {ACTIVE_WAN.label}</hbr-text><div className="wan-search-results">{search.items.map(device=><div className="wan-search-row" key={device.id}><div><hbr-button variant="text" size="small" onClick={()=>{setDialog(null);setEvidence({kind:'device',id:device.id});}}>{device.id}</hbr-button><hbr-text type="secondary" size="xs">{device.address} · IOS XR</hbr-text></div><hbr-button variant="text" size="small" onClick={()=>{setState(s=>navigateScope(s,'group',device.groupId));setDialog(null);}}>{domainLabel(device.domain)} / {groupLabel(device.groupId)}</hbr-button></div>)}{!search.total&&<hbr-text>No matching routers.</hbr-text>}</div><div className="wan-page-controls"><hbr-button size="small" variant="text" disabled={search.page===0} onClick={()=>setSearchPage(p=>p-1)}>Previous</hbr-button><hbr-text size="sm">{search.start}–{search.end} of {count(search.total)}</hbr-text><hbr-button size="small" variant="text" disabled={search.page>=search.pages-1} onClick={()=>setSearchPage(p=>p+1)}>Next</hbr-button></div></hbr-layout><hbr-button slot="footer" variant="outline" onClick={()=>setDialog(null)}>Close</hbr-button></hbr-modal>}
-    {dialog==='history'&&<hbr-modal open label="Observation history" size="small" onhbr-after-hide={e=>{if(e.target===e.currentTarget)setDialog(null);}}><hbr-layout direction="column" gap="md"><hbr-text type="secondary" size="sm">Open a recorded network snapshot. The source story pauses for historical review.</hbr-text>{FRAMES.filter(f=>f.index<=state.frame).map(f=><hbr-button key={f.index} variant="text" onClick={()=>{setPlaying(false);setState(s=>({...s,history:f.index}));setDialog(null);}}>{f.time} · {agentFrameTitle(f.index)}</hbr-button>)}</hbr-layout><hbr-button slot="footer" variant="outline" onClick={()=>setDialog(null)}>Close</hbr-button></hbr-modal>}
-    {dialog==='handover'&&<hbr-modal open label="Watch handover" size="medium" onhbr-after-hide={e=>{if(e.target===e.currentTarget)setDialog(null);}}><hbr-layout direction="column" gap="lg"><hbr-text type="secondary" size="sm">Captured {capturedAt} · Confirmed work, source quality, ownership, and outstanding decisions.</hbr-text><pre className="wan-handover-text">{handover}</pre><hbr-textarea label="Operator notes" rows={3} value={state.notes} onhbr-input={e=>{setState(s=>({...s,notes:inputValue(e)}));setCopied('dirty');}}/><hbr-button variant="text" onClick={()=>{setHandover(networkHandoverPrefix(state)+agentHandover({...state,history:null}));setCapturedAt(frame.time);setCopied(false);}}>Update summary with notes</hbr-button>{copied===true&&<hbr-text role="status">Copied locally.</hbr-text>}{copied==='dirty'&&<hbr-text type="secondary" size="sm">Update the summary to include edited notes.</hbr-text>}</hbr-layout><hbr-layout slot="footer" direction="row" gap="md"><hbr-button variant="text" onClick={()=>setDialog(null)}>Close</hbr-button><hbr-button disabled={copied==='dirty'} onClick={async()=>{try{await navigator.clipboard.writeText(handover);setCopied(true);}catch{setCopied(false);}}}>Copy reviewed summary</hbr-button></hbr-layout></hbr-modal>}
   </div>;
 }

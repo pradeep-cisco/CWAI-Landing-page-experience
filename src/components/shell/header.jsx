@@ -1,6 +1,7 @@
 import AppearanceSelector from "./appearance-selector";
+import { Link } from "react-router-dom";
 
-export default function Header() {
+export default function Header({ productName = "Magnetic", homeHref = "/" }) {
   return (
     <div
       className="n-header"
@@ -10,13 +11,12 @@ export default function Header() {
       }}
     >
       <hbr-shell-header>
-        <a href="/" slot="logo-name">
+        <Link to={homeHref} slot="logo-name">
           <hbr-icon name="cisco" />
-          {/* Note to Agent: Update the name according to the current branding */}
-          <div>Magnetic</div>
-        </a>
+          <div>{productName}</div>
+        </Link>
 
-        <AppearanceSelector />
+        <AppearanceSelector compact={productName === "Crosswork AI"} />
       </hbr-shell-header>
     </div>
   );

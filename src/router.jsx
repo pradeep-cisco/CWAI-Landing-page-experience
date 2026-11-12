@@ -20,7 +20,7 @@ const router = createBrowserRouter(
       path: "/",
       element: <Root navConfig={navConfig} />,
       children: [
-        { path: "network-monitoring", element: <NetworkMonitoring /> },
+        { path: "network-monitoring/:section?", element: <NetworkMonitoring /> },
         {
           index: true,
           element: <Navigate to="/home" replace />,

@@ -67,3 +67,18 @@ Screenshots:
 - [Expanded updates mobile](screenshots/live-watch-updates-mobile.jpg)
 
 The original dashboard remains clean at `36bae06`. The prior Magnetic implementation remains recoverable from `milestone/08-magnetic-dashboard`.
+
+
+## Product shell cleanup — 2026-11-12
+
+The product header, Home title, and browser title now use **Crosswork AI**. Product navigation is **Home → Admin → Incidents** with a fixed desktop rail and no collapse hamburger or organization switcher. Narrow screens show the same links in a compact horizontal row. Native router links, Magnetic icons, and semantic theme tokens keep navigation fixed; the cached shell-nav component automatically expands on resize, so it is not used for this fixed product rail. Existing starter routes retain their original shell.
+
+The main dashboard no longer includes the concept badge, Find router, Watch handover export, WAN setup selector, global Observed clock, or Observation history control. Their unused search/history/export state and modal branches were removed. Source times and last-known labels remain within domain and incident evidence. The agent's read-only delivered engineering handoff remains available.
+
+WAN setup selection is now part of the floating **Preview** controls, rendered into the document body outside the product root. All three WAN examples retain their separate source state, notes/drafts, and playback state. The controls can be hidden and reopened. Navigation among Home, Admin, and Incidents uses one persistent state owner and does not restart the source story.
+
+Admin shows the current delegated response configuration and recovery requirements as read-only information. Incidents shows the current prioritized workstreams with functioning source inspection and response links. A response opened from Admin navigates to Incidents so its workspace is visible.
+
+Validation: 84 existing checks passed; production build succeeded. Browser checks covered all three navigation destinations, selected states, incident-state continuity, external WAN selection and restoration, desktop/mobile layouts, and absence of header/hamburger controls. The product root contains no WAN select control; the Preview portal is outside `#root`. Document width remains 390px at a 390px viewport. The fixed desktop navigation remains 136px without extending over content. Browser warning/error logs were empty.
+
+Screenshots: [Clean desktop shell](screenshots/crosswork-ai-clean-desktop.jpg), [Clean mobile shell](screenshots/crosswork-ai-clean-mobile.jpg).
