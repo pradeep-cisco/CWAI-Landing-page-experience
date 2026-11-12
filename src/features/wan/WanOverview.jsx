@@ -6,6 +6,7 @@ import {
   telemetryCurrent, deviceInterfaces, deviceLinks,
 } from './model/scale.js';
 import { layoutBackbone } from './model/backbone-layout.js';
+import { domainObservation } from './watch-model.js';
 import './wan-overview.css';
 
 const number = value => Number(value || 0).toLocaleString('en-US');
@@ -67,7 +68,7 @@ function scaledLayout(nodes, bundles, width, page, pageSize) {
   const base = layoutBackbone({ domains: nodes, bundles, width: width / scaleX, page, pageSize });
   const rows = [...new Set(base.nodes.map(node => node.y))].sort((a, b) => a - b)
     .map(y => ({ top: y - base.cardHeight / 2, bottom: y + base.cardHeight / 2 }));
-  const padding = 16, gap = 32;
+  const padding = 4, gap = 32;
   // Compress only the empty routing lanes. The monotonic axis transform keeps
   // every route outside the same card boundaries and retains full card height.
   const vertical = y => {
@@ -133,17 +134,61 @@ function QualitySignal({ count }) {
   </span>;
 }
 
-function HierarchyCard({ node, state, kind, onNavigate, onHighlight }) {
+function ObservationTrend({ points, fresh, label }) {
+  if (!Array.isArray(points) || points.length < 2) return null;
+  const valid = points.filter(point => Number.isFinite(point.value));
+  if (valid.length < 2) return null;
+  const minutes = valid.map(point => {
+    const [hours, minute] = String(point.time).split(':').map(Number);
+    return Number.isFinite(hours) && Number.isFinite(minute) ? hours * 60 + minute : null;
+  });
+  const elapsed = minutes.at(-1) - minutes[0];
+  const timed = minutes.every(value => value !== null) && elapsed > 0;
+  const coordinates = valid.map((point, index) => {
+    const progress = timed ? (minutes[index] - minutes[0]) / elapsed : index / (valid.length - 1);
+    return `${3 + progress * 68},${23 - Math.max(0, Math.min(100, point.value)) / 100 * 20}`;
+  }).join(' ');
+  const last = coordinates.split(' ').at(-1).split(',');
+  return <svg className="wan-domain-trend" viewBox="0 0 74 28" role="img" aria-label={label} data-fresh={fresh}>
+    <path className="wan-domain-threshold" d="M3 7 H71" />
+    <polyline points={coordinates} />
+    <circle cx={last[0]} cy={last[1]} r="2.5" />
+  </svg>;
+}
+
+function NetworkAtmosphere() {
+  return <svg className="wan-map-atmosphere" viewBox="0 0 1200 600" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
+    <g className="wan-contour-lines">
+      <path d="M-80 455C80 315 150 345 238 230S350 97 475 140 648 258 765 185 1044-20 1260 95" />
+      <path d="M-90 480C89 340 162 370 249 252S365 119 483 163 657 281 777 207 1050 3 1265 119" />
+      <path d="M-102 505C92 365 174 396 260 275S381 141 492 186 666 304 789 230 1055 26 1270 143" />
+      <path d="M-113 530C96 390 186 421 271 298S396 163 500 209 675 327 801 252 1060 49 1275 168" />
+      <path d="M-125 555C100 415 198 446 282 320S412 185 509 232 684 350 813 275 1066 72 1280 192" />
+      <path d="M-136 580C104 440 210 471 293 343S427 207 517 255 693 373 825 297 1071 95 1285 216" />
+      <path d="M-148 605C108 465 222 497 304 366S443 229 526 278 702 396 837 320 1076 118 1290 240" />
+      <path d="M-160 630C112 490 234 522 315 388S458 251 534 301 711 419 849 342 1082 141 1295 264" />
+    </g>
+    <g className="wan-contour-detail">
+      <ellipse cx="945" cy="490" rx="220" ry="112" transform="rotate(-22 945 490)" />
+      <ellipse cx="945" cy="490" rx="188" ry="88" transform="rotate(-22 945 490)" />
+      <ellipse cx="945" cy="490" rx="156" ry="64" transform="rotate(-22 945 490)" />
+    </g>
+  </svg>;
+}
+
+function HierarchyCard({ node, state, kind, onNavigate, onHighlight, focused, muted }) {
   const devices = kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id);
   const summary = summarize(state, devices);
-  const signature = `${summary.critical}:${summary.major}:${summary.minor}:${summary.stale}:${summary.reachable}`;
+  const observation = kind === 'domain' ? domainObservation(state, node.id) : null;
+  const signature = `${summary.critical}:${summary.major}:${summary.minor}:${summary.stale}:${summary.reachable}:${observation?.kind}:${observation?.value}`;
   const ref = useArrival(signature);
   const population = kind === 'domain'
     ? `${number(DEVICE_GROUPS.filter(group => group.domain === node.id).length)} groups · ${plural(devices.length, 'router')}`
     : `${node.type || 'Device group'} · ${plural(devices.length, 'router')}`;
   return <div className="wan-map-node" style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
     data-region={kind === 'domain' ? node.id : undefined} data-group-status={kind === 'group' ? node.id : undefined}
-    data-condition={summary.tone} data-stale={summary.stale > 0}
+    data-condition={summary.tone} data-stale={summary.stale > 0} data-observation={observation?.kind} data-observation-tone={observation?.tone}
+    data-focused={focused} data-muted={muted}
     onPointerEnter={() => onHighlight(node.id)} onPointerLeave={() => onHighlight(null)}
     onFocus={() => onHighlight(node.id)} onBlur={() => onHighlight(null)}>
     <hbr-card ref={ref} selectable role="button" style={cardSizing}
@@ -156,9 +201,23 @@ function HierarchyCard({ node, state, kind, onNavigate, onHighlight }) {
           <hbr-text type="primary" size="sm" weight="bold" truncate="end">{node.label || node.id}</hbr-text>
           <hbr-icon name="caret-right" size="12px" aria-hidden="true" />
         </hbr-layout>
-        <hbr-text type="secondary" size="xs">{population}</hbr-text>
-        <div className="wan-node-alarm"><AlarmSignal summary={summary} compact /></div>
-        <QualitySignal count={summary.stale} />
+        {observation ? <div className="wan-domain-observation" data-kind={observation.kind} data-fresh={observation.fresh} title={`${observation.detail} · ${observation.source}`}>
+          <div className="wan-domain-condition"><span className="wan-domain-signal" />
+            <hbr-text size="xs" truncate="end">{observation.title}</hbr-text>
+          </div>
+          <div className="wan-domain-reading">
+            <span className="wan-domain-value">{observation.value || (summary.alarms ? alarmText(summary) : 'Within limits')}</span>
+            <ObservationTrend points={observation.trend} fresh={observation.fresh}
+              label={`${node.label || node.id} observed interface utilization trend${observation.fresh ? '' : ', last known'}`} />
+          </div>
+          <div className="wan-domain-footer"><span className="wan-domain-time">{observation.fresh ? 'Observed' : 'Last observed'} {observation.time}</span>
+            {summary.stale > 0 && observation.fresh && <span className="wan-domain-gap" title={`${number(summary.stale)} devices without current telemetry`}>Telemetry gap</span>}
+          </div>
+        </div> : <>
+          <hbr-text type="secondary" size="xs">{population}</hbr-text>
+          <div className="wan-node-alarm"><AlarmSignal summary={summary} compact /></div>
+          <QualitySignal count={summary.stale} />
+        </>}
       </hbr-layout>
     </hbr-card>
   </div>;
@@ -181,18 +240,22 @@ function RouteControl({ route, state, kind, onConnection, onHighlight }) {
   </div>;
 }
 
-function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNavigate, onConnection }) {
+function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNavigate, onConnection, spotlight }) {
   const [ref, width] = useContainerWidth();
-  const [highlight, setHighlight] = useState(null);
+  const [hovered, setHighlight] = useState(null);
+  const highlight = hovered || (kind === 'domain' ? spotlight : null);
   const setupId = ACTIVE_WAN.id;
   const layout = useMemo(() => scaledLayout(nodes, bundles, width, page, pageSize),
     [nodes, bundles, width, page, pageSize, setupId]);
   const narrow = width <= 640;
   const related = route => !highlight || route.id === highlight || route.from === highlight || route.to === highlight;
+  const highlightedRoute = bundles.find(bundle => bundle.id === highlight);
+  const relatedNode = id => id === highlight || highlightedRoute?.from === id || highlightedRoute?.to === id;
   return <hbr-layout direction="column" gap="md">
     <div ref={ref} className="wan-map" data-narrow={narrow} data-kind={kind} data-source-frame={state.frame}
       data-view={state.view} style={{ height: narrow ? undefined : layout.height }} role="group"
       aria-label={`${kind === 'domain' ? 'Operational domains' : 'Device groups'} and their actual logical connections`}>
+      <NetworkAtmosphere />
       {!narrow && <svg className="wan-map-routes" viewBox={`0 0 ${layout.width} ${layout.height}`} aria-hidden="true">
         <title>Logical connections derived from actual inventory links. Positions do not represent geography.</title>
         {layout.corridors.map(route => {
@@ -200,9 +263,10 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
           return <g key={route.id} data-corridor={route.id}
             data-condition={summary.active ? 'major' : summary.unavailable ? 'unknown' : 'normal'}
             data-stale={summary.unavailable > 0} data-emphasized={Boolean(highlight && related(route))}
-            data-muted={Boolean(highlight && !related(route))}>
+            data-muted={Boolean(highlight && !related(route) && !summary.active)}>
             <path className="wan-route-bed" d={routePath(route.points)} />
             <path className="wan-route-line" d={routePath(route.points)} />
+            {summary.active > 0 && <path key={`${route.id}:condition`} className="wan-route-arrival" d={routePath(route.points)} pathLength="1" />}
             {[route.points[0], route.points.at(-1)].map((point, index) =>
               <circle key={index} className="wan-route-port" cx={point[0]} cy={point[1]} r="3" />)}
           </g>;
@@ -210,7 +274,8 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
       </svg>}
       <div className="wan-map-nodes">
         {layout.nodes.map(node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} state={state}
-          kind={kind} onNavigate={onNavigate} onHighlight={setHighlight} />)}
+          kind={kind} onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
+          muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id)).alarms)} />)}
       </div>
       {!narrow && layout.corridors.map(route => <RouteControl key={`${setupId}:${route.id}`} route={route}
         state={state} kind={kind} onConnection={onConnection} onHighlight={setHighlight} />)}
@@ -310,7 +375,7 @@ function RouterInventory({ state, onPatch, onInspect, onConnection }) {
   </hbr-layout>;
 }
 
-export default function WanOverview({ state, onNavigate, onInspect, onConnection, onPatch, onOpenResponse }) {
+export default function WanOverview({ state, onNavigate, onInspect, onConnection, onPatch, onOpenResponse, spotlight = null }) {
   const [networkPages, setNetworkPages] = useState({});
   const [connectionPages, setConnectionPages] = useState({});
   const [localConnectionPages, setLocalConnectionPages] = useState({});
@@ -334,13 +399,13 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
   return <hbr-layout class="wan-overview" variant="dashboard" data-wan-setup={setupId}
     data-source-frame={state.frame} data-gap={state.gap} data-critical={state.critical}>
     <hbr-layout variant="dashboard:section" gap="lg">
-      <hbr-breadcrumb label="WAN scope">
+      {(isDomain || isGroup) && <hbr-breadcrumb label="WAN scope">
         <hbr-breadcrumb-item onClick={() => onNavigate('network')}>{ACTIVE_WAN.label}</hbr-breadcrumb-item>
         {(isDomain || isGroup) && <hbr-breadcrumb-item onClick={() => onNavigate('domain', state.domain)}>{domainLabel(state.domain)}</hbr-breadcrumb-item>}
         {isGroup && <hbr-breadcrumb-item>{groupLabel(state.popId)}</hbr-breadcrumb-item>}
-      </hbr-breadcrumb>
+      </hbr-breadcrumb>}
       <hbr-layout variant="dashboard:widgets:container">
-        <hbr-card container col="full">
+        <hbr-card container col="full" class="wan-overview-surface">
           <hbr-layout slot="header" direction="row" gap="lg" align="start" justify="space-between" class="wan-overview-heading">
             <hbr-layout direction="column" gap="2xs">
               <hbr-text variant="section-title"><h2>{title}</h2></hbr-text>
@@ -350,11 +415,11 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
               <hbr-icon slot="prefix" name="arrow-left" size="14px" />{isGroup ? 'Domain' : 'All domains'}
             </hbr-button>}
           </hbr-layout>
-          <hbr-layout direction="column" gap="xl">
+          <hbr-layout direction="column" gap="lg">
             <div className="wan-scope-health">
               <hbr-layout direction="row" gap="sm" align="center" class="wan-scope-status">
                 <AlarmSignal summary={summary} />
-                <hbr-text type="secondary" size="xs">{number(summary.reachable)} / {number(summary.devices)} reachable</hbr-text>
+                <hbr-text type="secondary" size="xs">{summary.reachable === summary.devices ? 'Reachability current' : `${plural(summary.devices - summary.reachable, 'unreachable router')}`}</hbr-text>
                 <QualitySignal count={summary.stale} />
               </hbr-layout>
               {(summary.alarms > 0 || summary.stale > 0) && <hbr-button variant="text" size="small"
@@ -366,10 +431,11 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
             {isGroup ? <RouterInventory state={state} onPatch={onPatch} onInspect={onInspect} onConnection={onConnection} /> : <>
               <LogicalMap nodes={isDomain ? localGroups : DOMAINS} bundles={isDomain ? localBundles : BUNDLES}
                 state={state} kind={isDomain ? 'group' : 'domain'} page={isDomain ? groupPage.page : domainPage.page}
-                pageSize={isDomain ? PAGE_SIZES.groups : 12} onNavigate={onNavigate} onConnection={onConnection} />
+                pageSize={isDomain ? PAGE_SIZES.groups : 12} onNavigate={onNavigate} onConnection={onConnection} spotlight={spotlight} />
               <Pager result={isDomain ? groupPage : domainPage} pageSize={isDomain ? PAGE_SIZES.groups : 12}
                 noun={isDomain ? 'device group' : 'domain'}
                 onChange={page => isDomain ? onPatch({ scopePage: page }) : setNetworkPages(previous => ({ ...previous, [setupId]: page }))} />
+              <hbr-accordion summary="Connections" size="small" variant="stacked" class="wan-connections-disclosure">
               {isDomain && <ConnectionList connections={localBundles} state={state} kind="group" title="Within-domain group connections"
                 page={localConnectionPages[`${setupId}:${state.domain}`] || 0}
                 onPage={page => setLocalConnectionPages(previous => ({ ...previous, [`${setupId}:${state.domain}`]: page }))}
@@ -379,6 +445,7 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
                 page={isDomain ? state.groupConnectionsPage || 0 : connectionsPage}
                 onPage={page => isDomain ? onPatch({ groupConnectionsPage: page }) : setConnectionPages(previous => ({ ...previous, [setupId]: page }))}
                 onConnection={onConnection} />
+              </hbr-accordion>
             </>}
           </hbr-layout>
         </hbr-card>

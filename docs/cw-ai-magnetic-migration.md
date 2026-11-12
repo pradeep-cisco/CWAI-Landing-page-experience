@@ -1,5 +1,7 @@
 # CW AI Magnetic migration
 
+This records the initial Magnetic milestone at `368fbea` (`milestone/08-magnetic-dashboard`). The subsequent landing-page evolution and current validation are documented in [Live network watch](live-network-watch.md).
+
 This migration carries the autonomous WAN monitoring concept into the React and Harbor Elements (Magnetic) starter at [Network monitoring](http://127.0.0.1:5173/network-monitoring). The intended outcome is the same operator journey: Priya supervises a WAN while CW AI owns eligible incidents, explains its evidence, and routes decisions outside its delegated scope. Source truth, response progress, and human ownership remain separately inspectable.
 
 ## Preserved source and fallback

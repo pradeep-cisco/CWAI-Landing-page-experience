@@ -205,3 +205,192 @@
     transition: none !important;
   }
 }
+
+/* This is the custom logical canvas, not a geographic map. The illustration
+   is decorative; source conditions and exact inventory routes remain above it. */
+.wan-map {
+  --wan-canvas-blue: color-mix(in srgb, var(--interact-text-default) 19%, transparent);
+  --wan-canvas-indigo: hsla(248, 62%, 58%, 0.09);
+  margin-block: 4px;
+}
+
+.wan-map::before {
+  content: '';
+  position: absolute;
+  inset: -4px -12px;
+  z-index: -2;
+  border: 1px solid color-mix(in srgb, var(--base-border-default) 24%, transparent);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 26% 20%, var(--wan-canvas-blue), transparent 57%),
+    radial-gradient(ellipse at 83% 80%, var(--wan-canvas-indigo), transparent 58%),
+    linear-gradient(180deg, transparent, color-mix(in srgb, var(--base-bg-default) 30%, transparent));
+}
+
+.wan-map-atmosphere {
+  position: absolute;
+  inset: -4px -12px;
+  z-index: -1;
+  width: calc(100% + 24px);
+  height: calc(100% + 8px);
+  overflow: hidden;
+  pointer-events: none;
+  border-radius: 16px;
+  mask-image: radial-gradient(ellipse at 50% 50%, #000 15%, transparent 77%);
+}
+
+.wan-contour-lines,
+.wan-contour-detail {
+  fill: none;
+  stroke: color-mix(in srgb, var(--interact-text-default) 21%, transparent);
+  stroke-width: 0.8;
+}
+
+.wan-contour-detail { opacity: 0.45; }
+
+.wan-map-node {
+  --wan-node-accent: var(--interact-text-default);
+  transition: opacity 220ms ease;
+}
+
+.wan-map-node::before {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  z-index: -1;
+  border: 1px solid transparent;
+  border-radius: 20px;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--wan-node-accent) 11%, transparent), transparent 75%);
+  opacity: 0.3;
+  transition: opacity 240ms ease, border-color 240ms ease;
+}
+
+.wan-map-node[data-condition='major'] { --wan-node-accent: var(--warning-icon-default); }
+.wan-map-node[data-condition='critical'] { --wan-node-accent: var(--negative-icon-default); }
+.wan-map-node[data-condition='unknown'] { --wan-node-accent: var(--base-text-medium-default); }
+.wan-map-node[data-observation='recovery'][data-observation-tone='positive'] { --wan-node-accent: var(--positive-icon-default); }
+.wan-map-node[data-observation='recovery'][data-observation-tone='warning'] { --wan-node-accent: var(--warning-icon-default); }
+.wan-map-node[data-condition='major']::before,
+.wan-map-node[data-condition='critical']::before,
+.wan-map-node[data-observation='trend']::before { opacity: 1; }
+
+.wan-map-node[data-focused='true']::before {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--interact-border-default) 65%, transparent);
+}
+
+.wan-map-node[data-muted='true'] { opacity: 0.9; }
+.wan-map-node:hover,
+.wan-map-node:focus-within { opacity: 1; }
+
+.wan-domain-observation {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  margin-top: 7px;
+}
+
+.wan-domain-condition {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  line-height: 17px;
+}
+
+.wan-domain-condition hbr-text { min-width: 0; flex: 1; }
+
+.wan-domain-signal {
+  width: 5px;
+  height: 5px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--wan-node-accent);
+}
+
+.wan-domain-observation[data-kind='quiet'] .wan-domain-signal { background: var(--positive-icon-default); }
+.wan-domain-observation[data-kind='gap'] .wan-domain-signal {
+  background: transparent;
+  outline: 1px solid var(--base-text-medium-default);
+}
+
+.wan-domain-reading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-width: 0;
+  height: 24px;
+}
+
+.wan-domain-value {
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 22px;
+  font-variant-numeric: tabular-nums;
+  color: var(--base-text-default);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wan-domain-time {
+  color: var(--base-text-medium-default);
+  font-size: 10px;
+  line-height: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.wan-domain-trend {
+  width: 74px;
+  height: 28px;
+  flex: none;
+  overflow: visible;
+  color: var(--wan-node-accent);
+}
+
+.wan-domain-trend polyline {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.wan-domain-trend circle { fill: currentColor; }
+.wan-domain-trend[data-fresh='false'] { opacity: 0.6; width: 48px; }
+.wan-domain-observation[data-fresh='false'] .wan-domain-value { font-size: 13px; }
+.wan-domain-threshold { fill: none; stroke: var(--base-border-default); stroke-width: 1; stroke-dasharray: 2 3; }
+
+.wan-route-arrival {
+  fill: none;
+  stroke: var(--warning-icon-default);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  opacity: 0;
+  animation: wan-route-arrives 900ms ease-out 1;
+  pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
+
+.wan-connections-disclosure { display: block; }
+.wan-connections-disclosure .wan-connections:first-child { border-top: none; padding-top: 8px; }
+
+@keyframes wan-route-arrives {
+  from { stroke-dashoffset: 1; opacity: 0.5; }
+  to { stroke-dashoffset: 0; opacity: 0; }
+}
+
+@media (max-width: 420px) {
+  .wan-map[data-narrow='true'] .wan-map-node { height: 134px !important; }
+  .wan-domain-time { font-size: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wan-route-arrival { animation: none; }
+}
+
+.wan-domain-footer {display:flex;align-items:center;justify-content:space-between;gap:4px;min-width:0;}
+.wan-domain-gap {font-size:9px;line-height:14px;color:var(--base-text-medium-default);white-space:nowrap;border-bottom:1px dashed var(--base-border-default);}
