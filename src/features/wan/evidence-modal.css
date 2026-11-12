@@ -1,0 +1,58 @@
+.wan-evidence-modal::part(panel) {
+  max-height: 84dvh;
+}
+
+.wan-evidence-modal::part(body) {
+  min-width: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.wan-evidence-content,
+.wan-evidence-content hbr-layout,
+.wan-evidence-content hbr-key-value-pairs,
+.wan-evidence-content hbr-text,
+.wan-evidence-content dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.wan-evidence-list {
+  display: grid;
+  gap: var(--hbr-spacing-md);
+  min-width: 0;
+}
+
+.wan-evidence-item {
+  display: grid;
+  gap: var(--hbr-spacing-sm);
+  min-width: 0;
+  padding-block: var(--hbr-spacing-md);
+  border-block-start: 1px solid var(--base-border-default);
+}
+
+.wan-evidence-row,
+.wan-evidence-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-sm);
+  min-width: 0;
+}
+
+.wan-evidence-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--hbr-spacing-md);
+}
+
+@media (max-width: 600px) {
+  .wan-evidence-modal::part(panel) {
+    max-height: 88dvh;
+  }
+
+  .wan-evidence-content hbr-key-value-pairs {
+    width: 100%;
+  }
+}

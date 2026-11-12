@@ -1,0 +1,176 @@
+.wan-agent-workspace {
+  display: flex;
+  flex-direction: column;
+  align-self: start;
+  min-width: 0;
+  width: 100%;
+  height: var(--wan-workspace-height, calc(100dvh - 184px));
+  max-height: var(--wan-workspace-height, calc(100dvh - 184px));
+  overflow: hidden;
+  color: var(--base-text-default);
+  background: var(--base-bg-weak-default);
+  border: 1px solid var(--base-border-default);
+}
+
+.wan-agent-header,
+.wan-agent-footer {
+  display: grid;
+  flex: none;
+  gap: var(--hbr-spacing-sm);
+  padding: var(--hbr-spacing-lg);
+  background: var(--base-bg-weak-default);
+  z-index: 1;
+}
+
+.wan-agent-header {
+  position: sticky;
+  top: 0;
+  border-bottom: 1px solid var(--base-border-default);
+}
+
+.wan-agent-footer {
+  position: sticky;
+  bottom: 0;
+  border-top: 1px solid var(--base-border-default);
+}
+
+.wan-agent-body {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: var(--hbr-spacing-lg);
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: var(--hbr-spacing-lg);
+  scrollbar-gutter: stable;
+}
+
+.wan-agent-body > * {
+  flex: none;
+  min-width: 0;
+}
+
+.wan-agent-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-sm);
+  min-width: 0;
+}
+
+.wan-agent-section,
+.wan-agent-source,
+.wan-agent-message {
+  display: grid;
+  gap: var(--hbr-spacing-sm);
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.wan-agent-source {
+  padding-block-start: var(--hbr-spacing-md);
+  border-top: 1px solid var(--base-border-default);
+}
+
+.wan-agent-decision {
+  padding: var(--hbr-spacing-lg);
+  border-inline-start: 3px solid var(--warning-border-default);
+  background: var(--base-bg-medium-default);
+}
+
+.wan-agent-metric {
+  padding: var(--hbr-spacing-lg);
+  background: var(--base-bg-medium-default);
+  border: 1px solid var(--base-border-default);
+}
+
+.wan-agent-disclosures,
+.wan-agent-conversation {
+  display: grid;
+  gap: var(--hbr-spacing-md);
+  min-width: 0;
+}
+
+.wan-agent-record {
+  display: grid;
+  grid-template-columns: minmax(88px, auto) minmax(0, 1fr);
+  gap: var(--hbr-spacing-sm) var(--hbr-spacing-md);
+  margin: 0;
+  font-size: inherit;
+}
+
+.wan-agent-record dt {
+  color: var(--base-text-medium-default);
+}
+
+.wan-agent-record dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.wan-agent-criterion {
+  display: grid;
+  grid-template-columns: 20px minmax(0, 1fr);
+  align-items: start;
+  gap: var(--hbr-spacing-sm);
+}
+
+.wan-agent-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-sm);
+}
+
+.wan-agent-question-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--hbr-spacing-sm);
+}
+
+.wan-agent-message {
+  padding-block: var(--hbr-spacing-md);
+  border-bottom: 1px solid var(--base-border-default);
+}
+
+.wan-agent-message[data-role='operator'] {
+  padding-inline-start: var(--hbr-spacing-lg);
+  border-inline-start: 2px solid var(--base-border-default);
+}
+
+.wan-agent-summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--hbr-spacing-md);
+  padding: var(--hbr-spacing-lg);
+  border: 1px solid var(--base-border-default);
+  background: var(--base-bg-weak-default);
+}
+
+.wan-agent-summary-copy {
+  display: grid;
+  flex: 1 1 240px;
+  gap: var(--hbr-spacing-xs);
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .wan-agent-workspace {
+    grid-column: 1 / -1;
+    height: min(840px, calc(100dvh - 156px));
+    max-height: calc(100dvh - 156px);
+  }
+
+  .wan-agent-header,
+  .wan-agent-body,
+  .wan-agent-footer {
+    padding: var(--hbr-spacing-md);
+  }
+
+  .wan-agent-question-form {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

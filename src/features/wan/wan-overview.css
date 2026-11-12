@@ -1,0 +1,207 @@
+/* The custom region is the logical topology, which has no mapped Harbor
+   component. Harbor owns card, button, tag, breadcrumb and pagination styling. */
+.wan-overview {
+  min-width: 0;
+  width: 100%;
+}
+
+.wan-overview h2,
+.wan-overview h3 {
+  margin: 0;
+}
+
+.wan-overview-heading,
+.wan-scope-status {
+  flex-wrap: wrap;
+}
+
+.wan-scope-health {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-md);
+}
+
+.wan-map {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  isolation: isolate;
+}
+
+.wan-map-routes {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.wan-route-bed,
+.wan-route-line {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+
+.wan-route-bed {
+  stroke: var(--base-bg-default);
+  stroke-width: 7;
+}
+
+.wan-route-line {
+  stroke: var(--control-border-strong-default);
+  stroke-width: 1.5;
+  transition: stroke-width 160ms ease, opacity 160ms ease;
+}
+
+.wan-route-port {
+  fill: var(--base-bg-default);
+  stroke: var(--control-border-strong-default);
+  stroke-width: 1.5;
+}
+
+.wan-map-routes g[data-condition="major"] .wan-route-line,
+.wan-map-routes g[data-condition="major"] .wan-route-port {
+  stroke: var(--warning-border-default);
+  stroke-width: 2.5;
+}
+
+.wan-map-routes g[data-stale="true"] .wan-route-line {
+  stroke-dasharray: 5 4;
+}
+
+.wan-map-routes g[data-emphasized="true"] .wan-route-line {
+  stroke-width: 3;
+}
+
+.wan-map-routes g[data-muted="true"] {
+  opacity: 0.25;
+}
+
+.wan-map-node {
+  position: absolute;
+  z-index: 2;
+  transform: translate(-50%, -50%);
+}
+
+.wan-map-node hbr-card {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.wan-map-node hbr-text[truncate] {
+  flex: 1;
+  min-width: 0;
+}
+
+.wan-node-alarm {
+  display: flex;
+  align-items: center;
+  min-height: 22px;
+}
+
+.wan-alarm-clear {
+  color: var(--base-text-medium-default);
+  font-size: var(--hbr-font-size-xs);
+  line-height: 18px;
+}
+
+.wan-quality {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--hbr-spacing-2xs, 4px);
+  color: var(--base-text-medium-default);
+  font-size: var(--hbr-font-size-xs);
+  line-height: 18px;
+}
+
+.wan-quality[data-stale="true"] {
+  font-weight: var(--hbr-font-weight-semibold);
+}
+
+.wan-route-control {
+  position: absolute;
+  z-index: 3;
+  transform: translate(-50%, -50%);
+}
+
+.wan-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-md);
+}
+
+.wan-connections {
+  padding-top: var(--hbr-spacing-xl);
+  border-top: 1px solid var(--base-border-default);
+}
+
+.wan-connection-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--hbr-spacing-md);
+}
+
+.wan-connection-row {
+  min-width: 0;
+  padding: var(--hbr-spacing-md);
+  border: 1px solid var(--base-border-default);
+  border-radius: var(--hbr-border-radius-md);
+}
+
+.wan-connection-count {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--hbr-spacing-xs);
+  font-size: var(--hbr-font-size-xs);
+  line-height: 18px;
+}
+
+.wan-map[data-narrow="true"] .wan-map-nodes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--hbr-spacing-md);
+}
+
+.wan-map[data-narrow="true"] .wan-map-node {
+  position: relative;
+  inset: auto !important;
+  width: auto !important;
+  height: 132px !important;
+  transform: none;
+}
+
+@media (max-width: 1000px) {
+  .wan-connection-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .wan-connection-list {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 420px) {
+  .wan-map[data-narrow="true"] .wan-map-nodes {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wan-overview *,
+  .wan-overview *::before,
+  .wan-overview *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

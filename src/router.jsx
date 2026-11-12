@@ -3,6 +3,7 @@ import Root from "./components/root";
 import Home from "./pages/home";
 import TeaSales from "./pages/tea-sales";
 import USCNetworkHealth from "./pages/usc-network-health";
+import NetworkMonitoring from "./pages/network-monitoring";
 
 const navConfig = [
   {
@@ -19,6 +20,7 @@ const router = createBrowserRouter(
       path: "/",
       element: <Root navConfig={navConfig} />,
       children: [
+        { path: "network-monitoring", element: <NetworkMonitoring /> },
         {
           index: true,
           element: <Navigate to="/home" replace />,

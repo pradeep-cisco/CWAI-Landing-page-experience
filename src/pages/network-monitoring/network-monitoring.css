@@ -1,0 +1,46 @@
+.wan-page { --wan-workspace-height: calc(100dvh - 160px); display:flex;flex-direction:column;gap:16px;min-width:0;padding-bottom:64px; }
+.wan-title-row,.wan-title-actions,.wan-scope-toolbar,.wan-source-clock,.wan-watch-state,.wan-source-footnote,.wan-alarm-row,.wan-search-row,.wan-page-controls,.wan-history-notice { display:flex; align-items:center; gap:16px; }
+.wan-title-row { justify-content:space-between; flex-wrap:wrap; gap:16px; }
+.wan-title-row>div:first-child,.wan-watch-copy {display:flex; flex-direction:column; gap:4px;}
+.wan-title-actions {gap:12px;flex-wrap:wrap;}
+.wan-scope-toolbar { flex-wrap:wrap; margin-top:8px; }
+.wan-scope-toolbar>hbr-select { width:240px; }
+.wan-source-clock {gap:8px;margin-left:auto;}
+.wan-live-dot {width:6px;height:6px;border-radius:50%;background:#56bf89;box-shadow:0 0 0 4px #56bf8915;}
+.wan-live-dot.playing {animation:wan-source-pulse 2.8s ease-in-out infinite;}
+.wan-watch-state {padding:16px 20px;border:1px solid var(--base-border-default);border-radius:12px;background:var(--base-bg-medium-default); min-height:80px;}
+.wan-watch-copy {flex:1;min-width:180px;}
+.wan-watch-glyph {display:grid;place-items:center;flex-shrink:0;}
+.wan-watch-state.warning {border-left:3px solid #eab460;}.wan-watch-state.negative {border-left:3px solid #ef7382;}
+.wan-trend {display:flex;align-items:center;gap:8px;color:#74c9c3;}.wan-trend svg{width:100px;height:32px;}.wan-trend path{fill:none;stroke:currentColor;stroke-width:2;}
+.wan-global-metrics {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;}
+.wan-global-metrics hbr-card {min-width:0;}
+.wan-metric {display:flex;flex-direction:column;gap:6px;}
+.wan-metric strong {font-size:24px;font-weight:600;line-height:1.3;color:var(--base-text-default);font-variant-numeric:tabular-nums;}
+.wan-workspace-grid {display:grid;grid-template-columns:minmax(0,1fr);gap:16px;align-items:start;min-width:0;scroll-margin-top:72px;}
+.wan-workspace-grid.response-open {grid-template-columns:minmax(0,1fr) minmax(340px,390px);}
+.wan-monitoring-main {display:flex;flex-direction:column;gap:16px;min-width:0;}
+.wan-agent-workspace {position:sticky;top:16px;}
+.wan-alarm-list {display:flex;flex-direction:column;gap:0;}
+.wan-alarm-row {padding:12px 0;flex-wrap:wrap;border-bottom:1px solid var(--base-border-default);gap:12px;}.wan-alarm-row:last-child{border:0;}
+.wan-alarm-description {display:flex;flex-direction:column;flex:1;min-width:180px;gap:4px;align-items:flex-start;}
+.wan-alarm-empty {display:flex;align-items:center;gap:12px;padding:12px 0;}
+.wan-source-footnote {justify-content:space-between;gap:8px;flex-wrap:wrap;}
+.wan-review-controller {position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:400;display:flex;align-items:center;gap:12px;padding:6px 16px;border:1px solid var(--base-border-default);border-radius:40px;background:var(--base-bg-default);box-shadow:0 6px 28px #0004;}
+.wan-review-label {font-size:12px;color:var(--base-text-medium-default);padding:0 8px;}.wan-review-reopen {position:fixed;bottom:20px;right:24px;z-index:400;}
+.wan-history-notice {padding:16px;border:1px solid var(--base-border-default);border-radius:8px;flex-wrap:wrap;background:var(--base-bg-medium-default);}
+.wan-history-notice hbr-text {flex:1;min-width:200px;}
+.wan-search-results {display:flex;flex-direction:column;max-height:50vh;overflow:auto;}
+.wan-search-row {padding:12px 0;border-bottom:1px solid var(--base-border-default);justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.wan-search-row>div {display:flex;flex-direction:column;align-items:flex-start;gap:4px;}
+.wan-page-controls {justify-content:space-between;}
+.wan-handover-text {white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.6;max-height:44vh;overflow:auto;padding:16px;background:var(--base-bg-medium-default);border:1px solid var(--base-border-default);border-radius:8px;}
+@keyframes wan-source-pulse {50%{box-shadow:0 0 0 7px #56bf8908;opacity:.6;}}
+@media(max-width:1200px){.wan-workspace-grid.response-open{grid-template-columns:minmax(0,1fr);} .wan-agent-workspace{position:relative;top:0;grid-row:1;}.wan-global-metrics{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:650px){.wan-monitoring-route hbr-shell-header::part(base){min-width:0;}}
+@media(max-width:650px){.wan-monitoring-route .n-root{--hbr-app-shift-left:0px;}.wan-monitoring-route .n-container>hbr-nav,.wan-monitoring-route .n-container>.n-nav,.wan-monitoring-route .n-container>.shell__nav{display:none;}.wan-monitoring-route .n-content{padding:64px 16px 0;width:100vw;}.wan-title-actions{gap:8px;}.wan-scope-toolbar>hbr-select{width:100%;}.wan-source-clock{margin-left:0;}.wan-watch-state{padding:16px;flex-wrap:wrap;gap:12px;}.wan-watch-copy{min-width:200px;}.wan-global-metrics{gap:8px;}.wan-metric{padding:12px;}.wan-metric strong{font-size:20px;}.wan-review-controller{bottom:12px;padding:8px 12px;gap:10px;width:max-content;max-width:calc(100vw - 16px);}.wan-review-label{display:none;}.wan-workspace-grid.response-open{grid-template-columns:minmax(0,1fr);}}
+@media(prefers-reduced-motion:reduce){.wan-page *{animation:none!important;transition:none!important;}}
+
+.wan-map-routes g[data-condition="major"] .wan-route-port{animation:wan-alarm-presence 3s ease-in-out infinite;}
+@keyframes wan-alarm-presence{50%{opacity:.55;}}
+@media(prefers-reduced-motion:reduce){.wan-map-routes g[data-condition="major"] .wan-route-port{animation:none;}}
