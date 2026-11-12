@@ -7,6 +7,7 @@ import WanOverview from '../../features/wan/WanOverview.jsx';
 import AgentWorkspace from '../../features/wan/AgentWorkspace.jsx';
 import NetworkWatch, { WatchPulse } from '../../features/wan/NetworkWatch.jsx';
 import { networkWatch } from '../../features/wan/watch-model.js';
+import OperationsDashboard from '../../features/wan/operations/OperationsDashboard.jsx';
 import EvidenceModal from '../../features/wan/EvidenceModal.jsx';
 import { FRAMES, MATCHES, INTERFACE, currentFrame, activeAlarms, reduce } from '../../features/wan/model/model.js';
 import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentResponse, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
@@ -115,6 +116,7 @@ export default function NetworkMonitoring() {
       </div>
       {showAgent ? <AgentWorkspace state={state} onAction={agentAction} onInspect={setEvidence} onClose={() => agentAction({ type: 'AGENT_CLOSE' })}/> : view === 'home' ? <NetworkWatch state={{ ...state, history: null }} watch={watch} spotlight={spotlight} onLocate={id => { setSpotlight(previous => previous === id ? null : id); setState(s => navigateScope(s, 'network')); }} onOpen={openResponse} onInspect={setEvidence}/> : null}
     </div>
+    {view === 'home' && <OperationsDashboard key={setup} state={state} onOpen={openResponse} onInspect={setEvidence} onAction={agentAction}/>}
     {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label="Preview controls" data-preview-controls="true">
       <div className="wan-preview-selector"><span className="wan-review-label">Preview</span><hbr-select label="WAN setup" size="small" value={setup} onhbr-change={e => switchSetup(inputValue(e))}>{WAN_SETUPS.map(wan => <hbr-option key={wan.id} value={wan.id}>{wan.label}</hbr-option>)}</hbr-select></div>
       <div className="wan-review-transport">
