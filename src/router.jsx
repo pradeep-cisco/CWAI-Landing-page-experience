@@ -4,6 +4,13 @@ import Home from "./pages/home";
 import TeaSales from "./pages/tea-sales";
 import USCNetworkHealth from "./pages/usc-network-health";
 import NetworkMonitoring from "./pages/network-monitoring";
+import { resolveDeploymentRouting } from "./routing/deployment";
+
+const deployment = resolveDeploymentRouting({
+  pathname: window.location.pathname,
+  assetBase: import.meta.env.BASE_URL,
+  routerBase: import.meta.env.VITE_ROUTER_BASE_PATH,
+});
 
 const navConfig = [
   {
@@ -23,7 +30,7 @@ const router = createBrowserRouter(
         { path: "network-monitoring/:section?", element: <NetworkMonitoring /> },
         {
           index: true,
-          element: <Navigate to="/home" replace />,
+          element: <Navigate to={deployment.landingPath} replace />,
         },
         {
           path: "usc-network-health",
@@ -41,7 +48,7 @@ const router = createBrowserRouter(
     },
   ],
   {
-    basename: import.meta.env.BASE_URL,
+    basename: deployment.basename,
   },
 );
 

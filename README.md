@@ -135,6 +135,17 @@ It builds from the cached snapshot and publishes `dist/` to `gh-pages` with the
 base path `/pages/magnetic/boilerplate-web/`. Other hosting environments can build
 with their own `VITE_BASE_PATH` and deploy `dist/`.
 
+### Protohost previews
+
+Protohost exposes the app at `/preview/<slug>/` and serves the build's files
+from `/preview-assets/<version>/`. Routing resolves the visible preview mount
+separately from Vite's asset base so the preview opens the Crosswork AI dashboard
+and its Home, Admin, and Incidents links stay within that preview. Local routes
+and conventional deployments retain their existing behavior.
+
+For other hosts with separate app and asset paths, set `VITE_ROUTER_BASE_PATH`
+to the app's path when building. `VITE_BASE_PATH` continues to control asset URLs.
+
 ## Using as a template
 
 Rename `name` in `package.json`, update this README, and choose an appropriate
