@@ -1,8 +1,8 @@
 .ops-dashboard{display:flex;flex-direction:column;gap:24px;min-width:0;padding-top:12px;--ops-accent:var(--interact-border-default);--ops-surface:var(--base-bg-weak-default);}
 .ops-dashboard *{box-sizing:border-box;}
-.ops-section-nav{position:sticky;top:8px;z-index:8;display:flex;align-items:center;flex-wrap:wrap;gap:8px 24px;padding:12px 16px;border:1px solid var(--base-border-default);border-radius:8px;background:color-mix(in srgb,var(--base-bg-default) 96%,transparent);backdrop-filter:blur(10px);}
-.ops-section-nav a{color:var(--base-text-medium-default);font-size:12px;text-decoration:none;line-height:24px;transition:color 160ms;}
-.ops-section-nav a:hover,.ops-section-nav a:focus-visible{color:var(--interact-text-default);text-decoration:underline;text-underline-offset:5px;}
+.ops-tabs{display:block;min-width:0;width:100%;}
+.ops-tabs>hbr-tab-panel{padding-top:24px;min-width:0;}
+.ops-tabs>hbr-tab-panel[active]>.ops-section{animation:ops-reveal 220ms ease-out;}
 .ops-section{position:relative;display:block;min-width:0;scroll-margin-top:136px;}
 .ops-card-layout,.ops-container,.ops-container-heading,.ops-section-body{min-width:0;width:100%;}
 .ops-container{--body-padding:24px;--header-padding:24px;}
@@ -41,6 +41,6 @@
 @keyframes ops-confirm{from{opacity:.45;transform:scaleX(.92);}to{opacity:1;transform:scaleX(1);}}
 @keyframes ops-sample-arrive{0%{r:5;opacity:.8;}100%{r:17;opacity:0;}}
 @media(max-width:850px){.ops-section-header{flex-wrap:wrap;}.ops-header-actions{justify-content:flex-start;}.ops-description{max-width:70ch;}}
-@media(max-width:550px){.ops-section{scroll-margin-top:224px;}.ops-container{--body-padding:20px 16px;--header-padding:20px 16px;}.ops-dashboard{gap:20px;}.ops-header-actions{gap:8px;flex-shrink:1;}.ops-section-nav{gap:4px 16px;top:8px;padding:8px 12px;}.ops-chart-reading>span{display:none;}.ops-chart-caption{font-size:11px;}}
+@media(max-width:550px){.ops-section{scroll-margin-top:224px;}.ops-container{--body-padding:20px 16px;--header-padding:20px 16px;}.ops-dashboard{gap:20px;}.ops-header-actions{gap:8px;flex-shrink:1;}.ops-chart-reading>span{display:none;}.ops-chart-caption{font-size:11px;}}
 @media(prefers-reduced-motion:reduce){.ops-dashboard *,.ops-dashboard *::before,.ops-dashboard *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important;}.ops-dashboard hbr-accordion{--show-duration:0ms;--hide-duration:0ms;}}
 @media(prefers-reduced-motion:reduce){.ops-dashboard hbr-tab::part(indicator){animation:none!important;transition:none!important;}}

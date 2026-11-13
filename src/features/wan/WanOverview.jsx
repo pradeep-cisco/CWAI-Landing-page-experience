@@ -6,7 +6,8 @@ import {
   telemetryCurrent, deviceInterfaces, deviceLinks,
 } from './model/scale.js';
 import { layoutBackbone } from './model/backbone-layout.js';
-import { domainObservation } from './watch-model.js';
+import { THRESHOLD } from './model/model.js';
+import { domainObservation, networkWatch } from './watch-model.js';
 import './wan-overview.css';
 
 const number = value => Number(value || 0).toLocaleString('en-US');
@@ -62,13 +63,13 @@ function useContainerWidth() {
 
 // The routes come from the fixture's actual links. Scaling reserves room for
 // Harbor cards without letting source severity or freshness move an anchor.
-function scaledLayout(nodes, bundles, width, page, pageSize) {
+function scaledLayout(nodes, bundles, width, page, pageSize, kind) {
   const scaleX = 1.2;
-  const scaleY = 1.35;
   const base = layoutBackbone({ domains: nodes, bundles, width: width / scaleX, page, pageSize });
+  const scaleY = kind === 'domain' ? 80 / base.cardHeight : 1.35;
   const rows = [...new Set(base.nodes.map(node => node.y))].sort((a, b) => a - b)
     .map(y => ({ top: y - base.cardHeight / 2, bottom: y + base.cardHeight / 2 }));
-  const padding = 4, gap = 32;
+  const padding = 4, gap = kind === 'domain' ? 56 : 32;
   // Compress only the empty routing lanes. The monotonic axis transform keeps
   // every route outside the same card boundaries and retains full card height.
   const vertical = y => {
@@ -134,7 +135,7 @@ function QualitySignal({ count }) {
   </span>;
 }
 
-function ObservationTrend({ points, fresh, label }) {
+function ObservationTrend({ points, fresh, label, compact = false }) {
   if (!Array.isArray(points) || points.length < 2) return null;
   const valid = points.filter(point => Number.isFinite(point.value));
   if (valid.length < 2) return null;
@@ -149,7 +150,7 @@ function ObservationTrend({ points, fresh, label }) {
     return `${3 + progress * 68},${23 - Math.max(0, Math.min(100, point.value)) / 100 * 20}`;
   }).join(' ');
   const last = coordinates.split(' ').at(-1).split(',');
-  return <svg className="wan-domain-trend" viewBox="0 0 74 28" role="img" aria-label={label} data-fresh={fresh}>
+  return <svg className={`wan-domain-trend${compact ? ' wan-domain-trend-mini' : ''}`} viewBox="0 0 74 28" role="img" aria-label={label} data-fresh={fresh}>
     <path className="wan-domain-threshold" d="M3 7 H71" />
     <polyline points={coordinates} />
     <circle cx={last[0]} cy={last[1]} r="2.5" />
@@ -176,15 +177,34 @@ function NetworkAtmosphere() {
   </svg>;
 }
 
-function HierarchyCard({ node, state, kind, onNavigate, onHighlight, focused, muted }) {
+function domainSummary(observation, summary, population) {
+  if (summary.reachable < summary.devices) return summary.stale ? 'Unreachable · Telemetry gap' : `${observation.value} unreachable`;
+  if (!observation.fresh || summary.stale) return 'Telemetry gap · Last known';
+  if (observation.kind === 'recovery') return observation.tone === 'positive' ? 'Recovery verified' : 'Recovery unverified';
+  if (observation.kind === 'major' || observation.kind === 'trend') {
+    if (!observation.value?.includes('%')) return 'Interface discards';
+    return `${observation.target.id.split(':')[0]} · ${observation.value} outbound${observation.kind === 'trend' ? ' ↑' : ''}`;
+  }
+  return population;
+}
+
+function HierarchyCard({ node, state, kind, incidents = [], onNavigate, onHighlight, focused, muted }) {
   const devices = kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id);
   const summary = summarize(state, devices);
   const observation = kind === 'domain' ? domainObservation(state, node.id) : null;
+  const domainIncidents = incidents.filter(incident => incident.domainId === node.id);
+  const reachability = `${plural(summary.reachable, 'router')} reachable${summary.reachable < summary.devices ? `, ${plural(summary.devices - summary.reachable, 'router')} unreachable` : ''}`;
   const signature = `${summary.critical}:${summary.major}:${summary.minor}:${summary.stale}:${summary.reachable}:${observation?.kind}:${observation?.value}`;
   const ref = useArrival(signature);
   const population = kind === 'domain'
     ? `${number(DEVICE_GROUPS.filter(group => group.domain === node.id).length)} groups · ${plural(devices.length, 'router')}`
     : `${node.type || 'Device group'} · ${plural(devices.length, 'router')}`;
+  const showTrend = observation?.fresh && observation.trend?.length >= 2 && ['major', 'trend', 'recovery'].includes(observation.kind);
+  const latest = showTrend ? observation.trend.at(-1) : null;
+  const rising = showTrend && latest.value > observation.trend.at(-2).value;
+  const elevated = showTrend && latest.value > THRESHOLD;
+  const trendScope = observation?.target?.id?.split(':')[0];
+  const indicator = elevated ? `Above ${THRESHOLD}% limit` : rising ? 'Outbound utilization rising' : null;
   return <div className="wan-map-node" style={{ left: node.x, top: node.y, width: node.width, height: node.height }}
     data-region={kind === 'domain' ? node.id : undefined} data-group-status={kind === 'group' ? node.id : undefined}
     data-condition={summary.tone} data-stale={summary.stale > 0} data-observation={observation?.kind} data-observation-tone={observation?.tone}
@@ -193,32 +213,33 @@ function HierarchyCard({ node, state, kind, onNavigate, onHighlight, focused, mu
     onFocus={() => onHighlight(node.id)} onBlur={() => onHighlight(null)}>
     <hbr-card ref={ref} selectable role="button" style={cardSizing}
       sentiment={summary.critical ? 'negative' : summary.alarms ? 'warning' : undefined}
-      aria-label={`Open ${node.label || node.id}, ${population}, ${number(summary.reachable)} reachable, ${alarmText(summary) || 'no active alarms'}, ${summary.stale ? plural(summary.stale, 'telemetry gap') : 'current telemetry'}`}
+      aria-label={[`Open ${node.label || node.id}`, population, reachability, kind === 'domain' ? domainIncidents.length ? plural(domainIncidents.length, 'incident') : null : alarmText(summary), summary.stale ? plural(summary.stale, 'telemetry gap') : 'current telemetry'].filter(Boolean).join(', ')}
       onClick={() => onNavigate(kind, node.id)}>
-      <hbr-layout direction="column" gap="none">
+      {observation ? <hbr-layout direction="column" gap="2xs" class="wan-domain-copy">
+        <div className="wan-domain-header">
+          <hbr-text type="primary" size="sm" weight="bold" truncate="end" title={node.label || node.id}>{node.label || node.id}</hbr-text>
+          <hbr-tooltip content={reachability} hoist>
+            <span className="wan-domain-reachability" role="img" aria-label={reachability}>
+              <hbr-icon name={summary.reachable === summary.devices ? 'status-positive' : 'status-negative'} sentiment={summary.reachable === summary.devices ? 'positive' : 'negative'} size="14px" aria-hidden="true" />
+            </span>
+          </hbr-tooltip>
+          {domainIncidents.length > 0 && <hbr-tag size="small" sentiment={domainIncidents.some(incident => incident.severity === 'Critical') ? 'negative' : 'warning'}>{plural(domainIncidents.length, 'incident')}</hbr-tag>}
+        </div>
+        <div className="wan-domain-summary-row">
+          <hbr-text class="wan-domain-summary" type="secondary" size="xs" truncate="end" title={`${observation.detail} · ${observation.source} · ${observation.time}`}>{showTrend && observation.kind !== 'recovery' ? `${trendScope} · ${observation.value}` : domainSummary(observation, summary, population)}</hbr-text>
+          {indicator && <hbr-tooltip content={indicator} hoist><span className="wan-domain-indicator" role="img" aria-label={indicator}><hbr-icon name={elevated ? 'status-warning' : 'trend-up'} sentiment={elevated ? 'warning' : undefined} size="14px" aria-hidden="true"/></span></hbr-tooltip>}
+          {showTrend && <ObservationTrend points={observation.trend} fresh={true} compact label={`${trendScope} outbound utilization: ${observation.value} at ${observation.time}${elevated ? `, above ${THRESHOLD}% limit` : ''}`}/>}
+        </div>
+      </hbr-layout> : <hbr-layout direction="column" gap="none">
         <hbr-layout direction="row" gap="xs" align="center" justify="space-between">
-          <hbr-icon name={kind === 'domain' ? 'stack' : 'device-uplink'} size="16px" aria-hidden="true" />
+          <hbr-icon name="device-uplink" size="16px" aria-hidden="true" />
           <hbr-text type="primary" size="sm" weight="bold" truncate="end">{node.label || node.id}</hbr-text>
           <hbr-icon name="caret-right" size="12px" aria-hidden="true" />
         </hbr-layout>
-        {observation ? <div className="wan-domain-observation" data-kind={observation.kind} data-fresh={observation.fresh} title={`${observation.detail} · ${observation.source}`}>
-          <div className="wan-domain-condition"><span className="wan-domain-signal" />
-            <hbr-text size="xs" truncate="end">{observation.title}</hbr-text>
-          </div>
-          <div className="wan-domain-reading">
-            <span className="wan-domain-value">{observation.value || (summary.alarms ? alarmText(summary) : 'Within limits')}</span>
-            <ObservationTrend points={observation.trend} fresh={observation.fresh}
-              label={`${node.label || node.id} observed interface utilization trend${observation.fresh ? '' : ', last known'}`} />
-          </div>
-          <div className="wan-domain-footer"><span className="wan-domain-time">{observation.fresh ? 'Observed' : 'Last observed'} {observation.time}</span>
-            {summary.stale > 0 && observation.fresh && <span className="wan-domain-gap" title={`${number(summary.stale)} devices without current telemetry`}>Telemetry gap</span>}
-          </div>
-        </div> : <>
-          <hbr-text type="secondary" size="xs">{population}</hbr-text>
-          <div className="wan-node-alarm"><AlarmSignal summary={summary} compact /></div>
-          <QualitySignal count={summary.stale} />
-        </>}
-      </hbr-layout>
+        <hbr-text type="secondary" size="xs">{population}</hbr-text>
+        <div className="wan-node-alarm"><AlarmSignal summary={summary} compact /></div>
+        <QualitySignal count={summary.stale} />
+      </hbr-layout>}
     </hbr-card>
   </div>;
 }
@@ -245,8 +266,9 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
   const [hovered, setHighlight] = useState(null);
   const highlight = hovered || (kind === 'domain' ? spotlight : null);
   const setupId = ACTIVE_WAN.id;
-  const layout = useMemo(() => scaledLayout(nodes, bundles, width, page, pageSize),
-    [nodes, bundles, width, page, pageSize, setupId]);
+  const layout = useMemo(() => scaledLayout(nodes, bundles, width, page, pageSize, kind),
+    [nodes, bundles, width, page, pageSize, setupId, kind]);
+  const incidents = useMemo(() => kind === 'domain' ? networkWatch(state).incidents : [], [state, kind]);
   const narrow = width <= 640;
   const related = route => !highlight || route.id === highlight || route.from === highlight || route.to === highlight;
   const highlightedRoute = bundles.find(bundle => bundle.id === highlight);
@@ -274,7 +296,7 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
       </svg>}
       <div className="wan-map-nodes">
         {layout.nodes.map(node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} state={state}
-          kind={kind} onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
+          kind={kind} incidents={incidents} onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
           muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id)).alarms)} />)}
       </div>
       {!narrow && layout.corridors.map(route => <RouteControl key={`${setupId}:${route.id}`} route={route}
@@ -386,6 +408,9 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
   const isDomain = state.view === 'domain' && DOMAINS.some(domain => domain.id === state.domain);
   const scopeDevices = isGroup ? groupDevices(state.popId) : isDomain ? domainDevices(state.domain) : DEVICES;
   const summary = summarize(state, scopeDevices);
+  const incidents = networkWatch(state).incidents;
+  const inspection = isDomain ? domainObservation(state, state.domain) : null;
+  const scopeAttention = summary.stale > 0 || summary.reachable < summary.devices || (isDomain || isGroup ? summary.alarms > 0 : incidents.length > 0);
   const localGroups = useMemo(() => DEVICE_GROUPS.filter(group => group.domain === state.domain), [setupId, state.domain]);
   const localBundles = useMemo(() => GROUP_BUNDLES.filter(bundle => bundle.fromDomain === state.domain && bundle.toDomain === state.domain), [setupId, state.domain]);
   const crossDomainBundles = useMemo(() => GROUP_BUNDLES.filter(bundle => bundle.fromDomain !== bundle.toDomain && [bundle.fromDomain, bundle.toDomain].includes(state.domain)), [setupId, state.domain]);
@@ -416,18 +441,25 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
             </hbr-button>}
           </hbr-layout>
           <hbr-layout direction="column" gap="lg">
-            <div className="wan-scope-health">
+            {scopeAttention && <div className="wan-scope-health">
               <hbr-layout direction="row" gap="sm" align="center" class="wan-scope-status">
-                <AlarmSignal summary={summary} />
-                <hbr-text type="secondary" size="xs">{summary.reachable === summary.devices ? 'Reachability current' : `${plural(summary.devices - summary.reachable, 'unreachable router')}`}</hbr-text>
-                <QualitySignal count={summary.stale} />
+                {isDomain || isGroup ? summary.alarms > 0 && <AlarmSignal summary={summary} /> : incidents.length > 0 && <hbr-tag size="small" sentiment={incidents.some(incident => incident.severity === 'Critical') ? 'negative' : 'warning'}>{plural(incidents.length, 'incident')}</hbr-tag>}
+                {summary.reachable < summary.devices && <hbr-text type="secondary" size="xs">{plural(summary.devices - summary.reachable, 'unreachable router')}</hbr-text>}
+                {summary.stale > 0 && <QualitySignal count={summary.stale} />}
               </hbr-layout>
-              {(summary.alarms > 0 || summary.stale > 0) && <hbr-button variant="text" size="small"
-                onClick={() => onOpenResponse(summary.critical ? 'device' : summary.alarms ? 'interface' : 'monitoring')}>
-                {summary.alarms ? 'Review response' : 'Review monitoring'}
+              {(summary.alarms > 0 || summary.stale > 0 || (!isDomain && !isGroup && incidents.length > 0)) && <hbr-button variant="text" size="small"
+                onClick={() => onOpenResponse(!isDomain && !isGroup && incidents.length ? incidents[0].id : summary.critical ? 'device' : summary.alarms ? 'interface' : 'monitoring')}>
+                {summary.alarms || (!isDomain && !isGroup && incidents.length) ? 'Review response' : 'Review monitoring'}
                 <hbr-icon slot="suffix" name="caret-right" size="12px" />
               </hbr-button>}
-            </div>
+            </div>}
+            {inspection && inspection.value !== 'Reachable' && <div className="wan-domain-inspection">
+              <hbr-layout direction="column" gap="2xs">
+                <hbr-text size="sm" weight="bold">{inspection.title} · {inspection.value}</hbr-text>
+                <hbr-text type="secondary" size="xs">{inspection.detail} · {inspection.source} · {inspection.fresh ? inspection.time : `Last known ${inspection.time}`}</hbr-text>
+              </hbr-layout>
+              <ObservationTrend points={inspection.trend} fresh={inspection.fresh} label={`${domainLabel(state.domain)} interface utilization${inspection.fresh ? '' : ', last known'} through ${inspection.time}`}/>
+            </div>}
             {isGroup ? <RouterInventory state={state} onPatch={onPatch} onInspect={onInspect} onConnection={onConnection} /> : <>
               <LogicalMap nodes={isDomain ? localGroups : DOMAINS} bundles={isDomain ? localBundles : BUNDLES}
                 state={state} kind={isDomain ? 'group' : 'domain'} page={isDomain ? groupPage.page : domainPage.page}

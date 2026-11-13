@@ -59,3 +59,47 @@ The restored browser connection allowed screenshot review at 1440×900 and 390×
 Visual records: [Dashboard desktop](screenshots/onecd-atmosphere/dashboard-desktop.png), [dashboard mobile](screenshots/onecd-atmosphere/dashboard-mobile.png), [native assistant desktop](screenshots/onecd-atmosphere/assistant-desktop.png), [native assistant mobile](screenshots/onecd-atmosphere/assistant-mobile.png), [recovery desktop](screenshots/onecd-atmosphere/recovery-desktop.png), and [history mobile](screenshots/onecd-atmosphere/history-mobile.png).
 
 Fallback: `milestone/14-consolidated-operations` at `274753f` preserves the consolidated layout before this appearance pass. `milestone/15-onecd-atmosphere` records the theme and native-message update.
+
+## Magnetic operations tabs — 2026-11-13
+
+Incidents, Watchlist, Changes, and Recent now use the boilerplate's native primary `hbr-tab-group`, `hbr-tab`, and `hbr-tab-panel` components instead of section jump links. One panel is visible at a time; all four remain mounted so selected cases, secondary tabs, samples, and expanded evidence survive switching. Data health remains outside the tabs. The WAN overview, Updates, response model, and existing One CD atmosphere are unchanged.
+
+Native count badges appear only when there are items: active incidents, developing trends plus events under correlation, configuration differences, and retained outcomes. Zero-count badges are omitted, leaving just the tab title. A promoted trend is not counted again as a developing condition. A configuration difference retained after assessment is still a difference, not an outstanding operator task. New source observations update the counts without switching the operator's selected tab.
+
+Follow incident selects Incidents and the case's Recovery view. Existing View outcome and Recent links activate the matching panel before scrolling to its labelled region. Nested Incident and Changes tab events cannot change the outer selection. Native manual keyboard activation and overflow arrows remain available. Panel reveals use a brief transition, suppressed with reduced motion.
+
+Verification is complete: 139 existing tests pass; the production build passes. Browser checks covered all four tabs, secondary tab retention, Watchlist → incident Recovery, completed incident → Recent, keyboard arrow focus and Enter activation, and mobile overflow controls. Desktop 1440×900 and mobile 390×844 screenshots were reviewed; no page horizontal overflow or browser warnings/errors were observed.
+
+Visual records: [Active incident desktop](screenshots/operations-tabs/incidents-desktop.png), [active incident mobile](screenshots/operations-tabs/incidents-mobile.png), [Recent desktop](screenshots/operations-tabs/recent-desktop.png), and [Recent mobile](screenshots/operations-tabs/recent-mobile.png). Fallback: `milestone/16-noc-agentic-response` at `1df5c71` preserves the previous stacked-section layout and complete agentic story.
+
+## Compact WAN domains — 2026-11-13
+
+Domain cards now use a stable 104px height with the existing schematic order and actual connections. Healthy domains show their name, inventory scope, and a native Magnetic reachability icon with an accessible label and hover detail. Routine Observed timestamps, Reachable text, and empty source-alarm labels are removed from these cards. Current outbound readings and their small trends remain where supplied; telemetry loss instead shows the last-known value and source time.
+
+Incidents appear only when the domain has an actual case in the shared incident queue. Correlated source alarms do not inflate that number. Source-cleared but unresolved cases retain their incident label and unverified state. Unreachable and Telemetry gap labels stay explicit; reachability is checked independently of telemetry. The overview summary uses the same actual incident queue, and its response action remains available for unresolved cases after source clearance. Device-group and router source-alarm details retain their existing meaning.
+
+Verification is complete: all 139 tests and the production build pass. Additional source-rendering checks covered quiet, correlated source alarms, failed and unconfirmed execution after source clearance, a Critical router with a collection gap, and a cross-domain telemetry gap. Desktop 1440×900 and mobile 390×844 review found no page overflow or card-content overflow. A crowded exception footer was moved beside its reading before final verification. Browser warnings/errors were empty.
+
+Visual records: [Overview desktop](screenshots/compact-domains/overview-desktop.png), [exceptions desktop](screenshots/compact-domains/exceptions-desktop.png), [exceptions mobile](screenshots/compact-domains/exceptions-mobile.png), and [last-known readings](screenshots/compact-domains/last-known-desktop.png).
+
+## Two-row domain rectangles — 2026-11-13
+
+The next refinement replaces the 104px domain cards above with stable 80px rectangles, approximately 210px wide at the primary desktop layout. The first row contains the domain name, independent reachability icon, and actual incident count only when nonzero. The second row contains inventory scope for healthy domains, a router-scoped outbound reading for a developing or active condition, or an explicit exception such as Telemetry gap, Unreachable, or Recovery unverified. Decorative domain stack icons, chevrons, and always-visible sparklines are removed.
+
+Opening a domain retains its group topology and now presents its source detail, exact observation time, and available trend above the group map. Last-known data stays marked as last known. The overview never shows a stale percentage as a current reading. Correlated source records still cannot become additional incident cases. Source-cleared failed or unconfirmed responses remain visible as unverified recovery.
+
+The custom map-node pseudo-element ring and surrounding glow are removed entirely. Native One CD card hover and keyboard focus remain; related-connection emphasis and data-arrival animation are preserved. All domain cards keep the same height across conditions so the logical ordering and routing remain stable.
+
+Verification is complete: 139 tests and the production build pass. Nine rendered source scenarios covered quiet, rising trend, active congestion, related alarms, verified recovery, failed/unconfirmed execution after source clearance, combined unreachable/telemetry-gap, and last-known data. Desktop 1440×900 and mobile 390×844 checks found no card-content or page horizontal overflow. Native keyboard Tab navigation and Enter activation opened the correct domain; inspection retained the trend and source metadata. Computed styles confirm the custom outer ring is absent.
+
+Visual records: [Overview desktop](screenshots/two-row-domains/overview-desktop.png), [overview mobile](screenshots/two-row-domains/overview-mobile.png), [domain inspection](screenshots/two-row-domains/domain-inspection-desktop.png), and [native keyboard focus](screenshots/two-row-domains/keyboard-focus-desktop.png).
+
+## Schematic spacing and targeted trends — 2026-11-13
+
+Routine Reachability current and Current telemetry labels are removed from the overview's status strip. When there are no incidents or source exceptions, the entire strip is omitted. Actual incident attention, unreachable-router counts, and telemetry gaps remain available. Domain-row routing lanes increase from 32px to 56px on desktop, with 24px row gaps on the narrow layout. Cards remain 80px tall and their connection routes still derive from the same inventory.
+
+Fresh router-scoped interface trends return as 48px mini graphs in the second card row. The row retains the router and observed percentage; graph and source labels identify outbound utilization. A native warning icon indicates a reading above the configured 80% limit, independently of whether its latest slope is rising or falling. A below-limit rise uses the native trend-up icon. Recovery keeps its verified/unverified text, and stale data keeps Telemetry gap / Last known without a live mini graph or elevation indicator. Detailed trends and source times remain in domain inspection.
+
+Verification is complete: all 139 tests and the production build pass. Seven additional source-rendered states checked quiet, below-limit rise, elevated rise, elevated fall, verified recovery, unverified recovery, and stale data. Desktop 1440×900 and mobile 390×844 screenshots were reviewed; card content fits and there is no page horizontal overflow. Quiet-state inspection confirms the empty status strip is absent.
+
+Visual records: [Elevated overview desktop](screenshots/schematic-spacing-trends/overview-desktop.png), [overview mobile](screenshots/schematic-spacing-trends/overview-mobile.png), [developing trend](screenshots/schematic-spacing-trends/developing-trend-desktop.png), and [quiet overview](screenshots/schematic-spacing-trends/quiet-desktop.png).
