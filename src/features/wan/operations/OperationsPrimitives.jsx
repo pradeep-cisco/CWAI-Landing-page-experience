@@ -1,11 +1,34 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { Children, useEffect, useId, useRef, useState } from 'react';
+
+/** The first child is the section heading; remaining children form its body. */
+export function OperationsSection({ id, className = '', children, ...attributes }) {
+  const [header, ...body] = Children.toArray(children);
+  return <section {...attributes} id={id} className={`ops-section ${className}`} tabIndex={-1}>
+    <hbr-layout variant="dashboard:widgets:container" class="ops-card-layout">
+      <hbr-card container col="full" class="ops-container" sentiment={attributes['data-verified'] ? 'positive' : undefined}>
+        {header && <div slot="header" className="ops-container-heading">{header}</div>}
+        <hbr-layout direction="column" gap="xl" class="ops-section-body">{body}</hbr-layout>
+      </hbr-card>
+    </hbr-layout>
+  </section>;
+}
+
+export function StatusIcon({ status = 'pending', size = '16px' }) {
+  const icons = {
+    complete: ['status-positive', 'positive'], active: ['status-in-progress', 'in-progress'],
+    pending: ['status-dormant', 'dormant'], blocked: ['status-warning', 'warning'],
+    error: ['status-negative', 'negative'],
+  };
+  const [name, sentiment] = icons[status] || icons.pending;
+  return <hbr-icon name={name} sentiment={sentiment} size={size} aria-hidden="true"/>;
+}
 
 export function SectionHeader({ id, kicker, title, description, children }) {
   return <header className="ops-section-header">
     <div className="ops-section-heading">
       {kicker && <span className="ops-eyebrow">{kicker}</span>}
       <hbr-text variant="section-title" id={id}>{title}</hbr-text>
-      {description && <p className="ops-description">{description}</p>}
+      {description && <hbr-text type="secondary" size="sm" class="ops-description">{description}</hbr-text>}
     </div>
     {children && <div className="ops-header-actions">{children}</div>}
   </header>;
@@ -17,7 +40,7 @@ export function StatusTag({ tone = 'info', children }) {
 }
 
 export function EvidenceNote({ children }) {
-  return <div className="ops-evidence-note"><span className="ops-source-mark" aria-hidden="true" />{children}</div>;
+  return <div className="ops-evidence-note"><span className="ops-source-mark" aria-hidden="true" /><hbr-text type="secondary" size="xs">{children}</hbr-text></div>;
 }
 
 export function RouterGlyph({ className = '' }) {

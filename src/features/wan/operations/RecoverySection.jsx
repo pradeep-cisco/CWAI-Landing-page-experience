@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { SectionHeader, StatusTag, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
+import { OperationsSection, SectionHeader, StatusTag, StatusIcon, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
 import './recovery-section.css';
 
 const minutes = value => String(value).split(':').reduce((sum, value, index) => sum + Number(value) * (index ? 1 : 60), 0);
@@ -30,7 +30,7 @@ export default function RecoverySection({ model, onInspect, onOpen }) {
   const tone = response.resolved ? 'positive' : badResult || !observation.fresh ? 'warning' : 'info';
   const status = response.resolved ? 'Verified' : badResult ? 'Outcome unconfirmed' : !active ? 'Ready to verify' : !observation.fresh ? 'Waiting for data' : complete ? 'Verification pending' : response.job.id ? 'Following execution' : 'Awaiting response';
 
-  return <section tabIndex={-1} className="ops-section rec-section" id="ops-recovery" aria-labelledby="ops-recovery-title" data-verified={response.resolved}>
+  return <OperationsSection className="rec-section" id="ops-recovery" aria-labelledby="ops-recovery-title" data-verified={response.resolved}>
     <SectionHeader id="ops-recovery-title" title="Recovery" description="Controller completion and network recovery are checked independently.">
       <StatusTag tone={tone}>{status}</StatusTag>
     </SectionHeader>
@@ -52,12 +52,14 @@ export default function RecoverySection({ model, onInspect, onOpen }) {
           <EvidenceLane label="Stable observations" status={recovery.observationWindow ? '5 minutes within limits' : 'Window not established'} tone={response.resolved ? 'positive' : 'info'} from={recovery.observationWindow?.from} to={recovery.observationWindow?.to} start={start} end={end} selectedTime={cursor} detail={recovery.observationWindow ? '08:30–08:35 · Source stability check' : 'Requires current below-limit observations and source clearance'}/>
         </div>
       </div>
-      <div className="rec-footer"><EvidenceNote>Sample inspection preserves the current response. All verification checks below describe the current source snapshot.</EvidenceNote><hbr-button size="small" variant="text" onClick={() => setShowCriteria(value => !value)}>{showCriteria ? 'Hide recovery checks' : 'Inspect recovery checks'}</hbr-button></div>
-      {showCriteria && <div className="rec-checks" data-new="true">
-        <div className="rec-check" data-met={complete}><span>{complete ? '✓' : '○'}</span><div><strong>Confirmed controller completion</strong><p>{response.job.id || 'No job confirmed'} · {jobLabels[response.job.status]}</p></div></div>
-        {model.criteria.map(criterion => <div className="rec-check" key={criterion.id} data-met={criterion.met}><span>{criterion.met ? '✓' : '○'}</span><div><strong>{criterion.label}</strong><p>{criterion.detail}</p></div></div>)}
-      </div>}
+      <EvidenceNote>Sample inspection preserves the current response. Verification checks describe the current source snapshot.</EvidenceNote>
+      <hbr-accordion label="Recovery checks" size="medium" open={showCriteria} onhbr-show={event => { if(event.target === event.currentTarget) setShowCriteria(true); }} onhbr-hide={event => { if(event.target === event.currentTarget) setShowCriteria(false); }}>
+        <div className="rec-checks">
+          <div className="rec-check" data-met={complete}><StatusIcon status={complete ? 'complete' : badResult ? 'error' : response.job.status === 'running' ? 'active' : 'pending'}/><div><strong>Confirmed controller completion</strong><p>{response.job.id || 'No job confirmed'} · {jobLabels[response.job.status]}</p></div></div>
+          {model.criteria.map(criterion => <div className="rec-check" key={criterion.id} data-met={criterion.met}><span role="img" aria-label={criterion.met ? 'Satisfied' : 'Not yet satisfied'}><StatusIcon status={criterion.met ? 'complete' : 'pending'}/></span><div><strong>{criterion.label}</strong><p>{criterion.detail}</p></div></div>)}
+        </div>
+      </hbr-accordion>
       <div className="rec-actions"><hbr-button size="small" variant="outline" onClick={() => onInspect?.({ kind: 'interface', id: scope.interfaceId })}>Inspect interface</hbr-button><hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Review response</hbr-button></div>
     </>}
-  </section>;
+  </OperationsSection>;
 }
