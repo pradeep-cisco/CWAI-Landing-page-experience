@@ -28,10 +28,10 @@ export default function OperationsDashboard({ state, onOpen, onInspect, onAction
     <nav className="ops-section-nav" aria-label="Network operations sections">
       {sections.map(([id, label]) => <a key={id} href={`#ops-${id}`} onClick={event => goTo(event, id)}>{label}</a>)}
     </nav>
-    <DataHealthSummary key={contextKey} model={model} onInspect={onInspect} onOpen={onOpen}/>
-    <IncidentSection key={contextKey} model={model} state={state} requestedIncident={requestedIncident} onOpen={onOpen} onInspect={onInspect} onAction={onAction}/>
-    <WatchlistSection key={contextKey} model={model} onInspect={onInspect} onOpen={onOpen} onReviewIncident={reviewIncident}/>
+    <DataHealthSummary key={`health:${contextKey}`} model={model} onInspect={onInspect} onOpen={onOpen}/>
+    <IncidentSection key={`incidents:${contextKey}`} model={model} state={state} requestedIncident={requestedIncident} onOpen={onOpen} onInspect={onInspect} onAction={onAction}/>
+    <WatchlistSection key={`watchlist:${contextKey}`} model={model} onInspect={onInspect} onOpen={onOpen} onReviewIncident={reviewIncident}/>
     <ChangesSection model={model} onInspect={onInspect}/>
-    <RecentSection key={contextKey} model={model} onOpen={onOpen}/>
+    <RecentSection key={`recent:${contextKey}`} model={model} onOpen={onOpen}/>
   </div>;
 }

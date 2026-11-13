@@ -35,3 +35,22 @@
 .crosswork-admin-grid>hbr-card{min-width:0;width:100%;}
 .crosswork-admin-grid dd{white-space:normal;overflow-wrap:anywhere;}
 @media(max-width:800px){.crosswork-admin-grid{grid-template-columns:minmax(0,1fr);}}
+
+/* Use the boilerplate's One CD gradient and glow assets. Keep the atmosphere
+   behind the content so source status, evidence, and controls stay precise. */
+body.wan-monitoring-route.hbr-mode-dark[data-theme="onecd"] .crosswork-shell .hbr-css__base-bg-gradient-layer{
+ background:linear-gradient(155deg,var(--base-bg-gradient-start) 0%,var(--base-bg-weak-default) 54%,var(--base-bg-gradient-end) 100%);
+}
+body.wan-monitoring-route.hbr-mode-dark[data-theme="onecd"] .crosswork-shell .hbr-css__glow-layer{
+ z-index:0;
+ opacity:.65;
+ background-image:var(--onecd-glow-top-default-code),var(--onecd-glow-bottom-default-code);
+ background-position:center top;
+ pointer-events:none;
+}
+body.wan-monitoring-route.hbr-mode-dark[data-theme="onecd"] .wan-agent-workspace{
+ background:radial-gradient(ellipse at 100% 0%,color-mix(in srgb,var(--interact-border-default) 6%,transparent),transparent 55%),var(--base-bg-weak-default);
+}
+body.wan-monitoring-route.hbr-mode-dark[data-theme="onecd"] .wan-agent-header{
+ background:linear-gradient(115deg,color-mix(in srgb,var(--interact-border-default) 7%,var(--base-bg-weak-default)),var(--base-bg-weak-default) 80%);
+}

@@ -295,13 +295,15 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
           {messages.length > 0 && (
             <div className="wan-agent-conversation" role="log" aria-label="Response conversation" aria-live="polite">
               {messages.map((message) => (
-                <div className="wan-agent-message" data-role={message.role} key={message.id}>
-                  <div className="wan-agent-row">
-                    <hbr-text size="xs" weight="semibold">{message.role === 'operator' ? 'Priya' : 'CW AI'}</hbr-text>
-                    <hbr-text type="secondary" size="xs">{message.time}</hbr-text>
+                <hbr-chat-message class="wan-agent-message" variant={message.role === 'operator' ? 'user' : 'assistant'} data-role={message.role} key={message.id}>
+                  <div className="wan-agent-message-content">
+                    <div className="wan-agent-row">
+                      <hbr-text size="xs" weight="semibold">{message.role === 'operator' ? 'Priya' : 'CW AI'}</hbr-text>
+                      <hbr-text type="secondary" size="xs">{message.time}</hbr-text>
+                    </div>
+                    <hbr-text>{message.text}</hbr-text>
                   </div>
-                  <hbr-text>{message.text}</hbr-text>
-                </div>
+                </hbr-chat-message>
               ))}
             </div>
           )}

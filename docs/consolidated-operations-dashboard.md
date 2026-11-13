@@ -46,4 +46,16 @@ Fallback: `milestone/13-magnetic-alignment` at `7257661` preserves the previous 
 
 Automated validation: 103 tests pass, including five new rendered-UI regressions. Additional source rendering covered 126 WAN/frame/exception combinations for Incidents/Watchlist and 90 evidence-component combinations. The production build passes. Protected files compare unchanged with milestone 13. The existing localhost route responds successfully.
 
-**Visual review is pending.** The in-app browser connection was unavailable during this iteration, so desktop/mobile screenshots, live keyboard interactions, and fluid transitions have not been verified for this consolidation. Earlier milestone screenshots document the previous layout only and are not evidence for this version.
+**At milestone 14, visual review was pending.** The in-app browser connection was unavailable during that iteration. The follow-up appearance review below records the restored browser checks; earlier milestone screenshots document their own versions only.
+
+## One CD atmosphere and native messages — 2026-11-13
+
+The subsequent appearance pass keeps One CD dark and the four-section layout. It reuses the boilerplate's native `--onecd-glow-top-default-code` and `--onecd-glow-bottom-default-code` assets at restrained opacity, over a gradient built from the existing dark background tokens. The glow stays behind content, ignores pointer input, and has no continuous animation. The response panel receives a faint token-based blue tint; source severity and recovery colours are unchanged. WAN overview and Updates components remain unchanged.
+
+Conversation entries now use the installed `hbr-chat-message` user and assistant variants. Harbor owns their padding, theme surface, and assistant gradient accent. Author, timestamp, incident scope, accessible conversation log, and question actions are preserved. The cached Harbor 2.19.7 component is beta. The installed starter does not provide a separately named, fully documented Unified Assistance package; this pass does not claim to implement that complete shell. The full `hbr-chat` layout was not forced into the narrow response panel.
+
+The restored browser connection allowed screenshot review at 1440×900 and 390×844. Native messages loaded and rendered after asking a scoped question, with no conversation or page horizontal overflow. The incident Recovery and History views were also inspected. A fresh load and source progression produced no new console warnings or errors after correcting duplicate sibling section keys from the consolidation pass. Automated validation remains 103 passing tests and a successful production build.
+
+Visual records: [Dashboard desktop](screenshots/onecd-atmosphere/dashboard-desktop.png), [dashboard mobile](screenshots/onecd-atmosphere/dashboard-mobile.png), [native assistant desktop](screenshots/onecd-atmosphere/assistant-desktop.png), [native assistant mobile](screenshots/onecd-atmosphere/assistant-mobile.png), [recovery desktop](screenshots/onecd-atmosphere/recovery-desktop.png), and [history mobile](screenshots/onecd-atmosphere/history-mobile.png).
+
+Fallback: `milestone/14-consolidated-operations` at `274753f` preserves the consolidated layout before this appearance pass. `milestone/15-onecd-atmosphere` records the theme and native-message update.

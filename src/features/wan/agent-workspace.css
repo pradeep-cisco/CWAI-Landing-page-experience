@@ -62,7 +62,7 @@
 
 .wan-agent-section,
 .wan-agent-source,
-.wan-agent-message {
+.wan-agent-message-content {
   display: grid;
   gap: var(--hbr-spacing-sm);
   min-width: 0;
@@ -131,13 +131,8 @@
 }
 
 .wan-agent-message {
-  padding-block: var(--hbr-spacing-md);
-  border-bottom: 1px solid var(--base-border-default);
-}
-
-.wan-agent-message[data-role='operator'] {
-  padding-inline-start: var(--hbr-spacing-lg);
-  border-inline-start: 2px solid var(--base-border-default);
+  display: block;
+  min-width: 0;
 }
 
 .wan-agent-summary {
