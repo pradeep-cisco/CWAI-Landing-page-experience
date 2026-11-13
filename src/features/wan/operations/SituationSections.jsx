@@ -1,7 +1,9 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { agentResponse } from '../model/agentic-model.js';
 import { domainLabel, findDevice, groupLabel } from '../model/scale.js';
 import { OperationsSection, SectionHeader, StatusTag, StatusIcon, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
+import { RecoveryDetails } from './RecoverySection.jsx';
+import { RepeatIssuesDetails } from './EvidenceSections.jsx';
 import './situation-sections.css';
 
 const jobLabel = { 'not-started': 'No change started', running: 'Executing', completed: 'Execution completed', failed: 'Execution failed', unknown: 'Result unconfirmed' };
@@ -53,58 +55,73 @@ function ScopeDiagram({ model, incident, response, selected, onSelect }) {
   </div>;
 }
 
-function QuietWatch({ model, onInspect, onOpen }) {
+function QuietWatch({ model, onInspect }) {
   const developing = model.frame === 1;
   const verified = model.response.resolved;
-  return <div className="sit-quiet-watch">
-    <div className="sit-watch-orbit" key={`${model.time}-${verified}`} aria-hidden="true">
-      <svg viewBox="0 0 200 200"><circle cx="100" cy="100" r="75"/><circle cx="100" cy="100" r="54"/><path d="M42 100h31l12-14 22 28 14-20h37"/><circle className="sit-orbit-point" cx="100" cy="25" r="4"/><circle className="sit-orbit-point secondary" cx="165" cy="138" r="3"/></svg>
-      <span className="sit-orbit-core"><StatusIcon status={developing ? 'active' : 'complete'} size="28px"/></span>
-    </div>
-    <div className="sit-quiet-copy">
-      <StatusTag tone={developing ? 'info' : 'positive'}>{verified ? 'Verified outcome' : developing ? 'Watching a trend' : 'Current sources'}</StatusTag>
-      <h3>{verified ? 'Recovery is supported by current evidence' : developing ? 'A developing condition is being followed' : 'No active incidents'}</h3>
-      <p>{verified ? 'The response record and independent recovery observations remain available.' : developing ? `${model.scope.domain} outbound utilization is rising. The configured threshold has not been crossed.` : 'Reachability, topology, and interface observations support the current network watch.'}</p>
-      <div className="sit-quiet-observation"><span className="sit-observation-dot"/><span>{model.scope.router} outbound</span><strong>{model.observation.utilization}%</strong><span>at {model.observation.observedAt}</span></div>
-      <div className="sit-quiet-actions"><hbr-button variant="outline" size="small" onClick={() => onInspect?.({kind:'interface',id:model.scope.interfaceId})}>Inspect current evidence</hbr-button>{verified && <hbr-button variant="text" size="small" onClick={() => onOpen?.('interface')}>Review response</hbr-button>}</div>
-    </div>
+  return <div className="sit-quiet-summary" data-verified={verified}>
+    <span className="sit-quiet-symbol"><StatusIcon status={developing ? 'active' : 'complete'} size="24px"/></span>
+    <div><h3>{verified ? 'CNC-1042 recovery verified' : 'No active incidents'}</h3><p>{verified ? 'The completed response and recovery proof are retained in Recent.' : developing ? 'A rising utilization trend is being followed in Watchlist.' : 'Current observations support the network watch.'}</p></div>
+    {verified ? <a className="sit-inline-link" href="#ops-recent">View outcome <span aria-hidden="true">↗</span></a> : <hbr-button variant="text" size="small" onClick={() => onInspect?.({kind:'interface',id:model.scope.interfaceId})}>Inspect evidence</hbr-button>}
   </div>;
 }
 
-export function IncidentSection({ model, state, onOpen, onInspect, onAction }) {
-  const [selectedId, setSelectedId] = useState(null);
+export function IncidentSection({ model, state, onOpen, onInspect, onAction, requestedIncident }) {
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [view, setView] = useState('overview');
   const [scopeRecord, setScopeRecord] = useState(null);
   const [evidenceRecord, setEvidenceRecord] = useState(null);
   const [showAllActivity, setShowAllActivity] = useState(false);
   const heading = useId();
   const incidents = model.watch.incidents;
-  const incident = incidents.find(item => item.id === selectedId) || incidents[0];
   const contextKey = `${model.scope.domainId}:${model.scope.groupId}`;
+  const selectedId = selectedRecord?.contextKey === contextKey ? selectedRecord.id : null;
+  const setSelectedId = id => setSelectedRecord(id ? {id,contextKey} : null);
+  // A deliberately inspected case stays in place when verification completes.
+  // The active count continues to come exclusively from current conditions.
+  const completedCase = selectedId === 'interface' && model.response.resolved ? {
+    id: 'interface', title: model.response.title, domainId: model.scope.domainId,
+    severity: 'Resolved', sourceState: 'Source-cleared', stage: model.response.stage,
+  } : null;
+  const incident = incidents.find(item => item.id === selectedId) || completedCase || incidents[0];
+  const choices = completedCase ? [...incidents, completedCase] : incidents;
+  useEffect(() => {
+    if (!requestedIncident || requestedIncident.contextKey !== contextKey) return;
+    setSelectedRecord({id:requestedIncident.id || 'interface',contextKey});
+    setView(['overview','recovery','history'].includes(requestedIncident.view) ? requestedIncident.view : 'overview');
+    setScopeRecord(null);
+    setEvidenceRecord(null);
+    setShowAllActivity(false);
+  }, [requestedIncident, contextKey]);
+  useEffect(() => {
+    if (model.frame >= 2) return;
+    setSelectedRecord(null);
+    setView('overview');
+    setScopeRecord(null);
+    setEvidenceRecord(null);
+    setShowAllActivity(false);
+  }, [model.frame]);
   const scopeSelection = scopeRecord?.incidentId === incident?.id && scopeRecord?.contextKey === contextKey ? scopeRecord : null;
   const evidenceIndex = evidenceRecord && evidenceRecord.incidentId === incident?.id && evidenceRecord.contextKey === contextKey ? evidenceRecord.index : null;
   const setScopeSelection = item => setScopeRecord(item ? {...item, incidentId:incident?.id,contextKey} : null);
   const setEvidenceIndex = index => setEvidenceRecord(index === null ? null : {index,incidentId:incident?.id,contextKey});
   const response = incident?.id === 'interface' || !incident ? model.response : agentResponse(state, incident.id);
-  const tone = incident?.severity === 'Critical' ? 'negative' : incident?.id === 'monitoring' ? 'inactive' : 'warning';
+  const tone = response.resolved && incident?.id === 'interface' ? 'positive' : incident?.severity === 'Critical' ? 'negative' : incident?.id === 'monitoring' ? 'inactive' : 'warning';
+  const countTone = incidents.some(item => item.severity === 'Critical') ? 'negative' : incidents.length ? 'warning' : 'positive';
   const target = incident?.id === 'device' || (incident?.id === 'monitoring' && !response.target.includes('XR-P1')) ? {kind:'device',id:'XR-PE-E2'} : {kind:'interface',id:model.scope.interfaceId};
   const evidence = response.evidence || [];
   const selectedEvidence = evidenceIndex === null ? null : evidence[evidenceIndex];
   const activity = response.activity || [];
   const visibleActivity = showAllActivity ? activity : activity.slice(-3);
   const progress = responseProgress(response, model.observation);
-  const selectIncident = id => { setSelectedId(id); setScopeSelection(null); setEvidenceIndex(null); setShowAllActivity(false); };
+  const selectIncident = id => { setSelectedId(id); setView('overview'); setScopeSelection(null); setEvidenceIndex(null); setShowAllActivity(false); };
+  const changeView = event => {
+    if (event.target !== event.currentTarget || !['overview','recovery','history'].includes(event.detail?.name)) return;
+    if (event.detail.name !== view) setSelectedId(incident.id);
+    setView(event.detail.name);
+  };
+  const recoveryLabel = response.resolved ? 'Recovery verified' : !model.observation.fresh ? 'Verification waiting for data' : response.job.status === 'failed' ? 'Execution failed · Recovery unverified' : response.job.status === 'unknown' ? 'Controller result unconfirmed' : response.job.status === 'completed' ? 'Execution complete · Verification pending' : response.job.status === 'running' ? 'Execution running · Recovery not yet verified' : 'Recovery not yet verified';
 
-  return <OperationsSection className="sit-incidents" id="ops-incidents" aria-labelledby={heading} data-state={incident ? 'active' : 'quiet'}>
-    <SectionHeader id={heading} kicker="Current conditions" title="Incidents" description="The condition, the evidence, and the response underway.">
-      <StatusTag tone={incidents.length ? tone : 'positive'}>{incidents.length ? `${incidents.length} active ${incidents.length === 1 ? 'condition' : 'conditions'}` : 'No active incidents'}</StatusTag>
-    </SectionHeader>
-    {!incident ? <QuietWatch model={model} onInspect={onInspect} onOpen={onOpen}/> : <>
-      {incidents.length > 1 && <div className="sit-incident-choices" aria-label="Choose an active condition">{incidents.map(item => <button type="button" key={item.id} data-selected={item.id === incident.id} data-tone={item.severity === 'Critical' ? 'negative' : item.id === 'monitoring' ? 'inactive' : 'warning'} aria-pressed={item.id === incident.id} onClick={() => selectIncident(item.id)}><span className="sit-choice-mark"/><span><strong>{item.title}</strong><small>{domainLabel(item.domainId)} · {item.sourceState}</small></span><span className="sit-choice-state">{item.stage}</span></button>)}</div>}
-      <div className="sit-incident-canvas" data-tone={tone}>
-        <div className="sit-incident-banner">
-          <div className="sit-incident-title"><StatusTag tone={tone}>{incident.sourceState}</StatusTag><h3>{incident.title}</h3><span>{response.target}</span></div>
-          <div className="sit-response-state"><span className="sit-live-dot" key={model.time}/><span>CW AI</span><strong>{response.stage}</strong><time>{model.time}</time></div>
-        </div>
+  const overview = incident ? <>
         <div className="sit-investigation-grid">
           <div className="sit-resource-surface">
             <div className="sit-surface-heading"><span>Affected scope</span><span>Resource hierarchy</span></div>
@@ -122,10 +139,10 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction }) {
           <hbr-button variant="outline" size="small" onClick={() => onInspect?.(scopeSelection?.id === 'device' ? {kind:'device',id:target.kind === 'device' ? target.id : model.scope.router} : target)}>Inspect source</hbr-button>
         </div>}
         <div className="sit-response-band">
-          <div className="sit-response-copy"><span className="sit-overline">Response underway</span><p>{response.summary}</p><span className="sit-next"><span aria-hidden="true">→</span> {response.next}</span></div>
+          <div className="sit-response-copy"><span className="sit-overline">{response.resolved ? 'Response completed' : 'Response underway'}</span><p>{response.summary}</p><span className="sit-next"><span aria-hidden="true">→</span> {response.next}</span></div>
           <div className="sit-confirmed-job"><span>Controller record</span><strong>{response.job?.id || 'No controller job'}</strong><StatusTag tone={response.job?.status === 'failed' ? 'negative' : response.job?.status === 'completed' ? 'positive' : 'info'}>{jobLabel[response.job?.status] || 'Not started'}</StatusTag>{response.job?.startedAt && <small>Started {response.job.startedAt}</small>}</div>
         </div>
-        {response.needsDecision && response.decision && <div className="sit-decision"><StatusTag tone="warning">Attention required</StatusTag><h4>{response.decision.title}</h4><p>{response.decision.detail}</p>{response.handoff && <small>{response.handoff.route} · Delivered {response.handoff.sent} · {response.handoff.status === 'accepted' ? 'Acceptance confirmed' : 'Acceptance pending'}</small>}</div>}
+
         <div className="sit-response-trace">
           <div className="sit-lifecycle">
             <div className="sit-activity-heading"><hbr-text variant="smallest-title">Response progress</hbr-text></div>
@@ -138,28 +155,67 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction }) {
             <hbr-timeline aria-label="Confirmed response activity">{visibleActivity.map((event,index) => <hbr-timeline-panel key={`${event.time}-${event.title}-${index}`} label={event.title} subtext={event.time} variant={activityVariant(event)} open={true} aria={{level:4}}><hbr-text size="xs" type="secondary">{event.detail}</hbr-text></hbr-timeline-panel>)}</hbr-timeline>
           </div>
         </div>
+  </> : null;
+
+  return <OperationsSection className="sit-incidents" id="ops-incidents" aria-labelledby={heading} data-state={incident ? 'active' : 'quiet'}>
+    <SectionHeader id={heading} kicker="Current conditions" title="Incidents" description="The condition, the evidence, and the response underway.">
+      <StatusTag tone={countTone}>{incidents.length ? `${incidents.length} active ${incidents.length === 1 ? 'condition' : 'conditions'}` : 'No active incidents'}</StatusTag>
+      {completedCase && <hbr-button variant="text" size="small" onClick={() => {setSelectedRecord(null);setView('overview');setScopeRecord(null);setEvidenceRecord(null);}}>Close review</hbr-button>}
+    </SectionHeader>
+    {!incident ? <QuietWatch model={model} onInspect={onInspect} onOpen={onOpen}/> : <>
+      {choices.length > 1 && <div className="sit-incident-choices" aria-label="Choose a condition">{choices.map(item => <button type="button" key={item.id} data-selected={item.id === incident.id} data-tone={item.severity === 'Resolved' ? 'positive' : item.severity === 'Critical' ? 'negative' : item.id === 'monitoring' ? 'inactive' : 'warning'} aria-pressed={item.id === incident.id} onClick={() => selectIncident(item.id)}><span className="sit-choice-mark"/><span><strong>{item.title}</strong><small>{domainLabel(item.domainId)} · {item.sourceState}</small></span><span className="sit-choice-state">{item.severity === 'Resolved' ? 'Completed review' : item.stage}</span></button>)}</div>}
+      <div className="sit-incident-canvas" data-tone={tone}>
+        <div className="sit-incident-banner">
+          <div className="sit-incident-title"><StatusTag tone={tone}>{incident.sourceState}</StatusTag><h3>{incident.title}</h3><span>{response.target}</span></div>
+          <div className="sit-response-state"><span className="sit-live-dot" key={model.time}/><span>CW AI</span><strong>{response.stage}</strong><time>{model.time}</time></div>
+        </div>
+        {incident.id === 'interface' && <div className="sit-recovery-brief" data-verified={response.resolved}>
+          <StatusIcon status={response.resolved ? 'complete' : ['failed','unknown'].includes(response.job.status) || !model.observation.fresh ? 'blocked' : 'active'}/>
+          <span>{recoveryLabel}</span>
+          {response.resolved && <span className="sit-review-label">Completed case · Kept open for review</span>}
+        </div>}
+        {response.needsDecision && response.decision && <div className="sit-decision"><StatusTag tone="warning">Attention required</StatusTag><h4>{response.decision.title}</h4><p>{response.decision.detail}</p>{response.handoff && <small>{response.handoff.route} · Delivered {response.handoff.sent} · {response.handoff.status === 'accepted' ? 'Acceptance confirmed' : 'Acceptance pending'}</small>}</div>}
+        {incident.id === 'interface' ? <hbr-tab-group class="sit-case-tabs" onhbr-tab-show={changeView}>
+          <hbr-tab slot="nav" panel="overview" active={view === 'overview'} onClick={() => setSelectedId(incident.id)}>Overview</hbr-tab>
+          <hbr-tab slot="nav" panel="recovery" active={view === 'recovery'} onClick={() => setSelectedId(incident.id)}>Recovery</hbr-tab>
+          <hbr-tab slot="nav" panel="history" active={view === 'history'} onClick={() => setSelectedId(incident.id)}>History</hbr-tab>
+          <hbr-tab-panel name="overview" active={view === 'overview'}><div className="sit-case-panel" data-active={view === 'overview'}>
+            {overview}
+          </div></hbr-tab-panel>
+          <hbr-tab-panel name="recovery" active={view === 'recovery'}><div className="sit-case-detail" data-active={view === 'recovery'}><RecoveryDetails model={model} onInspect={onInspect} onOpen={onOpen}/></div></hbr-tab-panel>
+          <hbr-tab-panel name="history" active={view === 'history'}><div className="sit-case-detail evidence-section" data-active={view === 'history'}><RepeatIssuesDetails model={model} onOpen={onOpen}/></div></hbr-tab-panel>
+        </hbr-tab-group> : <div className="sit-case-panel">
+            {overview}
+        </div>}
         <footer className="sit-incident-footer"><EvidenceNote>Source severity, controller execution, and recovery remain separate records.</EvidenceNote><div className="sit-footer-actions"><hbr-button variant="outline" size="small" onClick={() => onOpen?.(incident.id)}>{response.needsDecision ? 'Review decision' : 'Inspect response'}</hbr-button>{incident.id === 'interface' && !response.resolved && <hbr-button variant="text" size="small" onClick={() => onAction?.({type:response.paused ? 'AGENT_RESUME' : 'AGENT_PAUSE',incident:'interface'})}>{response.paused ? 'Resume with revalidation' : 'Pause further changes'}</hbr-button>}</div></footer>
       </div>
     </>}
   </OperationsSection>;
 }
 
-export function WatchlistSection({ model, onInspect, onOpen }) {
+export function WatchlistSection({ model, onInspect, onOpen, onReviewIncident }) {
   const heading = useId();
   const [selectedTime,setSelectedTime] = useState(null);
   const { observation:reading,response,frame } = model;
   const points = model.samples || [];
   const inspected = points.find(point => point.time === selectedTime) || points.at(-1);
   const incidentOpened = frame >= 2;
-  const title = !reading.fresh ? 'Current trend awaits fresh observations' : response.resolved ? 'The condition has stabilized' : frame === 11 ? 'The source has cleared; follow-up remains' : incidentOpened ? 'The developing condition became an incident' : frame === 1 ? 'Outbound utilization is rising' : 'Interface observations are within limits';
-  const tone = !reading.fresh ? 'inactive' : response.resolved ? 'positive' : incidentOpened && frame < 11 ? 'warning' : 'info';
+  const developing = frame === 1 && reading.fresh;
+  const tone = !reading.fresh ? 'warning' : developing ? 'info' : 'positive';
+  const followCase = () => onReviewIncident ? onReviewIncident('recovery') : onOpen?.('interface');
   const selectSample = value => setSelectedTime(typeof value === 'string' ? value : value?.time ?? null);
 
   return <OperationsSection className="sit-watchlist" id="ops-watchlist" aria-labelledby={heading}>
-    <SectionHeader id={heading} kicker="Developing conditions" title="Watchlist" description="Observed trends that deserve a closer watch."><StatusTag tone={tone}>{!reading.fresh ? 'Last-known observations' : response.resolved ? 'Verified recovery' : incidentOpened ? 'Linked incident' : frame === 1 ? 'Following a trend' : 'Within limits'}</StatusTag></SectionHeader>
-    <div className="sit-watch-heading"><div><span className="sit-overline">{model.scope.domain} · {model.scope.router} outbound</span><h3>{title}</h3><p>{model.scope.interface} → {model.scope.peer}</p></div><div className="sit-watch-value" data-tone={tone}><strong key={`${reading.utilization}-${reading.fresh}`}>{reading.utilization}<small>%</small></strong><span>{reading.fresh ? 'Observed' : 'Last observed'} {reading.observedAt}</span></div></div>
-    <div className="sit-trend-workspace"><div className="sit-large-trend"><MetricChart samples={points} threshold={model.threshold} selectedTime={inspected?.time} onSelect={selectSample} actionTime={response.job?.startedAt} endTime={model.time} label={`${model.scope.router} outbound interface utilization`} height={250}/><div className="sit-plot-legend"><span><i/>Outbound utilization</span><span><i className="threshold"/>Configured limit {model.threshold}%</span></div></div><aside className="sit-trend-inspection"><span className="sit-overline">Selected observation</span><strong>{inspected?.value ?? reading.utilization}<small>%</small></strong><time>{inspected?.time || reading.observedAt}</time><p>Interface telemetry<br/>{model.scope.router} outbound</p><StatusTag tone={(inspected?.value ?? reading.utilization) >= model.threshold ? 'warning' : 'positive'}>{(inspected?.value ?? reading.utilization) >= model.threshold ? 'Above limit at observation' : 'Below limit at observation'}</StatusTag></aside></div>
-    <div className="sit-observation-selector" aria-label="Inspect an observed sample">{points.slice(-6).map(point => <button type="button" key={point.time} aria-pressed={inspected?.time === point.time} data-selected={inspected?.time === point.time} onClick={() => setSelectedTime(point.time)}><time>{point.time}</time><strong>{point.value}%</strong><span className="sit-sample-dot" data-above={point.value >= model.threshold}/></button>)}</div>
-    <div className="sit-watch-conclusion" data-tone={tone}><div className="sit-conclusion-mark" aria-hidden="true"><StatusIcon status={!reading.fresh || (incidentOpened && frame === 11 && !response.resolved) ? 'blocked' : response.resolved ? 'complete' : incidentOpened || frame === 1 ? 'active' : 'pending'} size="20px"/></div><div><strong>{!reading.fresh ? 'Collection gap interrupts the current trend' : response.resolved ? 'Recovery confirmed at 08:35' : incidentOpened ? 'CNC-1042 opened at 08:00' : frame === 1 ? 'Read-only checks are following the rising metric' : 'A qualifying condition will start an autonomous response'} </strong><p>{!reading.fresh ? `The last trustworthy sample is retained at ${reading.observedAt}. Current utilization is unknown.` : response.resolved ? 'Current observations, source clearance, and the required stability window support the outcome.' : incidentOpened ? 'The earlier trend and source evidence remain attached to the same incident.' : 'Each new source observation extends this view. No forecast is implied.'}</p></div><hbr-button variant="text" size="small" onClick={() => incidentOpened ? onOpen?.('interface') : onInspect?.({kind:'interface',id:model.scope.interfaceId})}>{incidentOpened ? 'Follow incident' : 'Inspect current source'}</hbr-button></div>
+    <SectionHeader id={heading} title="Watchlist" description="Developing conditions before an incident is opened."><StatusTag tone={tone}>{!reading.fresh ? 'Visibility limited' : developing ? 'Following a trend' : 'No developing conditions'}</StatusTag></SectionHeader>
+    {developing ? <>
+      <div className="sit-watch-heading"><div><span className="sit-overline">{model.scope.domain} · {model.scope.router} outbound</span><h3>Outbound utilization is rising</h3><p>{model.scope.interface} → {model.scope.peer}</p></div><div className="sit-watch-value" data-tone="info"><strong key={reading.utilization}>{reading.utilization}<small>%</small></strong><span>Observed {reading.observedAt}</span></div></div>
+      <div className="sit-trend-workspace"><div className="sit-large-trend"><MetricChart samples={points} threshold={model.threshold} selectedTime={inspected?.time} onSelect={selectSample} endTime={model.time} label={`${model.scope.router} outbound interface utilization`} height={250}/><div className="sit-plot-legend"><span><i/>Outbound utilization</span><span><i className="threshold"/>Configured limit {model.threshold}%</span></div></div><aside className="sit-trend-inspection"><span className="sit-overline">Selected observation</span><strong>{inspected?.value ?? reading.utilization}<small>%</small></strong><time>{inspected?.time || reading.observedAt}</time><p>Interface telemetry<br/>{model.scope.router} outbound</p><StatusTag tone="info">Below limit at observation</StatusTag></aside></div>
+      <div className="sit-observation-selector" aria-label="Inspect an observed sample">{points.slice(-6).map(point => <button type="button" key={point.time} aria-pressed={inspected?.time === point.time} data-selected={inspected?.time === point.time} onClick={() => setSelectedTime(point.time)}><time>{point.time}</time><strong>{point.value}%</strong><span className="sit-sample-dot"/></button>)}</div>
+      <div className="sit-watch-conclusion" data-tone="info"><div className="sit-conclusion-mark" aria-hidden="true"><StatusIcon status="active" size="20px"/></div><div><strong>Read-only checks are following the rising metric</strong><p>The configured threshold has not been crossed. Each recorded observation extends the trend.</p></div><hbr-button variant="text" size="small" onClick={() => onInspect?.({kind:'interface',id:model.scope.interfaceId})}>Inspect source</hbr-button></div>
+    </> : <div className="sit-watch-summary" data-gap={!reading.fresh}>
+      <span className="sit-quiet-symbol"><StatusIcon status={!reading.fresh ? 'blocked' : incidentOpened && !response.resolved ? 'active' : 'complete'} size="24px"/></span>
+      <div><h3>{!reading.fresh ? 'A collection gap limits the current watch' : incidentOpened ? response.resolved ? 'The watched condition has a verified outcome' : 'The trend is now tracked in CNC-1042' : 'No developing condition in the current observations'}</h3><p>{!reading.fresh ? `Current utilization is unknown. Last trustworthy sample: ${reading.utilization}% at ${reading.observedAt}.` : incidentOpened ? response.resolved ? 'Recovery evidence is retained with the completed incident.' : 'Its observations and response stay together in the incident workspace.' : `${model.scope.router} outbound is below the configured ${model.threshold}% limit at ${reading.observedAt}.`}</p></div>
+      {incidentOpened ? <hbr-button variant="text" size="small" onClick={followCase}>{response.resolved ? 'Review outcome' : 'Follow incident'}</hbr-button> : <hbr-button variant="text" size="small" onClick={() => !reading.fresh ? onOpen?.('monitoring') : onInspect?.({kind:'interface',id:model.scope.interfaceId})}>{!reading.fresh ? 'Follow collection response' : 'Inspect source'}</hbr-button>}
+    </div>}
   </OperationsSection>;
 }

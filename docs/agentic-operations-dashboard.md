@@ -1,5 +1,7 @@
 # Agentic operations dashboard
 
+> Historical specification for milestones 12 and 13. The current four-section structure is documented in [Consolidated operations dashboard](consolidated-operations-dashboard.md). This document retains the earlier seven-section story for comparison and fallback.
+
 ## Scope and fallback
 
 The latest user instruction authorizes seven new operational sections **below** the existing landing-page workspace. The existing **WAN overview** and right-side **Network watch / Updates** panel are protected: this iteration does not redesign their components, geometry, source presentation, or interactions.

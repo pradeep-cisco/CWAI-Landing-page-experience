@@ -85,20 +85,29 @@ export function ChangesSection({ model, onInspect }) {
   </OperationsSection>;
 }
 
-export function MonitoringSection({ model, onInspect, onOpen }) {
+export function DataHealthSummary({ model, onInspect, onOpen }) {
   const [selected, setSelected] = useState(null);
+  const [expanded, setExpanded] = useState(false);
   const domains = rows(model.monitoring);
   const sources = domains.flatMap(domain => rows(domain.sources).map(source => ({ ...source, domain: domain.domain, domainId: domain.id, key: `${domain.id}:${source.id}` })));
   const active = sources.find(source => source.key === selected) || sources.find(source => source.status === 'delayed') || sources[0];
-  const delayed = sources.some(source => source.status === 'delayed');
+  const delayedSources = sources.filter(source => source.status === 'delayed');
+  const delayed = delayedSources.length > 0;
+  const affectedDomains = [...new Set(delayedSources.map(source => source.domain))];
+  const unreachable = sources.find(source => source.id === 'reachability' && /unreachable/i.test(source.value || ''));
+  const consequence = delayed
+    ? `${affectedDomains.join(' · ')} telemetry delayed. ${unreachable ? `${unreachable.value}; independently checked.` : 'Independent reachability checks remain current.'}${!model.observation.fresh && model.frame >= 2 ? ' Interface verification needs fresh telemetry.' : ''}`
+    : 'Telemetry, reachability, and topology observations are current.';
   let target = null;
   if (active?.id === 'telemetry') {
     if (active.domainId === model.scope?.domainId) target = { kind: 'interface', id: model.scope.interfaceId };
     else if (active.domainId === MONITORING_CONTEXT.transitDomain && active.scope?.includes('XR-P2')) target = { kind: 'interface', id: 'XR-P2:HundredGigE0/0/0/1' };
     else if (active.domainId === MONITORING_CONTEXT.criticalDomain && active.status === 'delayed') target = { kind: 'device', id: 'XR-PE-E2' };
   } else if (active?.id === 'reachability' && active.domainId === model.scope?.domainId) target = { kind: 'device', id: model.scope.router };
-  return <OperationsSection className="evidence-section evidence-monitoring" id="ops-monitoring" aria-labelledby="ops-monitoring-heading">
-    <SectionHeader id="ops-monitoring-heading" kicker="Confidence in the current picture" title="Monitoring" description="Freshness of the observations behind the network watch."><StatusTag tone={delayed ? 'warning' : 'positive'}>{delayed ? 'Collection gap' : 'Sources current'}</StatusTag></SectionHeader>
+  return <div className="evidence-section evidence-data-health" data-delayed={delayed} aria-label="Data health">
+    <hbr-accordion class="evidence-health-disclosure" open={expanded} onhbr-show={event => { if (event.target === event.currentTarget) setExpanded(true); }} onhbr-hide={event => { if (event.target === event.currentTarget) setExpanded(false); }}>
+      <div slot="label" className="evidence-health-label"><div className="evidence-health-status"><StatusIcon status={delayed ? 'blocked' : 'complete'}/><hbr-text variant="smallest-title">Data health</hbr-text><StatusTag tone={delayed ? 'warning' : 'positive'}>{delayed ? 'Collection delayed' : 'Sources current'}</StatusTag></div><span className="evidence-health-consequence" key={`${delayed}-${unreachable?.value || ''}`}>{consequence}</span></div>
+      <div className="evidence-health-details">
     <div className="evidence-monitor-legend"><span><i/>Received observation</span><span><i className="gap"/>Collection delayed</span><span className="evidence-observation-time">Source snapshots through {model.time}</span></div>
     <div className="evidence-source-grid"><div className="evidence-source-head"><span>Domain</span><span>Telemetry</span><span>Reachability</span><span>Topology</span></div>{domains.map(domain => <div className="evidence-source-domain" key={domain.id}><div className="evidence-source-domain-name"><span className="evidence-domain-shape"/>{domain.domain}</div>{rows(domain.sources).map(source => {
       const key = `${domain.id}:${source.id}`, stale = source.status === 'delayed';
@@ -107,7 +116,9 @@ export function MonitoringSection({ model, onInspect, onOpen }) {
       </button>;
     })}</div>)}</div>
     {active && <div className="evidence-source-inspection" data-stale={active.status === 'delayed'}><div className="evidence-source-inspection-main"><span className="evidence-eyebrow">Selected source</span><h3>{active.domain} · {active.label}</h3><p>{active.scope}</p><EvidenceNote>Last trustworthy observation {active.time} · {active.value || (active.status === 'delayed' ? 'Current reading unavailable' : 'Current source snapshot')}</EvidenceNote></div><div className="evidence-source-consequence"><strong>{active.status === 'delayed' ? 'Source-dependent checks need fresh evidence' : 'Current evidence available'}</strong><p>{active.status === 'delayed' ? 'The affected current reading is unavailable. Checks that depend on this source need fresh observations. Independent sources remain separately available.' : 'This source supports the current watch. Its collection state does not replace the network condition reported by the source.'}</p><div className="evidence-actions">{active.status === 'delayed' && <hbr-button size="small" variant="text" onClick={() => onOpen?.('monitoring')}>Follow collection response</hbr-button>}{target && <hbr-button size="small" variant="text" onClick={() => onInspect?.(target)}>Inspect source evidence</hbr-button>}</div></div></div>}
-  </OperationsSection>;
+      </div>
+    </hbr-accordion>
+  </div>;
 }
 
 function EpisodeProof({ episode }) {
@@ -116,22 +127,25 @@ function EpisodeProof({ episode }) {
   return <div className="evidence-proof"><div className="evidence-proof-meta"><div><span>Source record</span><strong>{episode.id}</strong></div><div><span>Controller result</span><strong>{episode.job?.id || 'Recorded response'} · {episode.job?.status || 'Confirmed'}</strong></div><div><span>Verification window</span><strong>{windowLabel}</strong></div></div><div className="evidence-proof-criteria">{rows(episode.criteria).map((criterion, i) => <div key={i}><span role="img" aria-label={criterion.met ? 'Satisfied' : 'Not yet satisfied'}><StatusIcon status={criterion.met ? 'complete' : 'pending'}/></span><span>{criterion.label}</span></div>)}</div><EvidenceNote>{episode.source} · {episode.current ? 'Current incident verification record' : 'Archived incident evidence; independent of the current watch'}</EvidenceNote></div>;
 }
 
-export function ResolvedSection({ model, onOpen }) {
-  const [selected, setSelected] = useState(null);
-  const [proofOpen, setProofOpen] = useState(false);
+export function RecentSection({ model, onOpen }) {
+  const [expandedId, setExpandedId] = useState(null);
   const results = rows(model.resolved).filter(episode => episode.verified);
-  const episode = results.find(item => item.id === selected) || results.at(-1);
-  return <OperationsSection className="evidence-section evidence-resolved" id="ops-resolved" aria-labelledby="ops-resolved-heading">
-    <SectionHeader id="ops-resolved-heading" kicker="Observed outcomes" title="Resolved" description="Verified recovery with the supporting observations retained."><StatusTag tone="positive">Evidence retained</StatusTag></SectionHeader>
-    {episode ? <>
-      {results.length > 1 && <div className="evidence-result-options" aria-label="Verified incident records">{results.map(result => <hbr-button size="small" key={result.id} variant={episode.id === result.id ? 'outline' : 'text'} aria={{ pressed: episode.id === result.id }} onClick={() => { setSelected(result.id); setProofOpen(false); }}>{result.id} · {result.recovered}</hbr-button>)}</div>}
-      <div className="evidence-resolved-heading"><div><span className="evidence-eyebrow">{episode.domain} · {episode.router} · {episode.id}</span><h3>{episode.title}</h3></div><div className="evidence-recovered-stamp" key={`${episode.id}:${episode.recovered}`}><span className="evidence-recovered-check"><StatusIcon status="complete" size="28px"/></span><div><strong>Recovery verified</strong><time>{episode.recovered}</time></div></div></div>
-      <div className="evidence-outcome-comparison"><div className="evidence-outcome-before"><div className="evidence-outcome-label"><span>Before</span><span>{episode.detected}</span></div><div className="evidence-outcome-value"><strong>{episode.peak}<small>%</small></strong><span>Peak recorded utilization</span></div><MetricChart samples={rows(episode.beforePoints).length ? episode.beforePoints : rows(episode.points).filter(point => point.value >= model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, recorded condition before recovery`}/></div><div className="evidence-outcome-bridge" aria-hidden="true"><span>→</span></div><div className="evidence-outcome-after"><div className="evidence-outcome-label"><span>Verified</span><span>{episode.recovered}</span></div><div className="evidence-outcome-value"><strong>{episode.after}<small>%</small></strong><span>After the stability window</span></div><MetricChart samples={rows(episode.afterPoints).length ? episode.afterPoints : rows(episode.points).filter(point => point.value < model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, qualifying recovery observations`}/></div></div>
-      <div className="evidence-section-footer"><EvidenceNote>{episode.source} · {episode.current ? 'Current incident' : 'Earlier shift'}</EvidenceNote>{episode.current && <hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Review response</hbr-button>}</div>
-      <hbr-accordion class="evidence-disclosure" label="Recovery proof" open={proofOpen} onhbr-show={event => { if (event.target === event.currentTarget) { setSelected(episode.id); setProofOpen(true); } }} onhbr-hide={event => { if (event.target === event.currentTarget) setProofOpen(false); }}>
+  return <OperationsSection className="evidence-section evidence-recent" id="ops-recent" aria-labelledby="ops-recent-heading">
+    <SectionHeader id="ops-recent-heading" title="Recent" description="Verified outcomes and their supporting evidence.">
+      <StatusTag tone="positive">{results.length} verified {results.length === 1 ? 'outcome' : 'outcomes'}</StatusTag>
+    </SectionHeader>
+    {results.length ? <div className="evidence-recent-list">{results.map(episode => <hbr-accordion key={episode.id} class="evidence-recent-record" open={expandedId === episode.id} onhbr-show={event => { if (event.target === event.currentTarget) setExpandedId(episode.id); }} onhbr-hide={event => { if (event.target === event.currentTarget) setExpandedId(current => current === episode.id ? null : current); }}>
+      <div slot="label" className="evidence-recent-summary">
+        <span className="evidence-recent-status"><StatusIcon status="complete" size="20px"/></span>
+        <div className="evidence-recent-identity"><strong>{episode.title}</strong><span>{episode.id} · {episode.domain} · {episode.router}</span><span>{episode.current ? 'Current shift' : 'Earlier shift · Archived'}</span></div>
+        <div className="evidence-recent-result"><strong>{episode.peak}% <span aria-hidden="true">→</span> {episode.after}%</strong><span>Peak → verified utilization</span><span>Recovery verified · {episode.recovered}</span></div>
+      </div>
+      <div className="evidence-recent-proof">
+        <div className="evidence-outcome-comparison"><div className="evidence-outcome-before"><div className="evidence-outcome-label"><span>Before</span><span>{episode.detected}</span></div><MetricChart samples={rows(episode.beforePoints).length ? episode.beforePoints : rows(episode.points).filter(point => point.value >= model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, recorded condition before recovery`}/></div><div className="evidence-outcome-bridge" aria-hidden="true"><span>→</span></div><div className="evidence-outcome-after"><div className="evidence-outcome-label"><span>Verified</span><span>{episode.recovered}</span></div><MetricChart samples={rows(episode.afterPoints).length ? episode.afterPoints : rows(episode.points).filter(point => point.value < model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, qualifying recovery observations`}/></div></div>
         <EpisodeProof episode={episode}/>
-      </hbr-accordion>
-    </> : <div className="evidence-no-result"><RouterMark/><h3>No verified recovery yet</h3><p>A completed controller job enters Recovery. A result appears here after the independent recovery criteria are met.</p></div>}
+        {episode.current && <div className="evidence-actions"><hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Review response</hbr-button></div>}
+      </div>
+    </hbr-accordion>)}</div> : <div className="evidence-recent-empty"><StatusIcon status="pending"/><hbr-text type="secondary" size="sm">No verified outcomes yet. Active verification stays with its incident.</hbr-text></div>}
   </OperationsSection>;
 }
 
@@ -159,18 +173,18 @@ function EpisodePlot({ episode, min, max }) {
   </svg></span>;
 }
 
-export function RepeatIssuesSection({ model, onOpen }) {
+export function RepeatIssuesDetails({ model, onOpen }) {
   const [selected, setSelected] = useState(null);
   const [comparing, setComparing] = useState(false);
   const episodes = rows(model.episodes);
   const active = episodes.find(episode => episode.id === selected) || episodes.at(-1);
   const relatives = episodes.flatMap(episode => rows(episode.points).map(point => minute(point.time) - minute(episode.detected)));
   const min = Math.min(0, ...relatives), max = Math.max(5, ...relatives);
-  return <OperationsSection className="evidence-section evidence-repeat" id="ops-repeat-issues" aria-labelledby="ops-repeat-heading">
-    <SectionHeader id="ops-repeat-heading" kicker="A longer view of the condition" title="Repeat issues" description="Related occurrences on the same interface, with each outcome kept separate."><StatusTag tone={episodes.length > 1 ? 'warning' : 'info'}>{episodes.length > 1 ? 'Condition repeated' : 'Earlier episode retained'}</StatusTag></SectionHeader>
+  return <div className="evidence-section evidence-repeat evidence-repeat-details">
+    <div className="evidence-repeat-heading"><hbr-text variant="sub-section-title">Related occurrences</hbr-text><StatusTag tone={episodes.length > 1 ? 'warning' : 'info'}>{episodes.length > 1 ? 'Condition repeated' : 'Earlier episode retained'}</StatusTag></div>
     <div className="evidence-repeat-scope"><div><strong>{model.scope?.router} · {model.scope?.interface}</strong><span>{model.scope?.domain} · Outbound utilization</span></div><span>Shared scale · Minutes from detection</span></div>
     <div className="evidence-episodes">{episodes.map(episode => <button type="button" className="evidence-episode" data-current={episode.current} data-verified={episode.verified} data-selected={active?.id === episode.id} key={episode.id} onClick={() => setSelected(episode.id)} aria-pressed={active?.id === episode.id}><div className="evidence-episode-identity"><span className="evidence-episode-node"/><span>{episode.current ? 'Current occurrence' : 'Earlier shift'}</span><strong>{episode.id}</strong><time>{episode.detected}–{episode.recovered || model.time}</time><span className="evidence-episode-status">{episode.verified ? 'Verified recovery' : episode.status || 'Under observation'}</span></div><EpisodePlot episode={episode} min={min} max={max}/></button>)}</div>
     {active && <div className="evidence-episode-detail"><div><span className="evidence-eyebrow">Selected occurrence · {active.id}</span><h3>{active.current ? 'Current evidence remains independent' : 'Earlier recovery is retained'}</h3><p>{episodes.length > 1 ? 'The condition and interface match an earlier occurrence. A common cause has not been established.' : 'One earlier occurrence is available. A recurring condition has not been established in the current watch.'}</p><EvidenceNote>{active.source}</EvidenceNote></div><div className="evidence-actions">{active.current && <hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Inspect current incident</hbr-button>}</div></div>}
     <hbr-accordion class="evidence-disclosure" label="Compare episodes" open={comparing} onhbr-show={event => { if (event.target === event.currentTarget) setComparing(true); }} onhbr-hide={event => { if (event.target === event.currentTarget) setComparing(false); }}><div className="evidence-episode-comparison"><div className="evidence-episode-comparison-labels"><strong>Recorded evidence</strong><span>Peak utilization</span><span>Final observation</span><span>Controller result</span><span>Recovery</span></div>{episodes.map(episode => <div key={episode.id}><strong>{episode.id}</strong><span>{episode.peak}%</span><span>{episode.verified ? `${episode.after}%` : episode.points?.at(-1) ? `${episode.points.at(-1).value}% · ${episode.points.at(-1).time}` : 'Unavailable'}</span><span>{episode.job?.status || 'Not started'}</span><span>{episode.verified ? `Verified ${episode.recovered}` : 'Not established'}</span></div>)}</div></hbr-accordion>
-  </OperationsSection>;
+  </div>;
 }

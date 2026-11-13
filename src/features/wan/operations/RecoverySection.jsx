@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { OperationsSection, SectionHeader, StatusTag, StatusIcon, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
+import { StatusTag, StatusIcon, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
 import './recovery-section.css';
 
 const minutes = value => String(value).split(':').reduce((sum, value, index) => sum + Number(value) * (index ? 1 : 60), 0);
@@ -19,7 +19,8 @@ function EvidenceLane({ label, status, tone = 'info', from, to, start, end, sele
   </div>;
 }
 
-export default function RecoverySection({ model, onInspect, onOpen }) {
+/** Recovery belongs to its incident; it never owns a second dashboard card. */
+export function RecoveryDetails({ model, onInspect, onOpen }) {
   const [selectedTime, setSelectedTime] = useState(null), [showCriteria, setShowCriteria] = useState(false);
   const { response, observation, recovery, samples, scope, time } = model;
   const active = model.frame >= 2;
@@ -30,14 +31,15 @@ export default function RecoverySection({ model, onInspect, onOpen }) {
   const tone = response.resolved ? 'positive' : badResult || !observation.fresh ? 'warning' : 'info';
   const status = response.resolved ? 'Verified' : badResult ? 'Outcome unconfirmed' : !active ? 'Ready to verify' : !observation.fresh ? 'Waiting for data' : complete ? 'Verification pending' : response.job.id ? 'Following execution' : 'Awaiting response';
 
-  return <OperationsSection className="rec-section" id="ops-recovery" aria-labelledby="ops-recovery-title" data-verified={response.resolved}>
-    <SectionHeader id="ops-recovery-title" title="Recovery" description="Controller completion and network recovery are checked independently.">
+  return <div className="rec-section rec-details" data-verified={response.resolved}>
+    <div className="rec-details-heading">
+      <hbr-text type="secondary" size="sm">Controller completion and network recovery are checked independently.</hbr-text>
       <StatusTag tone={tone}>{status}</StatusTag>
-    </SectionHeader>
+    </div>
     {!active ? <div className="rec-ready">
       <div className="rec-ready-visual" aria-hidden="true"><svg viewBox="0 0 520 100"><path d="M10 50h100m0 0 10-20 20 40 20-40 20 40 20-20h70m0 0 10-12 20 24 20-24 20 12h150"/><circle cx="112" cy="50" r="5"/><circle cx="270" cy="50" r="5"/><circle cx="495" cy="50" r="5"/></svg></div>
       <div className="rec-ready-steps"><span>Confirmed execution</span><span>Current observations</span><span>Sustained recovery</span></div>
-      <p>Recovery evidence will appear here when a condition requires a response. Earlier verified results remain in <a href="#ops-resolved">Resolved</a>.</p>
+      <p>Recovery evidence appears with the incident. Earlier verified results remain in <a href="#ops-recent">Recent</a>.</p>
     </div> : <>
       <div className="rec-summary">
         <div><span className="ops-eyebrow">{scope.domain} · {scope.router}</span><hbr-text variant="sub-section-title">{response.resolved ? 'Recovery independently verified' : complete ? 'Execution complete. Recovery still needs proof.' : badResult ? 'A successful response has not been established.' : 'Following the condition through recovery'}</hbr-text><p>{response.resolved ? 'Current observations, source clearance, and the stability window support this result.' : badResult ? 'Source improvement cannot establish a successful controller result.' : !observation.fresh ? `Current telemetry is unavailable. The last trustworthy observation is ${observation.observedAt}.` : response.currentWork}</p></div>
@@ -61,5 +63,5 @@ export default function RecoverySection({ model, onInspect, onOpen }) {
       </hbr-accordion>
       <div className="rec-actions"><hbr-button size="small" variant="outline" onClick={() => onInspect?.({ kind: 'interface', id: scope.interfaceId })}>Inspect interface</hbr-button><hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Review response</hbr-button></div>
     </>}
-  </OperationsSection>;
+  </div>;
 }
