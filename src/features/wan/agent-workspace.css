@@ -74,10 +74,20 @@
   border-top: 1px solid var(--base-border-default);
 }
 
-.wan-agent-decision {
+.wan-agent-dependency {
   padding: var(--hbr-spacing-lg);
   border-inline-start: 3px solid var(--warning-border-default);
   background: var(--base-bg-medium-default);
+}
+
+.wan-agent-prior-jobs {
+  display: grid;
+  gap: var(--hbr-spacing-md);
+  min-width: 0;
+}
+
+.wan-agent-reconciliation {
+  padding-block-end: var(--hbr-spacing-sm);
 }
 
 .wan-agent-metric {

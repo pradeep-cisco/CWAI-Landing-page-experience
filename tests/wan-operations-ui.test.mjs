@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 
 // Render the actual UI: model-only tests cannot catch an empty incident queue
 // crashing the page, or unrelated cases inheriting another case's evidence.
-let server, Dashboard, IncidentSection, DataHealthSummary, RecentSection, buildOperations, createAgentState, enterAgentFrame;
+let server, Dashboard, IncidentSection, DataHealthSummary, RecentSection, AgentWorkspace, buildOperations, createAgentState, enterAgentFrame;
 before(async () => {
   server = await createServer({
     server: { middlewareMode: true, hmr: false, ws: false, watch: null, open: false },
@@ -15,6 +15,7 @@ before(async () => {
   });
   ({ default: Dashboard } = await server.ssrLoadModule('/src/features/wan/operations/OperationsDashboard.jsx'));
   ({ IncidentSection } = await server.ssrLoadModule('/src/features/wan/operations/SituationSections.jsx'));
+  ({ AgentWorkspace } = await server.ssrLoadModule('/src/features/wan/AgentWorkspace.jsx'));
   ({ DataHealthSummary, RecentSection } = await server.ssrLoadModule('/src/features/wan/operations/EvidenceSections.jsx'));
   ({ buildOperations } = await server.ssrLoadModule('/src/features/wan/operations/operations-model.js'));
   ({ createAgentState, enterAgentFrame } = await server.ssrLoadModule('/src/features/wan/model/agentic-model.js'));
@@ -68,9 +69,55 @@ test('failed and unconfirmed execution never create a current verified outcome',
     assert.match(incident, runOutcome === 'failed' ? /Execution failed/ : /Controller result unconfirmed/);
     const recent = render(RecentSection, { model });
     assert.match(recent, /CNC-0991/);
-    assert.doesNotMatch(recent, /CNC-1042/);
+    assert.doesNotMatch(recent, /data-outcome-id="CNC-1042"/);
   }
   const verified = render(RecentSection, { model: buildOperations(at(11)) });
-  assert.match(verified, /CNC-1042/);
+  assert.match(verified, /data-outcome-id="CNC-1042"/);
   assert.match(verified, /Recovery verified · 08:35/);
+});
+
+test('the assistant uses truthful shared progress and keeps failure owned by CW AI', () => {
+  for (const runOutcome of ['failed', 'unknown']) {
+    const state = at(11, {runOutcome, agentic:{open:true}});
+    const html = render(AgentWorkspace,{state});
+    assert.match(html, /Owned by CW AI/);
+    assert.match(html, /Reconciling/);
+    assert.doesNotMatch(html, /label="Remediate" subtext="Complete"/);
+    assert.doesNotMatch(html, /Engineering handoff|Route to engineering|Accepted by|Arun/);
+    assert.match(html, /Controller result needs reconciliation|execution/i);
+  }
+});
+
+test('a generated response exposes projected alternatives and respects an authority hold', () => {
+  const generated = at(5,{match:'no-match'});
+  const plan = render(IncidentSection,{state:generated,model:buildOperations(generated)});
+  assert.match(plan,/Constructed from network evidence/);
+  assert.match(plan,/81% projected utilization/);
+  assert.match(plan,/60% projected utilization/);
+  assert.match(plan,/Projected bottleneck utilization/);
+  const blocked = at(5,{match:'restricted'});
+  const held = render(IncidentSection,{state:blocked,model:buildOperations(blocked)});
+  assert.match(held,/>Held<\/hbr-tag>/);
+  assert.doesNotMatch(held,/>Selected<\/hbr-tag>/);
+});
+
+test('unclassified and expected events remain inspectable without a second alarm panel', () => {
+  const state = at(0,{unclassifiedEvent:true,sourceEvents:[{id:'EXPECTED-1',title:'Scheduled event',disposition:'expected',dispositionReason:'Recorded maintenance scope',source:'Maintenance source'}]});
+  const html = render(Dashboard,{state});
+  assert.match(html,/CNC-3110/);
+  assert.match(html,/Minor · Under correlation/);
+  assert.match(html,/Expected events · 1/);
+  assert.match(html,/Recorded maintenance scope/);
+  assert.doesNotMatch(html,/class="wan-alarm-card"/);
+});
+
+test('a revised response retains the failed attempt and source reconciliation proof', () => {
+  const state = at(11,{runOutcome:'failed',reconciliation:'verified-retry',agentic:{open:true}});
+  const html = render(AgentWorkspace,{state});
+  assert.match(html,/RUN-018/);
+  assert.match(html,/RUN-017/);
+  assert.match(html,/Failed/);
+  assert.match(html,/08:26/);
+  assert.match(html,/08:29/);
+  assert.doesNotMatch(html,/Engineering handoff|Route to engineering/);
 });

@@ -35,7 +35,9 @@ function ConfigurationPane({ title, values, change, observed }) {
 export function ChangesSection({ model, onInspect }) {
   const [view, setView] = useState('comparison');
   const [expanded, setExpanded] = useState(false);
+  const [assessmentExpanded, setAssessmentExpanded] = useState(false);
   const change = model.changes || {}, maintenance = change.maintenance || {};
+  const assessment = change.assessment;
   const intended = rows(change.intended), observed = rows(change.observed);
   const changeView = event => {
     if (event.target !== event.currentTarget) return;
@@ -47,6 +49,14 @@ export function ChangesSection({ model, onInspect }) {
       <StatusTag tone={change.hasDrift ? 'warning' : 'positive'}>{change.hasDrift ? 'Difference detected' : 'Baseline aligned'}</StatusTag>
     </SectionHeader>
     <div className="evidence-finding"><StatusIcon status={change.hasDrift ? 'blocked' : 'complete'}/><strong>{change.finding || 'Observed configuration matches the intended baseline.'}</strong></div>
+    {assessment && <div className="evidence-assessment" data-complete={assessment.complete}>
+      <div className="evidence-assessment-heading"><div><hbr-text size="xs" type="secondary">{assessment.owner} · Configuration assessment</hbr-text><hbr-text variant="smallest-title">{assessment.finding}</hbr-text></div><StatusTag tone={change.hasDrift ? 'info' : 'positive'}>{assessment.status}</StatusTag></div>
+      <p key={assessment.record}>{assessment.reason}</p>
+      <div className="evidence-assessment-next"><StatusIcon status={assessment.complete ? 'complete' : 'active'}/><span>{assessment.action}</span><time>{assessment.time}</time></div>
+      <hbr-accordion class="evidence-disclosure" label="Assessment evidence" size="small" open={assessmentExpanded} onhbr-show={event => { if(event.target === event.currentTarget) setAssessmentExpanded(true); }} onhbr-hide={event => { if(event.target === event.currentTarget) setAssessmentExpanded(false); }}>
+        <div className="evidence-assessment-details"><div className="evidence-assessment-sources">{rows(assessment.sources).map(source => <div key={source.record}><span>{source.label}</span><strong>{source.record}</strong><time>{source.time}</time></div>)}</div><div className="evidence-proof-criteria">{rows(assessment.checks).map(check => <div key={check.label}><StatusIcon status={check.met ? 'complete' : 'pending'}/><span><strong>{check.label}</strong><small>{check.detail}</small></span></div>)}</div><EvidenceNote>{assessment.record} · Assessment record · No configuration operation issued</EvidenceNote></div>
+      </hbr-accordion>
+    </div>}
     <hbr-tab-group class="evidence-change-tabs" onhbr-tab-show={changeView}>
       <hbr-tab slot="nav" panel="comparison" active={view === 'comparison'}>Compare</hbr-tab>
       <hbr-tab slot="nav" panel="context" active={view === 'context'}>Change context</hbr-tab>
@@ -123,27 +133,32 @@ export function DataHealthSummary({ model, onInspect, onOpen }) {
 
 function EpisodeProof({ episode }) {
   const window = episode.verificationWindow;
-  const windowLabel = typeof window === 'string' ? window : window?.from && window?.to ? `${window.from}–${window.to} · ${window.minutes || 5} minutes` : `${episode.detected}–${episode.recovered}`;
-  return <div className="evidence-proof"><div className="evidence-proof-meta"><div><span>Source record</span><strong>{episode.id}</strong></div><div><span>Controller result</span><strong>{episode.job?.id || 'Recorded response'} · {episode.job?.status || 'Confirmed'}</strong></div><div><span>Verification window</span><strong>{windowLabel}</strong></div></div><div className="evidence-proof-criteria">{rows(episode.criteria).map((criterion, i) => <div key={i}><span role="img" aria-label={criterion.met ? 'Satisfied' : 'Not yet satisfied'}><StatusIcon status={criterion.met ? 'complete' : 'pending'}/></span><span>{criterion.label}</span></div>)}</div><EvidenceNote>{episode.source} · {episode.current ? 'Current incident verification record' : 'Archived incident evidence; independent of the current watch'}</EvidenceNote></div>;
+  const windowLabel = typeof window === 'string' ? window : window?.from && window?.to ? `${window.from}–${window.to} · ${window.minutes || 5} minutes` : episode.recovered;
+  return <div className="evidence-proof">
+    {episode.proofSummary && <p>{episode.proofSummary}</p>}
+    <div className="evidence-proof-meta"><div><span>Source record</span><strong>{episode.sourceRecord || episode.id}</strong></div><div><span>{episode.job?.id ? 'Controller result' : 'Network change'}</span><strong>{episode.job?.id ? `${episode.job.id} · ${episode.job.status}` : 'No controller operation recorded'}</strong></div><div><span>{window ? 'Verification window' : episode.verificationLabel || 'Outcome recorded'}</span><strong>{windowLabel}</strong></div></div>
+    {rows(episode.priorJobs).length > 0 && <div className="evidence-prior-results"><hbr-text variant="smallest-title">Earlier execution retained</hbr-text>{rows(episode.priorJobs).map(job => <div key={job.id}><StatusTag tone={job.status === 'failed' ? 'negative' : 'warning'}>{job.status === 'failed' ? 'Failed' : 'Unconfirmed'}</StatusTag><span>{job.id} · {job.completedAt ? `Completed ${job.completedAt}` : `Started ${job.startedAt}`}</span></div>)}{episode.reconciliation && <p>{episode.reconciliation.summary || episode.reconciliation.detail}</p>}</div>}
+    <div className="evidence-proof-criteria">{rows(episode.criteria).map((criterion, i) => <div key={criterion.id || criterion.label || i}><span role="img" aria-label={criterion.met ? 'Satisfied' : 'Not yet satisfied'}><StatusIcon status={criterion.met ? 'complete' : 'pending'}/></span><span>{criterion.label}</span></div>)}</div><EvidenceNote>{episode.source} · {episode.current ? 'Current shift record' : 'Archived incident evidence; independent of the current watch'}</EvidenceNote>
+  </div>;
 }
 
 export function RecentSection({ model, onOpen }) {
   const [expandedId, setExpandedId] = useState(null);
-  const results = rows(model.resolved).filter(episode => episode.verified);
+  const results = rows(model.outcomes || model.resolved).filter(episode => episode.verified || episode.completed);
   return <OperationsSection className="evidence-section evidence-recent" id="ops-recent" aria-labelledby="ops-recent-heading">
-    <SectionHeader id="ops-recent-heading" title="Recent" description="Verified outcomes and their supporting evidence.">
-      <StatusTag tone="positive">{results.length} verified {results.length === 1 ? 'outcome' : 'outcomes'}</StatusTag>
+    <SectionHeader id="ops-recent-heading" title="Recent" description="Completed work and its case-specific evidence.">
+      <StatusTag tone="info">{results.length} retained {results.length === 1 ? 'outcome' : 'outcomes'}</StatusTag>
     </SectionHeader>
-    {results.length ? <div className="evidence-recent-list">{results.map(episode => <hbr-accordion key={episode.id} class="evidence-recent-record" open={expandedId === episode.id} onhbr-show={event => { if (event.target === event.currentTarget) setExpandedId(episode.id); }} onhbr-hide={event => { if (event.target === event.currentTarget) setExpandedId(current => current === episode.id ? null : current); }}>
+    {results.length ? <div className="evidence-recent-list">{results.map(episode => <hbr-accordion key={episode.id} data-outcome-id={episode.id} class="evidence-recent-record" open={expandedId === episode.id} onhbr-show={event => { if (event.target === event.currentTarget) setExpandedId(episode.id); }} onhbr-hide={event => { if (event.target === event.currentTarget) setExpandedId(current => current === episode.id ? null : current); }}>
       <div slot="label" className="evidence-recent-summary">
-        <span className="evidence-recent-status"><StatusIcon status="complete" size="20px"/></span>
-        <div className="evidence-recent-identity"><strong>{episode.title}</strong><span>{episode.id} · {episode.domain} · {episode.router}</span><span>{episode.current ? 'Current shift' : 'Earlier shift · Archived'}</span></div>
-        <div className="evidence-recent-result"><strong>{episode.peak}% <span aria-hidden="true">→</span> {episode.after}%</strong><span>Peak → verified utilization</span><span>Recovery verified · {episode.recovered}</span></div>
+        <span className="evidence-recent-status">{episode.kind === 'configuration' ? <hbr-icon name="status-info-square" sentiment="info" size="20px" aria-hidden="true"/> : <StatusIcon status="complete" size="20px"/>}</span>
+        <div className="evidence-recent-identity"><strong>{episode.title}</strong><span>{episode.kind === 'device' ? 'CNC-2086' : episode.kind === 'monitoring' ? 'Collection investigation' : episode.id} · {episode.domain} · {episode.router}</span><span>{episode.current ? 'Current shift' : 'Earlier shift · Archived'}</span></div>
+        <div className="evidence-recent-result">{Number.isFinite(episode.peak) && Number.isFinite(episode.after) ? <><strong>{episode.peak}% <span aria-hidden="true">→</span> {episode.after}%</strong><span>Peak → verified utilization</span></> : <strong className="evidence-recent-text-result">{episode.resultLabel}</strong>}<span>{episode.outcomeLabel || 'Recovery verified'} · {episode.recovered}</span></div>
       </div>
       <div className="evidence-recent-proof">
-        <div className="evidence-outcome-comparison"><div className="evidence-outcome-before"><div className="evidence-outcome-label"><span>Before</span><span>{episode.detected}</span></div><MetricChart samples={rows(episode.beforePoints).length ? episode.beforePoints : rows(episode.points).filter(point => point.value >= model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, recorded condition before recovery`}/></div><div className="evidence-outcome-bridge" aria-hidden="true"><span>→</span></div><div className="evidence-outcome-after"><div className="evidence-outcome-label"><span>Verified</span><span>{episode.recovered}</span></div><MetricChart samples={rows(episode.afterPoints).length ? episode.afterPoints : rows(episode.points).filter(point => point.value < model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, qualifying recovery observations`}/></div></div>
+        {Number.isFinite(episode.peak) && Number.isFinite(episode.after) && <div className="evidence-outcome-comparison"><div className="evidence-outcome-before"><div className="evidence-outcome-label"><span>Before</span><span>{episode.detected}</span></div><MetricChart samples={rows(episode.beforePoints).length ? episode.beforePoints : rows(episode.points).filter(point => point.value >= model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, recorded condition before recovery`}/></div><div className="evidence-outcome-bridge" aria-hidden="true"><span>→</span></div><div className="evidence-outcome-after"><div className="evidence-outcome-label"><span>Verified</span><span>{episode.recovered}</span></div><MetricChart samples={rows(episode.afterPoints).length ? episode.afterPoints : rows(episode.points).filter(point => point.value < model.threshold)} threshold={model.threshold} height={150} label={`${episode.id}, qualifying recovery observations`}/></div></div>}
         <EpisodeProof episode={episode}/>
-        {episode.current && <div className="evidence-actions"><hbr-button size="small" variant="text" onClick={() => onOpen?.('interface')}>Review response</hbr-button></div>}
+        {episode.current && episode.workstream && <div className="evidence-actions"><hbr-button size="small" variant="text" onClick={() => onOpen?.(episode.workstream)}>Review response</hbr-button></div>}
       </div>
     </hbr-accordion>)}</div> : <div className="evidence-recent-empty"><StatusIcon status="pending"/><hbr-text type="secondary" size="sm">No verified outcomes yet. Active verification stays with its incident.</hbr-text></div>}
   </OperationsSection>;

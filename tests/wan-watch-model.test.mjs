@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createAgentState, enterAgentFrame, syncAgentResponse } from '../src/features/wan/model/agentic-model.js';
+import { createAgentState, enterAgentFrame, syncAgentResponse, agentResponse } from '../src/features/wan/model/agentic-model.js';
 import { reduce } from '../src/features/wan/model/model.js';
 import { WAN_SETUPS, MONITORING_CONTEXT, DOMAINS, setActiveWanSetup, domainLabel, groupLabel } from '../src/features/wan/model/scale.js';
 import { domainObservation, networkWatch } from '../src/features/wan/watch-model.js';
@@ -70,12 +70,17 @@ test('only independently verified recovery leaves incident attention; healthy so
   assert.equal(recovered.mode, 'recovery');
   assert.equal(recovered.incidents.length, 0);
   assert.ok(recovered.updates.some(item => item.id === 'interface-outcome'));
-  for (const overrides of [{ match: 'restricted' }, { runOutcome: 'failed' }, { runOutcome: 'unknown' }]) {
+  for (const overrides of [{ match: 'restricted' }, { match: 'precheck' }, { runOutcome: 'failed' }, { runOutcome: 'unknown' }]) {
     const state = at(11, overrides), watch = networkWatch(state);
     assert.equal(watch.mode, 'incident');
     assert.equal(watch.incidents[0].sourceState, 'Source-cleared');
     assert.equal(watch.incidents[0].resolved, false);
-    assert.equal(watch.incidents[0].needsDecision, true);
+    assert.equal(watch.incidents[0].needsDecision, false);
+    assert.equal(watch.incidents[0].owner, 'CW AI');
+    assert.equal(watch.incidents[0].attentionRequired, true);
+    assert.equal(watch.incidents[0].blocker.owner, 'CW AI');
+    assert.equal(watch.incidents[0].blocker.status, overrides.runOutcome ? 'reconciling' : 'blocked');
+    assert.deepEqual(state.agentic.handoffs, {});
     assert.match(domainObservation(state, MONITORING_CONTEXT.mainDomain).detail, /unverified/);
     assert.equal(watch.updates.some(item => item.id === 'interface-outcome'), false);
   }
@@ -118,14 +123,23 @@ test('Critical reachability has precedence over a simultaneous Major and collect
   assert.deepEqual(state, before);
 });
 
-test('a cleared device source leaves the current incident queue without rewriting the past handoff', () => {
+test('a restored device leaves the active queue while preserving its owned source record and evidence', () => {
   let state = at(3, { critical: true, criticalDetected: '08:00' });
-  const handoff = structuredClone(state.agentic.handoffs.device);
+  const original = structuredClone(state.agentic.deviceRecord);
   state = syncAgentResponse(reduce(state, { type: 'CRITICAL', value: false }));
   const watch = networkWatch(state);
   assert.equal(watch.incidents.some(item => item.id === 'device'), false);
   assert.equal(domainObservation(state, MONITORING_CONTEXT.criticalDomain).value, 'Reachable');
-  assert.deepEqual(state.agentic.handoffs.device, handoff);
+  assert.equal(state.agentic.deviceRecord.startedAt, original.startedAt);
+  assert.equal(state.agentic.deviceRecord.clearedAt, '08:01');
+  assert.equal(agentResponse(state, 'device').owner, 'CW AI');
+  assert.equal(agentResponse(state, 'device').resolved, true);
+  const source = watch.eventCoverage.events.find(item => item.id === 'CNC-2086');
+  assert.equal(source.active, false);
+  assert.equal(source.caseId, 'device');
+  assert.equal(source.detectedAt, '08:00');
+  assert.equal(source.clearedAt, '08:01');
+  assert.deepEqual(state.agentic.handoffs, {});
 });
 
 test('quiet coverage gaps get attention without inventing a threshold alarm', () => {
@@ -137,23 +151,113 @@ test('quiet coverage gaps get attention without inventing a threshold alarm', ()
   assert.equal(watch.updates.some(item => /Major|Critical/.test(item.title)), false);
 });
 
-test('response updates keep controller source times separate from an earlier handoff delivery', () => {
+test('an agent-owned scope dependency preserves the confirmed job and current controller-source times', () => {
   for (const runOutcome of ['completed', 'failed', 'unknown']) {
     let state = at(7, { runOutcome });
     state = syncAgentResponse(reduce(state, { type: 'MATCH', value: 'restricted' }));
-    assert.equal(state.agentic.handoffs.interface.sent, '08:10');
+    const original = agentResponse(state);
+    assert.equal(original.job.id, 'RUN-017');
+    assert.equal(original.job.startedAt, '08:10');
+    assert.equal(original.job.status, 'running');
+    assert.equal(original.blocker.owner, 'CW AI');
+    assert.equal(original.needsDecision, false);
+    assert.deepEqual(state.agentic.handoffs, {});
     state = enterAgentFrame(state, 9);
-    let update = networkWatch(state).updates.find(item => item.id === 'interface-response');
+    let watch = networkWatch(state);
+    let update = watch.updates.find(item => item.id === 'interface-response');
     assert.equal(update.title, 'Controller job running');
     assert.equal(update.time, '08:20');
+    assert.equal(watch.incidents[0].blocker.owner, 'CW AI');
+    assert.equal(watch.incidents[0].owner, 'CW AI');
     state = enterAgentFrame(state, 10);
-    update = networkWatch(state).updates.find(item => item.id === 'interface-response');
+    watch = networkWatch(state);
+    update = watch.updates.find(item => item.id === 'interface-response');
     assert.equal(update.time, '08:25');
     assert.equal(update.source, 'RUN-017');
     assert.equal(update.title, runOutcome === 'completed' ? 'Controller job completed'
       : runOutcome === 'failed' ? 'Controller job failed' : 'Controller result unconfirmed');
-    assert.equal(state.agentic.handoffs.interface.sent, '08:10');
+    assert.equal(agentResponse(state).job.startedAt, '08:10');
+    assert.equal(watch.incidents[0].resolved, false);
+    assert.equal(watch.incidents[0].needsDecision, false);
+    assert.equal(watch.incidents[0].blocker.owner, 'CW AI');
+    assert.deepEqual(state.agentic.handoffs, {});
   }
+});
+
+test('missing or unavailable catalogue matches retain agent ownership through a validated graph-derived response', () => {
+  for (const match of ['no-match', 'unavailable']) {
+    let state = at(5, { match });
+    let response = agentResponse(state);
+    assert.equal(response.job.status, 'not-started');
+    assert.equal(response.plan.origin, 'graph-derived');
+    assert.equal(response.owner, 'CW AI');
+    assert.equal(response.needsDecision, false);
+    assert.equal(response.handoff, null);
+    state = enterAgentFrame(state, 7);
+    let watch = networkWatch(state);
+    assert.equal(watch.incidents[0].sourceState, 'Major · Active');
+    assert.equal(watch.updates.find(item => item.id === 'interface-response').source, 'RUN-017');
+    assert.equal(agentResponse(state).job.status, 'running');
+    state = enterAgentFrame(state, 11);
+    watch = networkWatch(state);
+    response = agentResponse(state);
+    assert.equal(response.resolved, true);
+    assert.equal(watch.mode, 'recovery');
+    assert.equal(watch.incidents.length, 0);
+    assert.ok(watch.updates.some(item => item.id === 'interface-outcome'));
+    assert.deepEqual(state.agentic.handoffs, {});
+  }
+});
+
+test('a recorded reconciled retry reaches recovery without rewriting the original failed or unknown result', () => {
+  for (const runOutcome of ['failed', 'unknown']) {
+    const pending = at(11, { runOutcome });
+    assert.equal(networkWatch(pending).mode, 'incident');
+    assert.equal(agentResponse(pending).job.status, runOutcome);
+    const confirmed = at(11, { runOutcome, reconciliation: 'verified-retry' });
+    const response = agentResponse(confirmed), watch = networkWatch(confirmed);
+    assert.equal(response.resolved, true);
+    assert.equal(response.job.id, 'RUN-018');
+    assert.equal(response.priorJobs[0].id, 'RUN-017');
+    assert.equal(response.priorJobs[0].status, runOutcome);
+    assert.equal(watch.mode, 'recovery');
+    assert.equal(watch.updates.find(item => item.id === 'interface-response').source, 'RUN-018');
+    assert.ok(watch.updates.some(item => item.id === 'interface-outcome'));
+  }
+});
+
+test('an unclassified event keeps a quiet watch informative instead of implying an all-clear state', () => {
+  const state = at(0, { unclassifiedEvent: true }), watch = networkWatch(state);
+  assert.equal(watch.mode, 'correlation');
+  assert.equal(watch.tone, 'info');
+  assert.match(watch.title, /under investigation/);
+  assert.match(watch.detail, /CW AI retains ownership/);
+  assert.equal(watch.incidents.length, 0);
+  assert.equal(watch.eventCoverage.pending.length, 1);
+  assert.equal(watch.eventCoverage.pending[0].id, 'CNC-3110');
+  assert.equal(watch.eventCoverage.pending[0].owner, 'CW AI');
+  assert.equal(watch.eventCoverage.pending[0].caseId, null);
+  const update = watch.updates.find(item => item.id === 'event-correlation');
+  assert.match(update.title, /1 event under correlation/);
+  assert.equal(update.source, 'Syslog');
+  assert.deepEqual(update.target, { kind: 'device', id: 'XR-P3' });
+  assert.equal(update.time, '07:55');
+});
+
+test('a bounded update feed retains every linked and unmatched source event in its coverage ledger', () => {
+  const sourceEvents = Array.from({ length: 12 }, (_, index) => ({ id: `PENDING-${index + 1}`, title: `Received source event ${index + 1}`, time: '08:09', source: 'Router log', target: { kind: 'device', id: 'XR-P3' } }));
+  const state = at(7, { critical: true, gap: 'east', related: true, sourceEvents });
+  const copy = structuredClone(state), watch = networkWatch(state);
+  assert.equal(watch.updates.length, 4);
+  assert.equal(watch.eventCoverage.total, 16);
+  assert.equal(watch.eventCoverage.linked.length, 4);
+  assert.equal(watch.eventCoverage.pending.length, 12);
+  assert.deepEqual(watch.eventCoverage.pending.map(event => event.id), sourceEvents.map(event => event.id));
+  assert.ok(watch.eventCoverage.events.some(event => event.id === 'CNC-2086' && event.caseId === 'device'));
+  assert.ok(watch.eventCoverage.events.some(event => event.id === 'CNC-1044' && event.caseId === 'interface'));
+  assert.match(watch.updates.find(item => item.id === 'event-correlation').title, /12 events under correlation/);
+  assert.equal(watch.tone, 'negative');
+  assert.deepEqual(state, copy);
 });
 
 test('historical source inspection cannot replace the current landing response with a historical record', () => {
@@ -163,4 +267,14 @@ test('historical source inspection cannot replace the current landing response w
   assert.equal(networkWatch(historical).mode, 'recovery');
   assert.equal(networkWatch(historical).updates.find(item => item.id === 'interface-response').time, '08:35');
   assert.deepEqual(historical, before);
+});
+
+test('a verified interface outcome cannot hide a separate event under correlation', () => {
+  const watch = networkWatch(at(11,{unclassifiedEvent:true}));
+  assert.equal(watch.mode,'correlation');
+  assert.equal(watch.tone,'info');
+  assert.match(watch.title,/under investigation/);
+  assert.equal(watch.eventCoverage.pending.length,1);
+  assert.ok(watch.updates.some(item=>item.id==='interface-outcome'));
+  assert.ok(watch.updates.some(item=>item.id==='event-correlation'));
 });

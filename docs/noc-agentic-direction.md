@@ -2,6 +2,8 @@
 
 Updated: 2026-11-13. Status: current user direction; revised story coverage ready for review. No application code or UI changed in this clarification pass.
 
+Implementation follow-through: [NOC agent-owned response experience](noc-agentic-implementation.md) records the subsequent application changes, verification, source assumptions and fallback checkpoint.
+
 ## Scope decision
 
 The user clarified: “forget about the traffic engineer” and focus on agents with network visibility through a knowledge graph and detailed sources, so that the NOC operator can complete the work without another engineer's involvement.

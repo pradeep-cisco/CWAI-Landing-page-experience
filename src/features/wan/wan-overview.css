@@ -376,6 +376,10 @@
 }
 
 .wan-connections-disclosure { display: block; }
+.wan-connections-disclosure>summary {width:fit-content;cursor:pointer;color:var(--interact-text-default);font-size:12px;font-weight:600;line-height:24px;padding-block:4px;}
+.wan-connections-disclosure>summary:hover {text-decoration:underline;text-underline-offset:4px;}
+.wan-connections-disclosure>summary:focus-visible {outline:2px solid var(--interact-border-default);outline-offset:4px;}
+.wan-connections-disclosure[open]>summary {margin-bottom:16px;}
 .wan-connections-disclosure .wan-connections:first-child { border-top: none; padding-top: 8px; }
 
 @keyframes wan-route-arrives {

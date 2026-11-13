@@ -281,7 +281,7 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
         state={state} kind={kind} onConnection={onConnection} onHighlight={setHighlight} />)}
     </div>
     <hbr-text type="secondary" size="xs">
-      {narrow ? 'Actual connections are listed below. ' : `${plural(layout.corridors.length, 'actual connection')} shown. `}
+      {narrow ? 'View connections below for actual links. ' : `${plural(layout.corridors.length, 'actual connection')} shown. `}
       Positions are logical.{layout.offPageBundleCount > 0 ? ` ${plural(layout.offPageBundleCount, 'connection')} continue outside this page.` : ''}
     </hbr-text>
   </hbr-layout>;
@@ -435,7 +435,8 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
               <Pager result={isDomain ? groupPage : domainPage} pageSize={isDomain ? PAGE_SIZES.groups : 12}
                 noun={isDomain ? 'device group' : 'domain'}
                 onChange={page => isDomain ? onPatch({ scopePage: page }) : setNetworkPages(previous => ({ ...previous, [setupId]: page }))} />
-              <hbr-accordion summary="Connections" size="small" variant="stacked" class="wan-connections-disclosure">
+              <details className="wan-connections-disclosure" key={`${setupId}:${state.view}:${state.domain}`}>
+              <summary>View connections</summary>
               {isDomain && <ConnectionList connections={localBundles} state={state} kind="group" title="Within-domain group connections"
                 page={localConnectionPages[`${setupId}:${state.domain}`] || 0}
                 onPage={page => setLocalConnectionPages(previous => ({ ...previous, [`${setupId}:${state.domain}`]: page }))}
@@ -445,7 +446,7 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
                 page={isDomain ? state.groupConnectionsPage || 0 : connectionsPage}
                 onPage={page => isDomain ? onPatch({ groupConnectionsPage: page }) : setConnectionPages(previous => ({ ...previous, [setupId]: page }))}
                 onConnection={onConnection} />
-              </hbr-accordion>
+              </details>
             </>}
           </hbr-layout>
         </hbr-card>

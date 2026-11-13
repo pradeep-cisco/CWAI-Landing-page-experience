@@ -9,44 +9,31 @@ import NetworkWatch, { WatchPulse } from '../../features/wan/NetworkWatch.jsx';
 import { networkWatch } from '../../features/wan/watch-model.js';
 import OperationsDashboard from '../../features/wan/operations/OperationsDashboard.jsx';
 import EvidenceModal from '../../features/wan/EvidenceModal.jsx';
-import { FRAMES, MATCHES, INTERFACE, currentFrame, activeAlarms, reduce } from '../../features/wan/model/model.js';
-import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentResponse, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
+import { FRAMES, currentFrame, reduce } from '../../features/wan/model/model.js';
+import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
 import { WAN_SETUPS, ACTIVE_WAN, MONITORING_CONTEXT, setActiveWanSetup, domainLabel, groupLabel, navigateScope } from '../../features/wan/model/scale.js';
 import './network-monitoring.css';
 
 const inputValue = e => e.currentTarget?.value ?? e.target?.value ?? '';
 const context = () => ({ ...MONITORING_CONTEXT, mainDomainLabel: domainLabel(MONITORING_CONTEXT.mainDomain), mainGroupLabel: groupLabel(MONITORING_CONTEXT.mainGroup), criticalDomainLabel: domainLabel(MONITORING_CONTEXT.criticalDomain), transitDomainLabel: domainLabel(MONITORING_CONTEXT.transitDomain) });
-const initial = () => createAgentState({networkContext:context(), interfacePage:0, groupConnectionsPage:0});
+const initial = () => createAgentState({networkContext:context(), match:'no-match', interfacePage:0, groupConnectionsPage:0});
 
-function StatusTag({ sentiment='info', children }) {
-  return <hbr-tag status size="small" sentiment={sentiment}>{children}</hbr-tag>;
-}
-function SourceAlarms({state, onInspect, onOpen}) {
-  const alarms=activeAlarms(state);
-  return <hbr-accordion summary={`Source alarms · ${alarms.length} active`} className="wan-alarm-card">
-    {alarms.length ? <div className="wan-alarm-list">{alarms.map(alarm=><div className="wan-alarm-row" key={alarm.id}>
-      <StatusTag sentiment={alarm.severity==='Critical'?'negative':alarm.severity==='Major'?'warning':'low-warning'}>{alarm.severity}</StatusTag>
-      <div className="wan-alarm-description"><hbr-button variant="text" size="small" onClick={()=>onInspect(alarm.id==='CNC-2086'?{kind:'device',id:alarm.object}:{kind:'interface',id:alarm.id==='CNC-1044'?'XR-P2:HundredGigE0/0/0/1':`XR-P1:${INTERFACE}`})}>{alarm.title}</hbr-button><hbr-text type="secondary" size="xs">{alarm.target} · {alarm.id} · {alarm.detected}</hbr-text></div>
-      <hbr-text type="secondary" size="xs">CW AI · Acknowledged {alarm.ack?.time}</hbr-text>
-      <hbr-button variant="text" size="small" onClick={()=>onOpen(alarm.id==='CNC-2086'?'device':'interface')}>Response</hbr-button>
-    </div>)}</div> : <div className="wan-alarm-empty"><hbr-icon name="status-positive" sentiment="positive" /><hbr-text type="secondary" size="sm">{state.frame===11?'The source cleared CNC-1042 at 08:30. The response record is retained.':'No active alarms in the current source snapshot.'}</hbr-text></div>}
-  </hbr-accordion>;
-}
-
-function ReviewModal({state, onClose, onFrame, onSource, onAgent, onPlay}) {
-  const r=agentResponse(state,state.agentic.selected);
+function ReviewModal({state, onClose, onFrame, onSource, onPlay}) {
   return <hbr-modal open label="Review autonomous response" size="medium" onhbr-after-hide={e=>{if(e.target===e.currentTarget)onClose();}}>
     <hbr-layout direction="column" gap="lg">
       <hbr-text type="secondary" size="sm">Concept review · Simulated sources and agent responses. Review choices pause the source story.</hbr-text>
       <hbr-select label="Source observation" value={String(state.frame)} onhbr-change={e=>onFrame(Number(inputValue(e)),false)}>{FRAMES.map(f=><hbr-option key={f.index} value={String(f.index)}>{f.time} · {agentFrameTitle(f.index)}</hbr-option>)}</hbr-select>
-      <hbr-select label="Response authority" value={state.match} onhbr-change={e=>onSource({type:'MATCH',value:inputValue(e)})}>{Object.entries(MATCHES).map(([key,m])=><hbr-option key={key} value={key}>{key==='available'?'Autonomous response permitted':m.title}</hbr-option>)}</hbr-select>
+      <hbr-select label="Response context" value={state.match} onhbr-change={e=>onSource({type:'MATCH',value:inputValue(e)})}>
+        <hbr-option value="available">Validated procedure available</hbr-option><hbr-option value="no-match">No playbook · Construct a response</hbr-option><hbr-option value="unavailable">Catalogue unavailable · Use network evidence</hbr-option><hbr-option value="restricted">Change outside permitted scope</hbr-option><hbr-option value="precheck">Target held by another job</hbr-option>
+      </hbr-select>
       <hbr-select label="Telemetry collection" value={state.gap} onhbr-change={e=>onSource({type:'GAP',value:inputValue(e)})}>
         <hbr-option value="none">All sources current</hbr-option><hbr-option value="west">{domainLabel(MONITORING_CONTEXT.mainDomain)} interface metrics unavailable</hbr-option><hbr-option value="east">{domainLabel(MONITORING_CONTEXT.criticalDomain)} device telemetry unavailable</hbr-option>
       </hbr-select>
       <hbr-select label="Controller job result" value={state.runOutcome} onhbr-change={e=>onSource({type:'JOB_OUTCOME',value:inputValue(e)})}><hbr-option value="completed">Confirmed completion</hbr-option><hbr-option value="failed">Failed execution</hbr-option><hbr-option value="unknown">Result unconfirmed</hbr-option></hbr-select>
+      <hbr-select label="Agent recovery evidence" value={state.reconciliation || 'pending'} onhbr-change={e=>onSource({type:'RECONCILIATION',value:inputValue(e)})}><hbr-option value="pending">Reconciliation still pending</hbr-option><hbr-option value="verified-retry">Recorded reconciliation and successful revised response</hbr-option></hbr-select>
       <hbr-switch checked={state.critical} onhbr-change={e=>onSource({type:'CRITICAL',value:e.target.checked})}>Independent Critical router alarm</hbr-switch>
       <hbr-switch checked={state.related} onhbr-change={e=>onSource({type:'RELATED',value:e.target.checked})}>Two related Minor interface alarms</hbr-switch>
-      <hbr-button variant="text" disabled={r.handoff?.status!=='sent'} onClick={()=>onAgent({type:'AGENT_ACCEPT'})}>Simulate engineering acceptance</hbr-button>
+      <hbr-switch checked={Boolean(state.unclassifiedEvent)} onhbr-change={e=>onSource({type:'UNCLASSIFIED',value:e.target.checked})}>Additional event under correlation</hbr-switch>
     </hbr-layout>
     <hbr-layout slot="footer" direction="row" gap="md"><hbr-button variant="text" onClick={onClose}>Close</hbr-button><hbr-button onClick={onPlay} disabled={state.frame===11}>Play from here</hbr-button></hbr-layout>
   </hbr-modal>;
@@ -63,7 +50,6 @@ export default function NetworkMonitoring() {
   const [reviewVisible, setReviewVisible] = useState(true);
   const [dialog, setDialog] = useState(null);
   const [evidence, setEvidence] = useState(null);
-  const [delivered, setDelivered] = useState(null);
   const [spotlight, setSpotlight] = useState(null);
   const sessions = useRef(new Map()), workspaceRef = useRef(null);
 
@@ -80,13 +66,12 @@ export default function NetworkMonitoring() {
   }, [playing, state.frame, state.history, setup]);
   useEffect(() => { if (state.frame === 11) setPlaying(false); }, [state.frame]);
 
-  const sourceAction = action => setState(s => syncAgentResponse(action.type === 'JOB_OUTCOME' ? { ...s, runOutcome: action.value } : reduce(s, action)));
+  const sourceAction = action => setState(s => syncAgentResponse(action.type === 'JOB_OUTCOME' ? { ...s, runOutcome: action.value } : action.type === 'RECONCILIATION' ? { ...s, reconciliation: action.value } : action.type === 'UNCLASSIFIED' ? { ...s, unclassifiedEvent: action.value } : reduce(s, action)));
   const openResponse = id => {
     if (view === 'admin') navigate('/network-monitoring/incidents');
     setState(s => reduceAgent({ ...s, history: null, liveContext: null }, { type: 'AGENT_OPEN', incident: id }));
   };
   const agentAction = action => {
-    if (action.type === 'SHOW_HANDOFF') { setDelivered(agentResponse(state, action.incident || state.agentic.selected).handoff); setDialog('delivered'); return; }
     if (action.type === 'AGENT_OPEN' || action.type === 'AGENT_SELECT') { openResponse(action.incident || action.id || state.agentic.selected); return; }
     setState(s => reduceAgent(s, action));
   };
@@ -111,7 +96,6 @@ export default function NetworkMonitoring() {
       <div className="wan-monitoring-main">
         {view === 'home' ? <>
           <WanOverview state={state} spotlight={spotlight} onNavigate={(kind, value) => setState(s => navigateScope(s, kind, value))} onInspect={setEvidence} onConnection={selection => setEvidence({ kind: 'connections', level: selection.kind, id: selection.id })} onPatch={patch => setState(s => ({ ...s, ...patch }))} onOpenResponse={openResponse}/>
-          <SourceAlarms state={state} onInspect={setEvidence} onOpen={openResponse}/>
         </> : view === 'admin' ? <AdminSummary state={state}/> : <IncidentList watch={watch} onOpen={openResponse} onInspect={setEvidence}/>}
       </div>
       {showAgent ? <AgentWorkspace state={state} onAction={agentAction} onInspect={setEvidence} onClose={() => agentAction({ type: 'AGENT_CLOSE' })}/> : view === 'home' ? <NetworkWatch state={{ ...state, history: null }} watch={watch} spotlight={spotlight} onLocate={id => { setSpotlight(previous => previous === id ? null : id); setState(s => navigateScope(s, 'network')); }} onOpen={openResponse} onInspect={setEvidence}/> : null}
@@ -128,7 +112,6 @@ export default function NetworkMonitoring() {
       </div>
     </div> : <hbr-button className="wan-review-reopen" size="small" variant="outline" onClick={() => setReviewVisible(true)}>Preview</hbr-button>, document.body)}
     <EvidenceModal state={state} selection={evidence} onClose={() => setEvidence(null)} onInspect={setEvidence}/>
-    {dialog === 'review' && <ReviewModal state={state} onClose={() => setDialog(null)} onFrame={frameChange} onSource={sourceAction} onAgent={agentAction} onPlay={() => { setState(s => ({ ...s, history: null })); setPlaying(true); setDialog(null); }}/>}
-    {dialog==='delivered'&&delivered&&<hbr-modal open label="Delivered engineering handoff" size="medium" onhbr-after-hide={e=>{if(e.target===e.currentTarget)setDialog(null);}}><hbr-layout direction="column" gap="lg"><StatusTag sentiment="info">Delivered by {delivered.actor} · {delivered.sent}</StatusTag><hbr-text>{delivered.route} · {delivered.status==='accepted'?`Accepted by ${delivered.acceptedBy} at ${delivered.accepted}`:'Acceptance pending'}</hbr-text><hbr-key-value-pairs><dl><dt>Delivered scope</dt><dd>{delivered.snapshot.scope}</dd><dt>Reason</dt><dd>{delivered.snapshot.reason.title}</dd><dt>Source observation</dt><dd>{delivered.snapshot.observedAt}</dd><dt>Source alarm</dt><dd>{delivered.snapshot.alarm||'Not applicable'}</dd><dt>Controller result at delivery</dt><dd>{delivered.snapshot.jobStatus}</dd><dt>Operator context at delivery</dt><dd>{delivered.snapshot.notes||'No additional context.'}</dd></dl></hbr-key-value-pairs><hbr-text type="secondary" size="sm">This is the context captured at delivery. Subsequent observations are retained in the current response.</hbr-text></hbr-layout><hbr-button slot="footer" variant="outline" onClick={()=>setDialog(null)}>Close</hbr-button></hbr-modal>}
+    {dialog === 'review' && <ReviewModal state={state} onClose={() => setDialog(null)} onFrame={frameChange} onSource={sourceAction} onPlay={() => { setState(s => ({ ...s, history: null })); setPlaying(true); setDialog(null); }}/>}
   </div>;
 }

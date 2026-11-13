@@ -2,6 +2,9 @@ import { useEffect, useId, useState } from 'react';
 import { agentResponse } from '../model/agentic-model.js';
 import { domainLabel, findDevice, groupLabel } from '../model/scale.js';
 import { OperationsSection, SectionHeader, StatusTag, StatusIcon, MetricChart, EvidenceNote } from './OperationsPrimitives.jsx';
+import ResponsePlan from '../ResponsePlan.jsx';
+import { SourceEvents, PendingEvents, ExpectedEvents } from '../SourceEvents.jsx';
+import { eventCoverage } from '../model/event-accounting.js';
 import { RecoveryDetails } from './RecoverySection.jsx';
 import { RepeatIssuesDetails } from './EvidenceSections.jsx';
 import './situation-sections.css';
@@ -10,19 +13,6 @@ const jobLabel = { 'not-started': 'No change started', running: 'Executing', com
 const stepLabel = { complete: 'Confirmed', active: 'In progress', blocked: 'Waiting', pending: 'Not started', error: 'Failed', unknown: 'Result unconfirmed' };
 const stepVariant = { complete: 'complete', active: 'progress', blocked: 'inactive', pending: 'inactive', error: 'error', unknown: 'inactive' };
 const activityVariant = event => /failed|error/i.test(event.title) ? 'error' : /unavailable|unconfirmed|unknown/i.test(event.title) ? 'default' : 'complete';
-
-// Present the actual controller result, rather than inferring execution from
-// the source story's phase. Observation continues while further changes pause.
-function responseProgress(response, observation) {
-  if (response.id !== 'interface') return response.steps || [];
-  const execution = { running: 'active', completed: 'complete', failed: 'error', unknown: 'unknown' }[response.job?.status]
-    || (response.needsDecision || response.paused ? 'blocked' : 'pending');
-  return (response.steps || []).map(step => {
-    if (step.id === 'remediate') return { ...step, status: execution };
-    if (step.id === 'verify') return { ...step, status: response.resolved ? 'complete' : response.job?.status !== 'completed' ? 'pending' : !observation.fresh || response.needsDecision ? 'blocked' : 'active' };
-    return !observation.fresh && !response.resolved ? { ...step, status: 'blocked' } : step;
-  });
-}
 
 function ResourceMark({ type }) {
   return <svg viewBox="0 0 32 32" aria-hidden="true" className="sit-resource-icon">
@@ -112,7 +102,7 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction, req
   const selectedEvidence = evidenceIndex === null ? null : evidence[evidenceIndex];
   const activity = response.activity || [];
   const visibleActivity = showAllActivity ? activity : activity.slice(-3);
-  const progress = responseProgress(response, model.observation);
+  const progress = response.steps || [];
   const selectIncident = id => { setSelectedId(id); setView('overview'); setScopeSelection(null); setEvidenceIndex(null); setShowAllActivity(false); };
   const changeView = event => {
     if (event.target !== event.currentTarget || !['overview','recovery','history'].includes(event.detail?.name)) return;
@@ -122,6 +112,7 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction, req
   const recoveryLabel = response.resolved ? 'Recovery verified' : !model.observation.fresh ? 'Verification waiting for data' : response.job.status === 'failed' ? 'Execution failed · Recovery unverified' : response.job.status === 'unknown' ? 'Controller result unconfirmed' : response.job.status === 'completed' ? 'Execution complete · Verification pending' : response.job.status === 'running' ? 'Execution running · Recovery not yet verified' : 'Recovery not yet verified';
 
   const overview = incident ? <>
+        <ResponsePlan response={response}/>
         <div className="sit-investigation-grid">
           <div className="sit-resource-surface">
             <div className="sit-surface-heading"><span>Affected scope</span><span>Resource hierarchy</span></div>
@@ -142,6 +133,7 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction, req
           <div className="sit-response-copy"><span className="sit-overline">{response.resolved ? 'Response completed' : 'Response underway'}</span><p>{response.summary}</p><span className="sit-next"><span aria-hidden="true">→</span> {response.next}</span></div>
           <div className="sit-confirmed-job"><span>Controller record</span><strong>{response.job?.id || 'No controller job'}</strong><StatusTag tone={response.job?.status === 'failed' ? 'negative' : response.job?.status === 'completed' ? 'positive' : 'info'}>{jobLabel[response.job?.status] || 'Not started'}</StatusTag>{response.job?.startedAt && <small>Started {response.job.startedAt}</small>}</div>
         </div>
+        <SourceEvents state={state} caseId={incident.id} onInspect={onInspect}/>
 
         <div className="sit-response-trace">
           <div className="sit-lifecycle">
@@ -174,7 +166,7 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction, req
           <span>{recoveryLabel}</span>
           {response.resolved && <span className="sit-review-label">Completed case · Kept open for review</span>}
         </div>}
-        {response.needsDecision && response.decision && <div className="sit-decision"><StatusTag tone="warning">Attention required</StatusTag><h4>{response.decision.title}</h4><p>{response.decision.detail}</p>{response.handoff && <small>{response.handoff.route} · Delivered {response.handoff.sent} · {response.handoff.status === 'accepted' ? 'Acceptance confirmed' : 'Acceptance pending'}</small>}</div>}
+        {response.blocker && <div className="sit-decision"><StatusTag tone="warning">Owned by CW AI</StatusTag><h4>{response.blocker.title}</h4><p>{response.blocker.detail}</p><small>{response.blocker.next}</small></div>}
         {incident.id === 'interface' ? <hbr-tab-group class="sit-case-tabs" onhbr-tab-show={changeView}>
           <hbr-tab slot="nav" panel="overview" active={view === 'overview'} onClick={() => setSelectedId(incident.id)}>Overview</hbr-tab>
           <hbr-tab slot="nav" panel="recovery" active={view === 'recovery'} onClick={() => setSelectedId(incident.id)}>Recovery</hbr-tab>
@@ -187,13 +179,13 @@ export function IncidentSection({ model, state, onOpen, onInspect, onAction, req
         </hbr-tab-group> : <div className="sit-case-panel">
             {overview}
         </div>}
-        <footer className="sit-incident-footer"><EvidenceNote>Source severity, controller execution, and recovery remain separate records.</EvidenceNote><div className="sit-footer-actions"><hbr-button variant="outline" size="small" onClick={() => onOpen?.(incident.id)}>{response.needsDecision ? 'Review decision' : 'Inspect response'}</hbr-button>{incident.id === 'interface' && !response.resolved && <hbr-button variant="text" size="small" onClick={() => onAction?.({type:response.paused ? 'AGENT_RESUME' : 'AGENT_PAUSE',incident:'interface'})}>{response.paused ? 'Resume with revalidation' : 'Pause further changes'}</hbr-button>}</div></footer>
+        <footer className="sit-incident-footer"><EvidenceNote>Source severity, controller execution, and recovery remain separate records.</EvidenceNote><div className="sit-footer-actions"><hbr-button variant="outline" size="small" onClick={() => onOpen?.(incident.id)}>Inspect response</hbr-button>{incident.id === 'interface' && !response.resolved && <hbr-button variant="text" size="small" onClick={() => onAction?.({type:response.paused ? 'AGENT_RESUME' : 'AGENT_PAUSE',incident:'interface'})}>{response.paused ? 'Resume with revalidation' : 'Pause further changes'}</hbr-button>}</div></footer>
       </div>
     </>}
   </OperationsSection>;
 }
 
-export function WatchlistSection({ model, onInspect, onOpen, onReviewIncident }) {
+export function WatchlistSection({ model, state, onInspect, onOpen, onReviewIncident }) {
   const heading = useId();
   const [selectedTime,setSelectedTime] = useState(null);
   const { observation:reading,response,frame } = model;
@@ -201,12 +193,15 @@ export function WatchlistSection({ model, onInspect, onOpen, onReviewIncident })
   const inspected = points.find(point => point.time === selectedTime) || points.at(-1);
   const incidentOpened = frame >= 2;
   const developing = frame === 1 && reading.fresh;
+  const pending = state ? eventCoverage(state).pending : [];
   const tone = !reading.fresh ? 'warning' : developing ? 'info' : 'positive';
   const followCase = () => onReviewIncident ? onReviewIncident('recovery') : onOpen?.('interface');
   const selectSample = value => setSelectedTime(typeof value === 'string' ? value : value?.time ?? null);
 
   return <OperationsSection className="sit-watchlist" id="ops-watchlist" aria-labelledby={heading}>
-    <SectionHeader id={heading} title="Watchlist" description="Developing conditions before an incident is opened."><StatusTag tone={tone}>{!reading.fresh ? 'Visibility limited' : developing ? 'Following a trend' : 'No developing conditions'}</StatusTag></SectionHeader>
+    <SectionHeader id={heading} title="Watchlist" description="Developing conditions and new events under investigation."><StatusTag tone={pending.length ? 'info' : tone}>{pending.length ? `${pending.length} under correlation` : !reading.fresh ? 'Visibility limited' : developing ? 'Following a trend' : 'No developing conditions'}</StatusTag></SectionHeader>
+    {pending.length > 0 && <PendingEvents state={state} onInspect={onInspect}/>}
+    {state && <ExpectedEvents state={state}/>}
     {developing ? <>
       <div className="sit-watch-heading"><div><span className="sit-overline">{model.scope.domain} · {model.scope.router} outbound</span><h3>Outbound utilization is rising</h3><p>{model.scope.interface} → {model.scope.peer}</p></div><div className="sit-watch-value" data-tone="info"><strong key={reading.utilization}>{reading.utilization}<small>%</small></strong><span>Observed {reading.observedAt}</span></div></div>
       <div className="sit-trend-workspace"><div className="sit-large-trend"><MetricChart samples={points} threshold={model.threshold} selectedTime={inspected?.time} onSelect={selectSample} endTime={model.time} label={`${model.scope.router} outbound interface utilization`} height={250}/><div className="sit-plot-legend"><span><i/>Outbound utilization</span><span><i className="threshold"/>Configured limit {model.threshold}%</span></div></div><aside className="sit-trend-inspection"><span className="sit-overline">Selected observation</span><strong>{inspected?.value ?? reading.utilization}<small>%</small></strong><time>{inspected?.time || reading.observedAt}</time><p>Interface telemetry<br/>{model.scope.router} outbound</p><StatusTag tone="info">Below limit at observation</StatusTag></aside></div>

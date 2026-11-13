@@ -30,7 +30,7 @@ export default function OperationsDashboard({ state, onOpen, onInspect, onAction
     </nav>
     <DataHealthSummary key={`health:${contextKey}`} model={model} onInspect={onInspect} onOpen={onOpen}/>
     <IncidentSection key={`incidents:${contextKey}`} model={model} state={state} requestedIncident={requestedIncident} onOpen={onOpen} onInspect={onInspect} onAction={onAction}/>
-    <WatchlistSection key={`watchlist:${contextKey}`} model={model} onInspect={onInspect} onOpen={onOpen} onReviewIncident={reviewIncident}/>
+    <WatchlistSection key={`watchlist:${contextKey}`} state={state} model={model} onInspect={onInspect} onOpen={onOpen} onReviewIncident={reviewIncident}/>
     <ChangesSection model={model} onInspect={onInspect}/>
     <RecentSection key={`recent:${contextKey}`} model={model} onOpen={onOpen}/>
   </div>;

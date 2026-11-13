@@ -1,13 +1,18 @@
 import { useId, useState } from 'react';
 import { agentQueue, agentResponse } from './model/agentic-model.js';
 import { observations, currentFrame, THRESHOLD, INTERFACE } from './model/model.js';
+import ResponsePlan from './ResponsePlan.jsx';
+import { SourceEvents } from './SourceEvents.jsx';
 import './agent-workspace.css';
 
 const QUESTIONS = ['Why this response?', 'What else is affected?', 'What happens next?'];
-const JOB_LABELS = { 'not-started': 'Not started', running: 'Running', completed: 'Completed', failed: 'Failed', unknown: 'Result unknown' };
-const STAGE_VARIANTS = { complete: 'complete', active: 'progress', blocked: 'inactive', pending: 'inactive' };
-const STAGE_LABELS = { complete: 'Complete', active: 'In progress', blocked: 'Waiting for prerequisites', pending: 'Not started' };
-const toneFor = (response) => response.resolved ? 'positive' : response.needsDecision ? 'warning' : response.paused || response.inactive ? 'inactive' : 'in-progress';
+const JOB_LABELS = { 'not-started': 'Not started', running: 'Running', completed: 'Completed', failed: 'Failed', unknown: 'Result unconfirmed' };
+const STAGE_VARIANTS = { complete: 'complete', active: 'progress', blocked: 'inactive', pending: 'inactive', error: 'error', failed: 'error', unknown: 'default' };
+const STAGE_LABELS = { complete: 'Confirmed', active: 'In progress', blocked: 'Waiting for prerequisites', pending: 'Not started', error: 'Failed', failed: 'Failed', unknown: 'Result unconfirmed' };
+const toneFor = (response) => response.resolved ? 'positive' : response.blocker ? 'warning' : response.paused || response.inactive ? 'inactive' : 'in-progress';
+const activityVariant = (item) => ['error', 'failed'].includes(item.status) || /failed|error/i.test(item.title) ? 'error'
+  : ['unknown', 'pending', 'blocked', 'unavailable'].includes(item.status) || /unknown|unavailable|pending|waiting|unconfirmed|reconciling/i.test(item.title) ? 'default'
+    : item.status === 'active' ? 'progress' : 'complete';
 const inputValue = (event) => String(event.currentTarget?.value ?? event.target?.value ?? event.detail?.value ?? '');
 
 function SectionHeading({ children }) {
@@ -15,7 +20,7 @@ function SectionHeading({ children }) {
 }
 
 function StageRail({ response }) {
-  const steps = response.steps.length ? response.steps : [
+  const steps = response.steps?.length ? response.steps : [
     { id: 'investigate', label: 'Investigate', status: 'pending' },
     { id: 'remediate', label: 'Remediate', status: 'pending' },
     { id: 'verify', label: 'Verify', status: 'pending' },
@@ -42,7 +47,7 @@ function Findings({ response, onInspect, target }) {
   return (
     <hbr-layout direction="column" gap="lg">
       <hbr-text>{response.summary}</hbr-text>
-      {response.evidence.map((item) => (
+      {(response.evidence || []).map((item) => (
         <div className="wan-agent-source" key={`${item.source}-${item.label}`}>
           <div className="wan-agent-row">
             <hbr-text weight="semibold">{item.label}</hbr-text>
@@ -63,7 +68,7 @@ function Findings({ response, onInspect, target }) {
 }
 
 function Activity({ response, time }) {
-  const events = response.activity.length ? response.activity : [{
+  const events = response.activity?.length ? response.activity : [{
     time,
     agent: 'Coordination agent',
     title: 'Network watch active',
@@ -75,8 +80,8 @@ function Activity({ response, time }) {
         <hbr-timeline-panel
           key={`${event.time}-${event.title}-${index}`}
           label={event.title}
-          subtext={`${event.time} · ${event.agent}`}
-          variant="complete"
+          subtext={event.time}
+          variant={activityVariant(event)}
           open={true}
           aria={{ level: 4 }}
         >
@@ -87,21 +92,21 @@ function Activity({ response, time }) {
   );
 }
 
-function ExecutionRecord({ response, onAction }) {
-  const { job, acknowledgement, handoff } = response;
+function ExecutionRecord({ response }) {
+  const { job, acknowledgement, reconciliation, priorJobs = [] } = response;
   return (
     <hbr-layout direction="column" gap="lg">
       <dl className="wan-agent-record">
         <dt>Response owner</dt><dd>{response.owner}</dd>
         <dt>Target</dt><dd>{response.target}</dd>
         <dt>Acknowledgement</dt><dd>{acknowledgement?.confirmed ? `${acknowledgement.actor} · ${acknowledgement.time} · Confirmed` : 'Not applicable'}</dd>
-        <dt>Controller job</dt><dd>{job.id ? `${job.id} · ${JOB_LABELS[job.status]}` : 'No controller change started'}</dd>
+        <dt>Current controller job</dt><dd>{job.id ? `${job.id} · ${JOB_LABELS[job.status]}` : 'No controller change started'}</dd>
         {job.startedAt && <><dt>Started</dt><dd>{job.startedAt}</dd></>}
         {job.completedAt && <><dt>Completed</dt><dd>{job.completedAt}</dd></>}
       </dl>
       {job.id && (
         <hbr-timeline>
-          {job.steps.map((step) => (
+          {(job.steps || []).map((step) => (
             <hbr-timeline-panel
               key={step.label}
               label={step.label}
@@ -112,15 +117,20 @@ function ExecutionRecord({ response, onAction }) {
           ))}
         </hbr-timeline>
       )}
-      {handoff && (
-        <div className="wan-agent-source">
-          <hbr-text weight="semibold">Engineering handoff</hbr-text>
-          <hbr-tag size="small" sentiment={handoff.status === 'accepted' ? 'positive' : 'info'}>
-            {handoff.status === 'accepted' ? `Accepted by ${handoff.acceptedBy || 'engineering'}` : 'Delivered · Acceptance pending'}
-          </hbr-tag>
-          <hbr-text>{handoff.route} · Routed by {handoff.actor || 'CW AI'} at {handoff.sent}</hbr-text>
-          {handoff.accepted && <hbr-text type="secondary" size="xs">Acceptance confirmed {handoff.accepted}</hbr-text>}
-          <hbr-button variant="text" size="small" onClick={() => onAction({ type: 'SHOW_HANDOFF', incident: response.id })}>Review delivered context</hbr-button>
+      {priorJobs.length > 0 && <div className="wan-agent-prior-jobs">
+        <hbr-text variant="smallest-title">Earlier attempts</hbr-text>
+        {priorJobs.map((previous) => <div className="wan-agent-source" key={previous.id}>
+          <div className="wan-agent-row"><hbr-text weight="semibold">{previous.id}</hbr-text><hbr-tag size="small" sentiment={previous.status === 'failed' ? 'negative' : previous.status === 'unknown' ? 'warning' : 'info'}>{JOB_LABELS[previous.status] || previous.status}</hbr-tag></div>
+          {previous.startedAt && <hbr-text type="secondary" size="xs">Started {previous.startedAt}</hbr-text>}
+          <hbr-text type="secondary" size="xs">Original controller result retained independently of the current attempt.</hbr-text>
+        </div>)}
+      </div>}
+      {reconciliation && (
+        <div className="wan-agent-source wan-agent-reconciliation">
+          <div className="wan-agent-row"><hbr-text weight="semibold">Execution reconciliation</hbr-text><hbr-tag size="small" sentiment={reconciliation.status === 'verified-not-applied' ? 'positive' : 'info'}>{reconciliation.status === 'verified-not-applied' ? 'Not applied · Confirmed' : 'In progress'}</hbr-tag></div>
+          <hbr-text>{reconciliation.detail}</hbr-text>
+          {reconciliation.time && <hbr-text type="secondary" size="xs">Recorded {reconciliation.time}</hbr-text>}
+          {(reconciliation.sources || []).map((record, index) => <hbr-text type="secondary" size="xs" key={record.id || record.label || index}>{record.id || record.label || record.source}{record.time ? ` · ${record.time}` : ''}{record.detail ? ` · ${record.detail}` : ''}</hbr-text>)}
         </div>
       )}
       <hbr-text type="secondary" size="xs">A controller result, a source alarm, and verified recovery are separate records.</hbr-text>
@@ -130,11 +140,11 @@ function ExecutionRecord({ response, onAction }) {
 
 export function AgentSummary({ state, onAction }) {
   const queue = agentQueue(state);
-  const decisions = queue.filter((item) => item.needsDecision);
-  const working = queue.filter((item) => !item.resolved && !item.needsDecision);
-  const selected = decisions[0] || queue.find((item) => item.id === state.agentic?.selected) || queue[0] || agentResponse(state);
+  const constrained = queue.filter((item) => item.blocker && !item.resolved);
+  const working = queue.filter((item) => !item.resolved);
+  const selected = constrained[0] || queue.find((item) => item.id === state.agentic?.selected) || queue[0] || agentResponse(state);
   const resolved = queue.some((item) => item.resolved);
-  const title = decisions.length ? `${decisions.length} ${decisions.length === 1 ? 'response needs' : 'responses need'} a decision` : working.length ? `${working.length} ${working.length === 1 ? 'response' : 'responses'} in progress` : resolved ? 'Recovery verified by CW AI' : 'Autonomous response enabled';
+  const title = constrained.length ? `Following ${constrained.length} ${constrained.length === 1 ? 'response dependency' : 'response dependencies'}` : working.length ? `${working.length} ${working.length === 1 ? 'response' : 'responses'} in progress` : resolved ? 'Recovery verified by CW AI' : 'Autonomous response enabled';
   return (
     <div className="wan-agent-summary" aria-label="CW AI response status">
       <hbr-icon name="magic-wand" size="24px" />
@@ -144,7 +154,7 @@ export function AgentSummary({ state, onAction }) {
       </div>
       <hbr-tag size="small" sentiment={toneFor(selected)}>{selected.stage}</hbr-tag>
       <hbr-button variant="outline" size="small" onClick={() => onAction({ type: 'AGENT_OPEN', incident: selected.id })}>
-        {state.agentic?.open ? 'Response open' : decisions.length ? 'Review decision' : 'View response'}
+        {state.agentic?.open ? 'Response open' : 'View response'}
         <hbr-icon slot="suffix" name="arrow-right" />
       </hbr-button>
     </div>
@@ -162,10 +172,10 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
   const choices = queue.some((item) => item.id === response.id) ? queue : [...queue, response];
   const source = observations(state);
   const time = currentFrame(state).time;
-  const { job, decision } = response;
+  const { job, blocker } = response;
   const paused = !!state.agentic.paused;
   const historical = state.history !== null && state.history !== undefined;
-  const canIntervene = !historical && !response.resolved && !response.inactive && response.stage !== 'Monitoring' && !(response.id === 'interface' && state.frame < 2);
+  const canIntervene = response.id === 'interface' && !historical && !response.resolved && !response.inactive && response.stage !== 'Monitoring' && state.frame >= 2;
   const target = response.id === 'device' || (response.id === 'monitoring' && state.gap !== 'west') ? { kind: 'device', id: 'XR-PE-E2' } : { kind: 'interface', id: `XR-P1:${INTERFACE}` };
   const messages = (state.agentic.messages || []).filter((message) => message.incident === response.id);
   const draft = state.agentic.draft || '';
@@ -192,17 +202,18 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
           </hbr-layout>
         </div>
         <hbr-select
-          key={choices.map(item => `${item.id}:${item.title}:${item.needsDecision}:${item.resolved}`).join('|')}
+          key={choices.map(item => `${item.id}:${item.title}:${!!item.blocker}:${item.resolved}`).join('|')}
           label="Response queue"
           size="small"
           value={response.id}
           hoist={true}
           onhbr-change={(event) => {
+            if (event.target !== event.currentTarget) return;
             const incident = event.detail?.option?.value ?? event.currentTarget.value;
             if (incident) onAction({ type: 'AGENT_SELECT', incident });
           }}
         >
-          {choices.map((item) => <hbr-option key={item.id} value={item.id}>{item.title}{item.needsDecision ? ' · Decision needed' : item.resolved ? ' · Resolved' : ''}</hbr-option>)}
+          {choices.map((item) => <hbr-option key={item.id} value={item.id}>{item.title}{item.blocker ? ' · Following dependency' : item.resolved ? ' · Resolved' : ''}</hbr-option>)}
         </hbr-select>
         <div className="wan-agent-row">
           <hbr-text size="xs" weight="semibold">Owned by {response.owner}</hbr-text>
@@ -215,7 +226,7 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
         <hbr-card>
           <hbr-layout direction="column" gap="md">
             <div className="wan-agent-row">
-              <hbr-text size="xs" weight="semibold">{response.currentAgent}</hbr-text>
+              <hbr-text size="xs" weight="semibold">CW AI owns this response</hbr-text>
               {job.id && <hbr-tag size="small" sentiment={job.status === 'failed' ? 'negative' : job.status === 'completed' ? 'positive' : 'info'}>{job.id} · {JOB_LABELS[job.status]}</hbr-tag>}
             </div>
             <SectionHeading>{response.currentWork}</SectionHeading>
@@ -227,19 +238,20 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
             )}
             <hbr-text>{response.summary}</hbr-text>
             <div className="wan-agent-source">
-              <hbr-text type="secondary" size="xs">{response.resolved ? 'Outcome' : 'Next agent activity'}</hbr-text>
+              <hbr-text type="secondary" size="xs">{response.resolved ? 'Outcome' : 'Next'}</hbr-text>
               <hbr-text>{response.next}</hbr-text>
             </div>
           </hbr-layout>
         </hbr-card>
 
-        {decision && response.needsDecision && (
-          <section className="wan-agent-decision wan-agent-section" aria-label="Engineering decision">
-            <hbr-tag size="small" sentiment="warning">Engineering decision required</hbr-tag>
-            <SectionHeading>{decision.title}</SectionHeading>
-            <hbr-text>{decision.detail}</hbr-text>
-            {response.handoff && <hbr-text type="secondary" size="xs">CW AI delivered the evidence to {response.handoff.route} at {response.handoff.sent}. Engineering acceptance is {response.handoff.status === 'accepted' ? 'confirmed' : 'pending'}.</hbr-text>}
-            <hbr-button size="small" variant="outline" onClick={() => onAction({ type: 'SHOW_HANDOFF', incident: response.id })}>Review engineering handoff</hbr-button>
+        <ResponsePlan response={response} details={false}/>
+
+        {blocker && (
+          <section className="wan-agent-dependency wan-agent-section" aria-label="Owned response dependency" data-status={blocker.status}>
+            <div className="wan-agent-row"><hbr-tag size="small" sentiment="warning">{blocker.status === 'reconciling' ? 'Reconciling evidence' : 'Following dependency'}</hbr-tag><hbr-text size="xs" weight="semibold">{blocker.owner || 'CW AI'} retains ownership</hbr-text></div>
+            <SectionHeading>{blocker.title}</SectionHeading>
+            <hbr-text>{blocker.detail}</hbr-text>
+            {blocker.next && <hbr-text type="secondary" size="xs">Next: {blocker.next}</hbr-text>}
           </section>
         )}
 
@@ -263,17 +275,23 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
         <StageRail response={response} />
 
         <div className="wan-agent-disclosures">
-          <hbr-accordion summary="Findings and sources" size="small">
-            <Findings response={response} onInspect={onInspect} target={target} />
+          <hbr-accordion label="Response plan" size="small">
+            <ResponsePlan response={response}/>
           </hbr-accordion>
-          <hbr-accordion summary={`Agent activity · ${response.activity.length}`} size="small">
+          <hbr-accordion label="Findings and sources" size="small">
+            <hbr-layout direction="column" gap="xl">
+              <Findings response={response} onInspect={onInspect} target={target}/>
+              <SourceEvents state={state} caseId={response.id} onInspect={onInspect} disclosure={false}/>
+            </hbr-layout>
+          </hbr-accordion>
+          <hbr-accordion label={`Response activity · ${response.activity?.length || 0}`} size="small">
             <Activity response={response} time={time} />
           </hbr-accordion>
-          <hbr-accordion summary="Change and execution record" size="small">
-            <ExecutionRecord response={response} onAction={onAction} />
+          <hbr-accordion label="Change and execution record" size="small">
+            <ExecutionRecord response={response}/>
           </hbr-accordion>
-          {response.criteria.length > 0 && (
-            <hbr-accordion summary="Recovery verification" size="small" open={response.stage === 'Verifying' || response.resolved}>
+          {response.criteria?.length > 0 && (
+            <hbr-accordion label="Recovery verification" size="small" open={response.stage === 'Verifying' || response.resolved}>
               <hbr-layout direction="column" gap="lg">
                 {response.criteria.map((criterion) => (
                   <div className="wan-agent-criterion" key={criterion.id}>
@@ -316,7 +334,7 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
               placeholder="Ask about these findings…"
               autocomplete="off"
               value={draft}
-              onhbr-input={(event) => onAction({ type: 'AGENT_DRAFT', incident: response.id, value: inputValue(event) })}
+              onhbr-input={(event) => { if (event.target === event.currentTarget) onAction({ type: 'AGENT_DRAFT', incident: response.id, value: inputValue(event) }); }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' && !event.isComposing) {
                   event.preventDefault();
@@ -326,14 +344,14 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
             />
             <hbr-button type="submit" size="small" disabled={!draft.trim()}>Ask</hbr-button>
           </form>
-          <hbr-accordion summary="Add operator context" size="small">
+          <hbr-accordion label="Add operator context" size="small">
             <hbr-textarea
               label="Context for this response"
               helpText="Saved with this response. Context does not authorize a controller change."
               rows={3}
               resize="vertical"
               value={state.agentic.notes?.[response.id] || ''}
-              onhbr-input={(event) => onAction({ type: 'AGENT_NOTE', incident: response.id, value: inputValue(event) })}
+              onhbr-input={(event) => { if (event.target === event.currentTarget) onAction({ type: 'AGENT_NOTE', incident: response.id, value: inputValue(event) }); }}
             />
           </hbr-accordion>
         </section>
@@ -342,11 +360,10 @@ export function AgentWorkspace({ state, onAction, onInspect, onClose }) {
       <footer className="wan-agent-footer">
         <hbr-text type="secondary" size="xs">{historical ? 'Historical review · Return to current observations to intervene' : response.resolved ? 'Outcome and evidence retained' : state.agentic.pinned ? 'Pinned response · Monitoring continues' : 'Response continues when minimized'}</hbr-text>
         {canIntervene && (
-          <hbr-accordion summary="Intervene" size="small" open={intervening} onhbr-show={() => setIntervening(true)} onhbr-hide={() => setIntervening(false)}>
+          <hbr-accordion label="Intervene" size="small" open={intervening} onhbr-show={event => { if (event.target === event.currentTarget) setIntervening(true); }} onhbr-hide={event => { if (event.target === event.currentTarget) setIntervening(false); }}>
             <hbr-layout direction="column" gap="md">
               <hbr-text type="secondary" size="xs">Pausing prevents further automated changes. Observation continues; a confirmed controller job is not cancelled or reversed.</hbr-text>
               {response.id === 'interface' && <hbr-button variant="outline" size="small" onClick={() => onAction({ type: paused ? 'AGENT_RESUME' : 'AGENT_PAUSE', incident: response.id })}>{paused ? 'Resume with revalidation' : 'Pause further changes'}</hbr-button>}
-              {!response.handoff ? <hbr-button variant="outline" size="small" onClick={() => onAction({ type: 'AGENT_HANDOFF', incident: response.id })}>Route to engineering</hbr-button> : <hbr-text type="secondary" size="xs">Evidence already delivered to {response.handoff.route}. {response.handoff.status === 'accepted' ? 'Acceptance confirmed.' : 'Acceptance pending.'}</hbr-text>}
             </hbr-layout>
           </hbr-accordion>
         )}

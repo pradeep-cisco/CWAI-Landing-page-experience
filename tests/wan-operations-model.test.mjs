@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { buildOperations } from '../src/features/wan/operations/operations-model.js';
-import { createAgentState, enterAgentFrame, reduceAgent } from '../src/features/wan/model/agentic-model.js';
+import { createAgentState, enterAgentFrame, reduceAgent, syncAgentResponse } from '../src/features/wan/model/agentic-model.js';
+import { reduce } from '../src/features/wan/model/model.js';
 import { MONITORING_CONTEXT, DOMAINS, WAN_SETUPS, setActiveWanSetup, domainLabel, groupLabel, findDevice } from '../src/features/wan/model/scale.js';
 
 const context = () => ({ ...MONITORING_CONTEXT,
@@ -105,6 +106,112 @@ test('historical inspection leaves the current operational projection unchanged 
   assert.equal(next.changes.maintenance.checks[0].status, 'pending');
 });
 
+test('configuration differences receive an owned assessment without being called repaired', () => {
+  const assessing = buildOperations(at(4));
+  assert.equal(assessing.changes.assessment.owner, 'CW AI');
+  assert.equal(assessing.changes.assessment.status, 'Assessing difference');
+  assert.equal(assessing.outcomes.some(item => item.kind === 'configuration'), false);
+  const reviewed = buildOperations(at(5));
+  assert.equal(reviewed.changes.hasDrift, true);
+  assert.equal(reviewed.changes.assessment.status, 'Difference retained');
+  assert.equal(reviewed.changes.assessment.complete, true);
+  assert.equal(reviewed.changes.observed.find(item => item.key === 'description').value, 'CONTROL-LOOPBACK-OLD');
+  const outcome = reviewed.outcomes.find(item => item.kind === 'configuration');
+  assert.equal(outcome.completed, true);
+  assert.equal(outcome.verified, false);
+  assert.equal(outcome.job, null);
+  assert.equal(outcome.outcomeLabel, 'Difference retained');
+  assert.match(outcome.proofSummary, /forwarding effect.*not established/);
+  assert.equal(reviewed.resolved.some(item => item.kind === 'configuration'), false);
+  assert.equal(buildOperations(at(7, { operations: { drift: false } })).outcomes.some(item => item.kind === 'configuration'), false);
+});
+
+test('restored router and collection work retain source-specific outcomes without interface recovery proof', () => {
+  let state = at(7, { critical: true, gap: 'west' });
+  assert.equal(buildOperations(state).outcomes.some(item => ['device', 'monitoring'].includes(item.kind)), false);
+  state = enterAgentFrame(state, 8);
+  state = syncAgentResponse({ ...state, critical: false, gap: 'none' });
+  const model = buildOperations(state);
+  const device = model.outcomes.find(item => item.kind === 'device');
+  const collection = model.outcomes.find(item => item.kind === 'monitoring');
+  assert.equal(device.outcomeLabel, 'Reachability restored');
+  assert.equal(collection.outcomeLabel, 'Collection restored');
+  for (const result of [device, collection]) {
+    assert.equal(result.recovered, '08:12');
+    assert.equal(result.job, null);
+    assert.equal(result.verificationWindow, undefined);
+    assert.equal(result.peak, undefined);
+    assert.equal(result.after, undefined);
+    assert.ok(result.criteria.every(item => item.met));
+    assert.doesNotMatch(JSON.stringify(result.criteria), /below 80|08:30|08:35|RUN-017/);
+  }
+  assert.match(device.proofSummary, /repair operation.*not inferred/);
+  assert.match(collection.proofSummary, /does not establish interface or service recovery/);
+  assert.equal(model.resolved.some(item => item.current), false);
+});
+
+test('reachability restoration does not require or imply restored device telemetry', () => {
+  let state = at(7, { critical: true, gap: 'east' });
+  state = syncAgentResponse({ ...state, critical: false });
+  const model = buildOperations(state);
+  assert.ok(model.outcomes.some(item => item.kind === 'device'));
+  assert.equal(model.outcomes.some(item => item.kind === 'monitoring'), false);
+  const telemetry = model.monitoring.find(row => row.id === MONITORING_CONTEXT.criticalDomain).sources.find(source => source.id === 'telemetry');
+  assert.equal(telemetry.status, 'delayed');
+  assert.equal(telemetry.time, '07:50');
+});
+
+test('a new router occurrence preserves completed proof and its stable Recent identity', () => {
+  let state = at(3, { critical: true });
+  state = syncAgentResponse(reduce(state, { type: 'CRITICAL', value: false }));
+  const first = buildOperations(state).outcomes.find(item => item.kind === 'device');
+  assert.ok(first);
+  assert.equal(first.workstream, 'device');
+  state = enterAgentFrame(state, 4);
+  state = syncAgentResponse(reduce(state, { type: 'CRITICAL', value: true }));
+  const retained = buildOperations(state).outcomes.find(item => item.id === first.id);
+  assert.ok(retained, 'the old Recent row stays present while the router has another incident');
+  assert.equal(retained.workstream, undefined, 'old proof must not open a new occurrence as its response');
+  for (const key of ['scope', 'detected', 'recovered', 'proofSummary']) assert.equal(retained[key], first[key]);
+  assert.deepEqual(retained.criteria, first.criteria);
+  state = syncAgentResponse(reduce(state, { type: 'CRITICAL', value: false }));
+  const restored = buildOperations(state).outcomes.filter(item => item.kind === 'device');
+  assert.equal(restored.length, 2, 'history and the latest-source fallback must not duplicate an outcome');
+  assert.equal(new Set(restored.map(item => item.id)).size, 2);
+  assert.ok(restored.some(item => item.id === first.id));
+  assert.equal(restored.filter(item => item.workstream === 'device').length, 1);
+  const sourceCopy = structuredClone(state);
+  const projection = buildOperations(state);
+  projection.outcomes.find(item => item.id === first.id).criteria[0].label = 'Changed projection';
+  assert.deepEqual(state, sourceCopy);
+  assert.notEqual(buildOperations(state).outcomes.find(item => item.id === first.id).criteria[0].label, 'Changed projection');
+});
+
+test('a different collection gap retains the previous stream proof without borrowing its current scope', () => {
+  let state = at(3, { gap: 'west' });
+  state = syncAgentResponse(reduce(state, { type: 'GAP', value: 'none' }));
+  const first = buildOperations(state).outcomes.find(item => item.kind === 'monitoring');
+  assert.match(first.scope, /XR-P1 and XR-P2/);
+  state = enterAgentFrame(state, 4);
+  state = syncAgentResponse(reduce(state, { type: 'GAP', value: 'east' }));
+  const retained = buildOperations(state).outcomes.find(item => item.id === first.id);
+  assert.ok(retained);
+  assert.equal(retained.workstream, undefined);
+  assert.equal(retained.scope, first.scope);
+  assert.deepEqual(retained.criteria, first.criteria);
+  assert.ok(retained.criteria.some(item => /07:58/.test(item.label)));
+  state = syncAgentResponse(reduce(state, { type: 'GAP', value: 'none' }));
+  const completed = buildOperations(state).outcomes.filter(item => item.kind === 'monitoring');
+  assert.equal(completed.length, 2);
+  assert.ok(completed.some(item => item.id === first.id));
+  const latest = completed.find(item => item.id !== first.id);
+  assert.equal(latest.domain, domainLabel(MONITORING_CONTEXT.criticalDomain));
+  assert.ok(latest.criteria.some(item => /07:50/.test(item.label)));
+  assert.equal(latest.workstream, 'monitoring');
+  const replay = buildOperations(enterAgentFrame(state, 0));
+  assert.equal(replay.outcomes.some(item => item.kind === 'monitoring'), false, 'future restoration proof is absent in earlier source frames');
+});
+
 for (const setup of WAN_SETUPS) {
   test(`${setup.label}: lower sections resolve labels and groups from the selected WAN`, () => {
     try {
@@ -117,6 +224,11 @@ for (const setup of WAN_SETUPS) {
       assert.deepEqual(model.monitoring.map(row => row.id), DOMAINS.map(domain => domain.id));
       assert.equal(model.changes.domainId, findDevice('XR-P5').domain);
       assert.equal(model.episodes[0].domain, model.scope.domain);
+      let restored = at(7, { critical: true, gap: 'west' });
+      restored = syncAgentResponse({ ...restored, critical: false, gap: 'none' });
+      const outcomes = buildOperations(restored).outcomes;
+      assert.equal(outcomes.find(item => item.kind === 'device').domain, domainLabel(findDevice('XR-PE-E2').domain));
+      assert.equal(outcomes.find(item => item.kind === 'monitoring').domain, model.scope.domain);
     } finally { setActiveWanSetup('national'); }
   });
 }

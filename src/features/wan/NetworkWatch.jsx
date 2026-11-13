@@ -13,7 +13,7 @@ export function WatchPulse({ watch, onOpen }) {
   const primary = watch.incidents[0];
   return <div className="wan-watch-pulse" data-tone={watch.tone} role="status">
     <hbr-icon name={iconFor(watch.tone)} sentiment={watch.tone === 'inactive' ? 'info' : watch.tone} size="18px" />
-    <div><strong>{watch.title}</strong><span>{primary ? primary.needsDecision ? 'Engineering decision required' : `Owned by ${primary.owner} · ${primary.stage}` : watch.mode === 'trend' ? 'CW AI checking trend' : watch.fresh ? 'Current source observations' : 'Source coverage incomplete'}</span></div>
+    <div><strong>{watch.title}</strong><span>{primary ? `Owned by ${primary.owner} · ${primary.stage}` : watch.mode === 'correlation' ? 'CW AI gathering evidence' : watch.mode === 'trend' ? 'CW AI checking trend' : watch.fresh ? 'Current source observations' : 'Source coverage incomplete'}</span></div>
     {primary && <hbr-button variant="text" size="small" onClick={() => onOpen(primary.id)}>View response</hbr-button>}
   </div>;
 }
@@ -47,11 +47,10 @@ function Incident({ incident, state, onOpen, onLocate, spotlight, primary = fals
       <span>Threshold {incident.metric.threshold}%<br />Observed {incident.metric.time}</span>
       <Trend points={observation.trend} stale={!incident.metric.fresh} />
     </div>}
-    <div className="wan-watch-owner"><span className="wan-watch-owner-dot" data-stage={incident.stage}/><strong>{incident.currentAgent}</strong><Status tone={incident.needsDecision ? 'warning' : 'in-progress'}>{incident.stage}</Status></div>
+    <div className="wan-watch-owner"><span className="wan-watch-owner-dot" data-stage={incident.stage}/><strong>CW AI</strong><Status tone={incident.attentionRequired ? 'warning' : 'in-progress'}>{incident.stage}</Status></div>
     {primary && <p className="wan-watch-work">{incident.currentWork}</p>}
-    {primary && incident.handoff && <div className="wan-watch-handoff">{incident.handoff.route} · {incident.handoff.status === 'accepted' ? 'Acceptance confirmed' : 'Evidence delivered · Acceptance pending'}</div>}
     <div className="wan-watch-actions">
-      <hbr-button size="small" variant={primary ? 'fill' : 'text'} onClick={() => onOpen(incident.id)}>{incident.needsDecision ? 'Review decision' : 'Follow response'}<hbr-icon slot="suffix" name="arrow-right" /></hbr-button>
+      <hbr-button size="small" variant={primary ? 'fill' : 'text'} onClick={() => onOpen(incident.id)}>Follow response<hbr-icon slot="suffix" name="arrow-right" /></hbr-button>
       <hbr-button size="small" variant="text" aria={{ pressed: spotlight === incident.domainId }} onClick={() => onLocate(incident.domainId)}>{domainLabel(incident.domainId)}</hbr-button>
     </div>
   </article>;
@@ -70,8 +69,8 @@ export default function NetworkWatch({ state, watch, spotlight, onLocate, onOpen
   return <aside className="wan-network-watch" aria-label="Live network watch" data-mode={watch.mode}>
     <div className="wan-watch-heading"><hbr-text variant="section-title">{primary ? 'Incident attention' : 'Network watch'}</hbr-text><span className="wan-watch-heading-mark">{primary ? `${watch.incidents.length} open` : 'CW AI'}</span></div>
     {primary ? <div className="wan-watch-queue">{watch.incidents.map((incident, index) => <Incident key={incident.id} incident={incident} state={state} primary={index === 0} onOpen={onOpen} onLocate={onLocate} spotlight={spotlight} />)}</div> : <div className="wan-watch-calm" data-tone={watch.mode}>
-      <div className="wan-watch-calm-mark"><hbr-icon name={watch.mode === 'recovery' ? 'status-positive' : developing ? 'status-in-progress' : 'status-positive'} sentiment={developing ? 'in-progress' : 'positive'} size="24px"/></div>
-      <hbr-text variant="sub-section-title">{watch.mode === 'recovery' ? 'Recovery verified' : developing ? 'Watching a developing trend' : 'No active source alarms'}</hbr-text>
+      <div className="wan-watch-calm-mark"><hbr-icon name={watch.mode === 'recovery' ? 'status-positive' : developing || watch.mode === 'correlation' ? 'status-in-progress' : 'status-positive'} sentiment={developing || watch.mode === 'correlation' ? 'in-progress' : 'positive'} size="24px"/></div>
+      <hbr-text variant="sub-section-title">{watch.mode === 'recovery' ? 'Recovery verified' : developing ? 'Watching a developing trend' : watch.mode === 'correlation' ? 'Correlating network events' : 'No active source alarms'}</hbr-text>
       <p>{watch.detail}</p>
       {developing && <><Trend points={developing.trend}/><hbr-button variant="text" size="small" onClick={() => onLocate(developing.domainId)}>Locate {domainLabel(developing.domainId)}<hbr-icon slot="suffix" name="arrow-right" /></hbr-button></>}
       {watch.mode === 'recovery' && <hbr-button variant="text" size="small" onClick={() => onOpen('interface')}>Review outcome<hbr-icon slot="suffix" name="arrow-right" /></hbr-button>}

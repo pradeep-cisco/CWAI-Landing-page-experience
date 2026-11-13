@@ -2,6 +2,8 @@
 
 > **Scope superseded by the user's clarification on 2026-11-13.** The target is now one NOC operator supported by agents that complete the operational response using a network knowledge graph and detailed connected sources. A human traffic engineer and routine engineering handoff are outside the intended journey. This report remains historical evidence; its engineering-persona and handoff-continuation gates are no longer requirements. Its reproduced truthfulness defects, event completeness, connection-access, safe-response and verification findings remain relevant. See [Current NOC and agentic direction](noc-agentic-direction.md).
 
+> **Implementation follow-through:** the subsequent [agent-owned response iteration](noc-agentic-implementation.md) fixes the three reproduced status/conversation defects, preserves connection and source-event access, and records the updated scenario coverage. The findings below describe the reviewed pre-change version.
+
 Date: 2026-11-13. Reviewed implementation: `5b42ffd` (`milestone/15-onecd-atmosphere`).
 
 Status: **Ready for stakeholder review.** The structure is suitable for further validation; complete role and agentic outcome coverage is not established. This review changes no application code or UI.

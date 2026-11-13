@@ -5,6 +5,7 @@ import {
   currentFrame, observations,
 } from './model/model.js';
 import { agentResponse } from './model/agentic-model.js';
+import { eventCoverage } from './model/event-accounting.js';
 import {
   DOMAINS, MONITORING_CONTEXT, domainDevices, domainLabel, summarize,
 } from './model/scale.js';
@@ -117,14 +118,13 @@ function incidentRecord(state, id) {
       : state.frame < 11 ? 'Major · Active' : 'Source-cleared',
     stage: response.stage, owner: response.owner, currentAgent: response.currentAgent,
     currentWork: response.currentWork, next: response.next,
-    needsDecision: response.needsDecision, resolved: response.resolved,
+    needsDecision: false, attentionRequired: response.attentionRequired, blocker: response.blocker, resolved: response.resolved,
     time: device ? state.criticalDetected || currentFrame(state).time
       : collection ? response.startedAt : state.frame < 11 ? '08:00' : '08:30',
     metric: !device && !collection ? {
       value: reading.utilization, unit: '%', threshold: THRESHOLD,
       fresh: reading.fresh, time: reading.observedAt,
     } : null,
-    handoff: response.handoff,
   };
 }
 
@@ -168,12 +168,12 @@ export function networkWatch(state) {
           : job.status === 'running' ? 'Controller job running'
             : job.status === 'failed' ? 'Controller job failed'
               : job.status === 'unknown' ? 'Controller result unconfirmed'
-                : main.currentAgent,
+              : main.currentWork,
       detail: main.resolved ? 'Confirmed execution and source evidence retained'
         : job.status === 'completed' ? 'Recovery verification remains separate from execution'
           : main.currentWork,
       time: main.resolved ? time : job.status === 'completed' ? job.completedAt || time : time,
-      source: job.id || main.currentAgent, fresh: true,
+      source: job.id || 'CW AI response', fresh: true,
       domainId: MONITORING_CONTEXT.mainDomain, incident: 'interface', target: interfaceTarget,
     });
   } else {
@@ -192,22 +192,29 @@ export function networkWatch(state) {
       time, source: 'BGP-LS topology', fresh: true, domainId: null,
     });
   }
+  const coverage = eventCoverage(state);
+  if (coverage.pending.length) {
+    const pending = coverage.pending[0];
+    updates.unshift({id:'event-correlation',kind:'correlation',tone:'info',title:`${coverage.pending.length} ${coverage.pending.length === 1 ? 'event' : 'events'} under correlation`,detail:`${pending.title} · CW AI is gathering related observations; association is not established.`,time:pending.time,source:pending.source,fresh:true,target:['device','interface'].includes(pending.target?.kind) ? pending.target : undefined});
+  }
   const primary = incidents[0];
   const mode = primary ? primary.id === 'monitoring' ? 'gap' : 'incident'
-    : main.resolved ? 'recovery' : state.frame === 1 ? 'trend' : 'quiet';
+    : coverage.pending.length ? 'correlation' : main.resolved ? 'recovery' : state.frame === 1 ? 'trend' : 'quiet';
   const title = primary ? primary.id === 'device' ? 'Router reachability needs attention'
     : primary.id === 'monitoring' ? 'Monitoring coverage incomplete'
       : primary.sourceState === 'Source-cleared' ? 'Response follow-up remains open' : 'Interface condition active'
-    : main.resolved ? 'Network recovery verified'
+    : coverage.pending.length ? 'New source event under investigation'
+      : main.resolved ? 'Interface recovery verified'
       : state.frame === 1 ? 'A utilization trend is developing' : 'Network within configured limits';
   const detail = primary ? `${domainLabel(primary.domainId)} · ${primary.currentWork}`
-    : main.resolved ? 'Source evidence and the completed response remain available.'
+    : coverage.pending.length ? 'CW AI retains ownership while the new event is correlated with current network evidence.'
+      : main.resolved ? 'Source evidence and the completed response remain available.'
       : state.frame === 1 ? `${domainLabel(MONITORING_CONTEXT.mainDomain)} · ${reading.utilization}% outbound utilization · Below the ${THRESHOLD}% threshold`
         : 'Current reachability, collection, and interface observations support the watch.';
   return {
     mode, title, detail,
     tone: primary ? primary.id === 'device' ? 'negative' : primary.id === 'monitoring' ? 'inactive' : 'warning'
-      : main.resolved || state.frame === 0 ? 'positive' : 'info',
-    incidents, updates: updates.slice(0, 4), fresh: state.gap === 'none',
+      : coverage.pending.length ? 'info' : main.resolved || state.frame === 0 ? 'positive' : 'info',
+    incidents, updates: updates.slice(0, 4), fresh: state.gap === 'none', eventCoverage: coverage,
   };
 }
