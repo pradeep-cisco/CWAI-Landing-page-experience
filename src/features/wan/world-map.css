@@ -1,9 +1,9 @@
 /* Custom geographic canvas; native Magnetic cards and controls retain styling. */
 .wan-overview-view-switcher{flex:none;margin-left:auto;align-self:flex-start;}
 .wan-world-view{min-width:0;width:100%;}
-/* Keep the surrounding surface opaque; color belongs to the land geometry. */
-.wan-overview-surface:has(.wan-world-view)::part(base){background:var(--base-bg-default);}
-.wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;overflow:clip;touch-action:pan-y;background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--base-text-medium-default) 22%,transparent) .7px,transparent 1px);background-size:20px 20px;}
+/* One dot grid covers the complete World card; color stays in the land geometry. */
+.wan-overview-surface:has(.wan-world-view)::part(base){background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--base-text-medium-default) 22%,transparent) .7px,transparent 1px) 0 0 / 20px 20px,var(--base-bg-default);}
+.wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;overflow:clip;touch-action:pan-y;}
 .wan-world-viewport:focus-visible{outline:2px solid var(--interact-border-default);outline-offset:2px;}
 .wan-world-viewport[data-zoomed=true]{cursor:grab;touch-action:none;}
 .wan-world-viewport[data-dragging=true]{cursor:grabbing;user-select:none;}

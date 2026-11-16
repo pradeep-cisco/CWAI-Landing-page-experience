@@ -412,7 +412,7 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
   return <hbr-layout direction="column" gap="lg" class="wan-world-view">
     <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={state.frame}
       data-zoom={viewport.scale} data-zoomed={viewport.scale > MIN_MAP_SCALE} data-dragging={dragging} data-animate={animateView && !dragging}
-      style={{ height, backgroundPosition: `${viewport.x}px ${viewport.y}px` }} role="group" tabIndex={0}
+      style={{ height }} role="group" tabIndex={0}
       aria-label="WAN map canvas. Plus and minus zoom; arrow keys pan; Home resets. Control or Command plus scroll zooms at the pointer. Domain locations are illustrative; connections come from network inventory."
       onPointerDown={panStart} onPointerMove={panMove} onPointerUp={panEnd} onPointerCancel={panEnd} onLostPointerCapture={panEnd} onKeyDown={keyboard}>
       <svg className="wan-world-svg" viewBox={narrow ? '0 140 1000 425' : `0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} preserveAspectRatio="xMidYMid meet" role="group" aria-label="Geographic anchors and logical network connections">
