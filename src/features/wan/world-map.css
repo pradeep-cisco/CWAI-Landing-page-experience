@@ -1,8 +1,8 @@
 /* Custom geographic canvas; native Magnetic cards and controls retain styling. */
 .wan-overview-view-switcher{flex:none;margin-left:auto;align-self:flex-start;}
 .wan-world-view{min-width:0;width:100%;}
-/* One dot grid covers the complete World card; color stays in the land geometry. */
-.wan-overview-surface:has(.wan-world-view)::part(base){background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--base-text-medium-default) 22%,transparent) .7px,transparent 1px) 0 0 / 20px 20px,var(--base-bg-default);}
+/* One inset dot grid spans the title, map and footer without touching the border. */
+.wan-overview-surface:has(.wan-world-view)::part(base){background:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--base-text-medium-default) 22%,transparent) .7px,transparent 1px) 0 0 / 20px 20px,var(--base-bg-default);background-origin:content-box,border-box;background-clip:content-box,border-box;}
 .wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;overflow:clip;touch-action:pan-y;}
 .wan-world-viewport:focus-visible{outline:2px solid var(--interact-border-default);outline-offset:2px;}
 .wan-world-viewport[data-zoomed=true]{cursor:grab;touch-action:none;}

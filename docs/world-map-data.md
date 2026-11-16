@@ -59,3 +59,9 @@ Visual records: [all-domain desktop](screenshots/world-map/zoom/desktop-fit.jpg)
 The neutral dot pattern now belongs to the complete World overview container instead of the map viewport. It covers the title, inner padding, map, compact domain-card list, caption, paging summary, and connections footer in one continuous 20px grid. The map viewport is transparent, and camera pan no longer shifts a separate background grid. The colored gradient remains confined to the land geometry.
 
 The production build passes. Desktop 1440×900, a 1440×1100 view of the complete container, and mobile 390×844 were visually reviewed, including the mobile footer. Header/body/footer wrappers remain transparent, there is no duplicate canvas grid or mobile horizontal overflow, and keyboard zoom and fit still work. Visual records: [complete desktop container](screenshots/world-map/full-container-dots/desktop.jpg), [mobile title and map](screenshots/world-map/full-container-dots/mobile.jpg), and [mobile footer](screenshots/world-map/full-container-dots/mobile-footer.jpg).
+
+## Dot pattern border inset — 2026-11-16
+
+The dot layer now starts and clips at the container's content box, using the existing 32px desktop and 24px mobile padding as a clear margin from the border. The opaque base color still fills the complete card. Dots continue behind the title, map and footer, while content positions and camera behavior remain unchanged.
+
+The production build passes. Desktop 1440×900, the complete 1440×1100 container, and mobile 390×844 were visually reviewed. Computed styles confirm the expected clear inset and no mobile horizontal overflow. Visual records: [desktop inset](screenshots/world-map/inset-dots/desktop.jpg) and [mobile inset](screenshots/world-map/inset-dots/mobile.jpg).
