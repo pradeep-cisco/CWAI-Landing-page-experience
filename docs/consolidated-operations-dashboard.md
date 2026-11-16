@@ -103,3 +103,40 @@ Fresh router-scoped interface trends return as 48px mini graphs in the second ca
 Verification is complete: all 139 tests and the production build pass. Seven additional source-rendered states checked quiet, below-limit rise, elevated rise, elevated fall, verified recovery, unverified recovery, and stale data. Desktop 1440×900 and mobile 390×844 screenshots were reviewed; card content fits and there is no page horizontal overflow. Quiet-state inspection confirms the empty status strip is absent.
 
 Visual records: [Elevated overview desktop](screenshots/schematic-spacing-trends/overview-desktop.png), [overview mobile](screenshots/schematic-spacing-trends/overview-mobile.png), [developing trend](screenshots/schematic-spacing-trends/developing-trend-desktop.png), and [quiet overview](screenshots/schematic-spacing-trends/quiet-desktop.png).
+
+## Knowledge graph and Admin diagnostics — 2026-11-14
+
+Data health now lives in Admin, alongside the new Knowledge graph workspace and the existing Automation content. Earlier descriptions of Data health outside the Home operations tabs document previous milestones. The WAN overview and Updates remain unchanged; operational source exceptions retain their existing context. See the [knowledge graph Admin journey, model boundaries, validation, and visual records](knowledge-graph-admin.md).
+
+The [radial explorer canvas](knowledge-graph-canvas.md) now follows the reference prototype's hop rings, entity sectors, colored relationships, badges, expansion, viewport controls, and grouped inspector. It replaces the first Admin version's column layout while retaining the existing Magnetic theme and model provenance.
+
+## Initial experience overview presentation — 2026-11-16
+
+The floating Preview panel now launches **Experience overview**, a six-chapter presentation in a native Magnetic modal. It uses National Backbone as an independent example; it does not switch the operator's selected WAN, change the source observation, or navigate away from the current workspace. Source-story playback pauses during the presentation and resumes only if it was already playing. The existing WAN overview and Network watch are unchanged.
+
+| Chapter | Visual and interaction | Priya's outcome |
+| --- | --- | --- |
+| Take the watch | Six-domain schematic derived from the National Backbone fixture and the existing logical layout. The hierarchy connects domain, device group, router and interface. | Understand the network at a useful scale. |
+| Find your focus | Select WAN overview, Network watch or the operational tabs. The selected region and its explanation change together. | Know where to find the picture, updates and ongoing work. |
+| See changes early | Two recorded samples, 46% at 07:55 and 73% at 07:58, are plotted against the 80% configured limit. | Notice developing exposure without mistaking a trend for an outage. |
+| Follow the response | Select Investigate, Remediate or Verify inside the same CW AI-owned CNC-1042 case. | Follow autonomous work without starting each task or coordinating specialists. |
+| Trust the outcome | Compare the completed 08:25 job at 86% with verified 08:35 recovery at 54%. Source clearance and the stability check are separate proof. | Distinguish completed execution from measured recovery and retain operator control. |
+| Explore the context | Four entity colors and typed relationships explain Admin's Knowledge graph. Select Device, Interface, Service or Config to inspect an example source and relationship. | Understand the supporting network context and evidence. |
+
+Previous/Next, direct chapter selection, arrow keys and Escape are supported. The footer stays reachable while longer content scrolls on mobile. The native modal renders outside the app's stacking contexts so it clears mobile navigation. On dismissal, keyboard focus returns to the launcher. Motion uses restrained diagram arrivals, a source-status pulse and chart drawing, with reduced-motion alternatives; essential content stays visible if animation is suspended. The prototype label remains explicit and no live controller, agent or knowledge-graph connection is claimed.
+
+Verification: all 160 existing tests and the production build pass. Desktop 1440×900 and mobile 390×844 review covered all six chapters, layout-area selection, response stages, recovery comparison, entity inspection, repeated arrow navigation, modal scrolling and dismissal. A scrolled mobile slide returns to the top on Next. Opening the National example from Metro Transport at 07:58 preserves Metro Transport and 07:58 after closing. The launcher also opens from Admin. No horizontal overflow was found in the reviewed views.
+
+Visual records: [Overview desktop](screenshots/experience-overview/overview-desktop.jpg), [layout explanation](screenshots/experience-overview/layout-desktop.jpg), [recovery comparison](screenshots/experience-overview/recovery-desktop.jpg), [knowledge context](screenshots/experience-overview/context-desktop.jpg), [overview mobile](screenshots/experience-overview/overview-mobile.jpg), and [trend mobile](screenshots/experience-overview/trend-mobile.jpg). The editable chapter copy lives in `src/features/wan/overview/experience-content.js`.
+
+## Minimal outcome presentation — 2026-11-16
+
+The overview now has its own presentation language: warm off-white canvas, large Inter headlines, restrained blue/violet accents, a single explanatory diagram, short supporting copy, and discreet navigation dots. It uses native HTML controls and a native modal dialog, independently of Magnetic. The launch action, product theme, WAN schematic, Network watch, operational tabs and Admin workspace retain their existing treatment.
+
+Persona names, narrative times, incident/job IDs, side commentary cards and repeated outcome labels are removed. The six outcome headlines are: **Understand the network at a glance**, **Know where to look**, **Notice what needs attention**, **Let intelligence move work forward**, **Confirm recovery with evidence**, and **Understand the supporting context**. Only the layout slide resembles the product, using a simplified selectable outline.
+
+The visuals demonstrate aggregation into six domains, layout-area selection, distinct developing-signal and active-incident emphasis, four selectable autonomous-work stages, execution versus evidence-backed recovery, and selectable entity relationships. The National Backbone illustration retains the fixture's actual domain relationships without creating or changing a WAN model. Recovery comparison is an explanatory interaction and never initiates a controller action.
+
+Motion includes a bounded particle-gathering entrance, scene transitions, a restrained attention ripple, and confirmation transitions. A motion control pauses the animations. Reduced-motion preferences show the settled composition. Native dialog behavior contains focus, blocks background interaction and supports Escape; close and Done restore the launcher and previous scroll setting. Arrow keys, Home/End, Previous/Next and direct slide selection are available.
+
+Verification: 160 existing tests and the production build pass. Browser review at 1440×900 and 390×844 covered the slide visuals, all local controls, repeated arrow navigation, motion pause/resume, dismissal, retained WAN/source state, and responsive overflow. Previous visual records above are retained. Current visual records are in `docs/screenshots/experience-overview-minimal/`.

@@ -6,7 +6,7 @@ import { createServer } from 'vite';
 
 // Render the actual UI: model-only tests cannot catch an empty incident queue
 // crashing the page, or unrelated cases inheriting another case's evidence.
-let server, Dashboard, IncidentSection, DataHealthSummary, RecentSection, AgentWorkspace, buildOperations, createAgentState, enterAgentFrame;
+let server, Dashboard, AdminWorkspace, IncidentSection, DataHealthSummary, RecentSection, AgentWorkspace, buildOperations, createAgentState, enterAgentFrame;
 before(async () => {
   server = await createServer({
     server: { middlewareMode: true, hmr: false, ws: false, watch: null, open: false },
@@ -14,6 +14,7 @@ before(async () => {
     appType: 'custom', logLevel: 'error',
   });
   ({ default: Dashboard } = await server.ssrLoadModule('/src/features/wan/operations/OperationsDashboard.jsx'));
+  ({ default: AdminWorkspace } = await server.ssrLoadModule('/src/features/wan/admin/AdminWorkspace.jsx'));
   ({ IncidentSection } = await server.ssrLoadModule('/src/features/wan/operations/SituationSections.jsx'));
   ({ AgentWorkspace } = await server.ssrLoadModule('/src/features/wan/AgentWorkspace.jsx'));
   ({ DataHealthSummary, RecentSection } = await server.ssrLoadModule('/src/features/wan/operations/EvidenceSections.jsx'));
@@ -34,6 +35,20 @@ test('quiet and verified dashboards render four section homes without an active 
     assert.match(html, /No active incidents/);
     assert.doesNotMatch(html, /class="sit-case-tabs"/);
   }
+});
+
+test('source diagnostics move to Admin while landing incidents and Watchlist stay available', () => {
+  const state = at(7, { gap: 'east', critical: true });
+  const home = render(Dashboard, { state });
+  const admin = render(AdminWorkspace, { state });
+  assert.doesNotMatch(home, /class="[^"]*\bevidence-data-health\b/);
+  assert.match(home, /ops-incidents/);
+  assert.match(home, /ops-watchlist/);
+  assert.match(admin, /class="[^"]*\bevidence-data-health\b/);
+  assert.match(admin, /Collection delayed/);
+  assert.match(admin, /XR-PE-E2 unreachable; independently checked/);
+  assert.match(admin, /Knowledge graph/);
+  assert.match(admin, /GraphQL query/);
 });
 
 test('a promoted trend has one incident workspace and a compact Watchlist reference', () => {

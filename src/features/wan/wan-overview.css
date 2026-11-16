@@ -5,6 +5,16 @@
   width: 100%;
 }
 
+.wan-overview-surface::part(base) {
+  padding: var(--hbr-spacing-xl);
+}
+
+@media (max-width: 640px) {
+  .wan-overview-surface::part(base) {
+    padding: var(--hbr-spacing-lg);
+  }
+}
+
 .wan-overview h2,
 .wan-overview h3 {
   margin: 0;

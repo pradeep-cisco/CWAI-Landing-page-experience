@@ -95,9 +95,9 @@ export function ChangesSection({ model, onInspect }) {
   </OperationsSection>;
 }
 
-export function DataHealthSummary({ model, onInspect, onOpen }) {
+export function DataHealthSummary({ model, onInspect, onOpen, defaultExpanded = false }) {
   const [selected, setSelected] = useState(null);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const domains = rows(model.monitoring);
   const sources = domains.flatMap(domain => rows(domain.sources).map(source => ({ ...source, domain: domain.domain, domainId: domain.id, key: `${domain.id}:${source.id}` })));
   const active = sources.find(source => source.key === selected) || sources.find(source => source.status === 'delayed') || sources[0];

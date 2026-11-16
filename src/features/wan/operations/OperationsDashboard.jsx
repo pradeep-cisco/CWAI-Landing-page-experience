@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { eventCoverage } from '../model/event-accounting.js';
 import { buildOperations } from './operations-model.js';
 import { IncidentSection, WatchlistSection } from './SituationSections.jsx';
-import { ChangesSection, DataHealthSummary, RecentSection } from './EvidenceSections.jsx';
+import { ChangesSection, RecentSection } from './EvidenceSections.jsx';
 import './operations.css';
 
 const sections = [
@@ -59,7 +59,6 @@ export default function OperationsDashboard({ state, onOpen, onInspect, onAction
     focusSection('incidents');
   };
   return <div className="ops-dashboard" aria-label="Network operations" onClickCapture={followSectionLink}>
-    <DataHealthSummary key={`health:${contextKey}`} model={model} onInspect={onInspect} onOpen={onOpen}/>
     <hbr-tab-group ref={tabs} primary class="ops-tabs" aria-label="Network operations views" onhbr-tab-show={changeSection}>
       {sections.map(([id, label]) => <hbr-tab key={id} slot="nav" panel={id} active={activeSection === id}>
         {label}{counts[id] > 0 && <hbr-badge slot="suffix" pill size="small" sentiment={id === 'incidents' ? model.watch.incidents.some(item => item.severity === 'Critical') ? 'danger' : 'warning' : 'neutral'} aria-label={`${counts[id]} ${countLabels[id]}`}>{counts[id]}</hbr-badge>}

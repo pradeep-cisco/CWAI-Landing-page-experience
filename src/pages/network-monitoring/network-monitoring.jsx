@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate, useParams } from 'react-router-dom';
-import { AdminSummary, IncidentList } from '../../features/wan/ProductSections.jsx';
+import { IncidentList } from '../../features/wan/ProductSections.jsx';
+import AdminWorkspace from '../../features/wan/admin/AdminWorkspace.jsx';
 import { useAppearance } from '../../theme/appearance-context.jsx';
 import WanOverview from '../../features/wan/WanOverview.jsx';
 import AgentWorkspace from '../../features/wan/AgentWorkspace.jsx';
@@ -9,6 +10,7 @@ import NetworkWatch, { WatchPulse } from '../../features/wan/NetworkWatch.jsx';
 import { networkWatch } from '../../features/wan/watch-model.js';
 import OperationsDashboard from '../../features/wan/operations/OperationsDashboard.jsx';
 import EvidenceModal from '../../features/wan/EvidenceModal.jsx';
+import ExperienceOverview from '../../features/wan/overview/ExperienceOverview.jsx';
 import { FRAMES, currentFrame, reduce } from '../../features/wan/model/model.js';
 import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
 import { WAN_SETUPS, ACTIVE_WAN, MONITORING_CONTEXT, setActiveWanSetup, domainLabel, groupLabel, navigateScope } from '../../features/wan/model/scale.js';
@@ -52,6 +54,12 @@ export default function NetworkMonitoring() {
   const [evidence, setEvidence] = useState(null);
   const [spotlight, setSpotlight] = useState(null);
   const sessions = useRef(new Map()), workspaceRef = useRef(null);
+  const overviewTriggerRef = useRef(null), resumePreviewRef = useRef(false), previousDialogRef = useRef(null);
+
+  useEffect(() => {
+    if (previousDialogRef.current === 'overview' && dialog !== 'overview') overviewTriggerRef.current?.setFocus();
+    previousDialogRef.current = dialog;
+  }, [dialog]);
 
   useEffect(() => { const previous = document.title; document.title = 'Crosswork AI'; return () => { document.title = previous; }; }, []);
   useEffect(() => {
@@ -91,18 +99,19 @@ export default function NetworkMonitoring() {
     <header className="wan-page-heading">
       <hbr-text variant="page-title">{view === 'home' ? 'Crosswork AI' : view === 'admin' ? 'Admin' : 'Incidents'}</hbr-text>
     </header>
-    <WatchPulse watch={watch} onOpen={openResponse}/>
+    {view !== 'admin' && <WatchPulse watch={watch} onOpen={openResponse}/>}
     <div ref={workspaceRef} className={`wan-workspace-grid ${showAgent ? 'response-open' : view !== 'home' ? 'section-only' : ''} ${watch.incidents.length ? 'has-attention' : ''}`}>
       <div className="wan-monitoring-main">
         {view === 'home' ? <>
           <WanOverview state={state} spotlight={spotlight} onNavigate={(kind, value) => setState(s => navigateScope(s, kind, value))} onInspect={setEvidence} onConnection={selection => setEvidence({ kind: 'connections', level: selection.kind, id: selection.id })} onPatch={patch => setState(s => ({ ...s, ...patch }))} onOpenResponse={openResponse}/>
-        </> : view === 'admin' ? <AdminSummary state={state}/> : <IncidentList watch={watch} onOpen={openResponse} onInspect={setEvidence}/>}
+        </> : view === 'admin' ? <AdminWorkspace state={state} onInspect={setEvidence} onOpen={openResponse}/> : <IncidentList watch={watch} onOpen={openResponse} onInspect={setEvidence}/>}
       </div>
       {showAgent ? <AgentWorkspace state={state} onAction={agentAction} onInspect={setEvidence} onClose={() => agentAction({ type: 'AGENT_CLOSE' })}/> : view === 'home' ? <NetworkWatch state={{ ...state, history: null }} watch={watch} spotlight={spotlight} onLocate={id => { setSpotlight(previous => previous === id ? null : id); setState(s => navigateScope(s, 'network')); }} onOpen={openResponse} onInspect={setEvidence}/> : null}
     </div>
     {view === 'home' && <OperationsDashboard key={setup} state={state} onOpen={openResponse} onInspect={setEvidence} onAction={agentAction}/>}
-    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label="Preview controls" data-preview-controls="true">
+    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label="Preview controls" data-preview-controls="true" aria-hidden={dialog === 'overview' ? 'true' : undefined}>
       <div className="wan-preview-selector"><span className="wan-review-label">Preview</span><hbr-select label="WAN setup" size="small" value={setup} onhbr-change={e => switchSetup(inputValue(e))}>{WAN_SETUPS.map(wan => <hbr-option key={wan.id} value={wan.id}>{wan.label}</hbr-option>)}</hbr-select></div>
+      <hbr-button ref={overviewTriggerRef} className="wan-overview-launch" size="small" variant="outline" onClick={() => { resumePreviewRef.current = playing; setPlaying(false); setDialog('overview'); }}><hbr-icon name="eye" slot="prefix"/>Experience overview</hbr-button>
       <div className="wan-review-transport">
         <hbr-button variant="text" size="small" disabled={state.frame === 0} onClick={() => frameChange(state.frame - 1)} aria-label="Previous observation">Prev</hbr-button>
         <hbr-button variant="text" size="small" onClick={() => { setPlaying(false); setDialog('review'); }}>{frame.time}</hbr-button>
@@ -112,6 +121,7 @@ export default function NetworkMonitoring() {
       </div>
     </div> : <hbr-button className="wan-review-reopen" size="small" variant="outline" onClick={() => setReviewVisible(true)}>Preview</hbr-button>, document.body)}
     <EvidenceModal state={state} selection={evidence} onClose={() => setEvidence(null)} onInspect={setEvidence}/>
+    {dialog === 'overview' && <ExperienceOverview onClose={() => { setDialog(null); setPlaying(resumePreviewRef.current); }}/>}
     {dialog === 'review' && <ReviewModal state={state} onClose={() => setDialog(null)} onFrame={frameChange} onSource={sourceAction} onPlay={() => { setState(s => ({ ...s, history: null })); setPlaying(true); setDialog(null); }}/>}
   </div>;
 }
