@@ -140,3 +140,11 @@ The visuals demonstrate aggregation into six domains, layout-area selection, dis
 Motion includes a bounded particle-gathering entrance, scene transitions, a restrained attention ripple, and confirmation transitions. A motion control pauses the animations. Reduced-motion preferences show the settled composition. Native dialog behavior contains focus, blocks background interaction and supports Escape; close and Done restore the launcher and previous scroll setting. Arrow keys, Home/End, Previous/Next and direct slide selection are available.
 
 Verification: 160 existing tests and the production build pass. Browser review at 1440×900 and 390×844 covered the slide visuals, all local controls, repeated arrow navigation, motion pause/resume, dismissal, retained WAN/source state, and responsive overflow. Previous visual records above are retained. Current visual records are in `docs/screenshots/experience-overview-minimal/`.
+
+## Geographic WAN overview — 2026-11-16
+
+The WAN overview now offers World and Schematic modes through the native Magnetic view switcher. World uses real Natural Earth coastlines, explicit illustrative domain locations, inventory-derived logical connections, and the existing native domain cards. Core can span several geographic markers while remaining one logical domain. Source conditions and incident counts retain their existing meaning. Pin/card drill-down and connection-member inspection reuse the existing operator flows.
+
+The new canvas adds restrained theme-based land shading, connection activity, and related-route emphasis. Missing observations stop ambient route activity and retain dashed last-known connections. Narrow layouts place readable cards below a compact map, with no inferred geography for lower hierarchy levels. Network watch, the agentic response, operational tabs, Admin, and the minimal experience presentation remain unchanged.
+
+See the [map experience, source provenance, validation, limitations, and visual records](world-map-data.md). The pre-map milestone remains available at `b1ca97c7e8800cfd187e7a20981d32fb63969e09`, and the current Schematic option preserves its overview presentation.

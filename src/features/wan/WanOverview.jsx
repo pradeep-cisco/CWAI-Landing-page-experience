@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   ACTIVE_WAN, DOMAINS, DEVICE_GROUPS, DEVICES, BUNDLES, GROUP_BUNDLES,
   PAGE_SIZES, domainDevices, groupDevices, domainLabel, groupLabel, findGroup,
@@ -6,9 +6,11 @@ import {
   telemetryCurrent, deviceInterfaces, deviceLinks,
 } from './model/scale.js';
 import { layoutBackbone } from './model/backbone-layout.js';
+import { buildWorldLayout, LAND, WIDTH as WORLD_WIDTH, HEIGHT as WORLD_HEIGHT } from './model/world-map.js';
 import { THRESHOLD } from './model/model.js';
 import { domainObservation, networkWatch } from './watch-model.js';
 import './wan-overview.css';
+import './world-map.css';
 
 const number = value => Number(value || 0).toLocaleString('en-US');
 const plural = (value, noun) => `${number(value)} ${noun}${value === 1 ? '' : 's'}`;
@@ -309,6 +311,78 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
   </hbr-layout>;
 }
 
+function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }) {
+  const [ref, width] = useContainerWidth();
+  const [hovered, setHighlight] = useState(null);
+  const setupId = ACTIVE_WAN.id;
+  const layout = useMemo(() => buildWorldLayout(nodes, bundles, setupId), [nodes, bundles, setupId]);
+  const incidents = useMemo(() => networkWatch(state).incidents, [state]);
+  const gradientId = `world-land-${useId().replaceAll(':', '')}`;
+  // Keep native cards readable; move them below the map before they overlap.
+  const narrow = width <= 760;
+  const height = narrow ? Math.max(180, width * .425) : width * WORLD_HEIGHT / WORLD_WIDTH;
+  const highlight = hovered || spotlight;
+  const selectedRoute = bundles.find(bundle => bundle.id === highlight);
+  const relatedNode = id => id === highlight || selectedRoute?.from === id || selectedRoute?.to === id;
+  const relatedRoute = route => !highlight || route.id === highlight || route.from === highlight || route.to === highlight;
+  const cardWidth = Math.min(206, Math.max(176, width * .22));
+  const positioned = layout.nodes.map(node => ({ ...node,
+    x: Math.max(cardWidth / 2 + 8, Math.min(width - cardWidth / 2 - 8, node.x / WORLD_WIDTH * width)),
+    y: node.y / WORLD_HEIGHT * height, width: cardWidth, height: 80,
+  }));
+  const byId = new Map(positioned.map(node => [node.id, node]));
+  const condition = id => {
+    const summary = summarize(state, domainDevices(id));
+    return summary.critical ? 'critical' : summary.alarms || incidents.some(incident => incident.domainId === id) ? 'major' : summary.stale ? 'unknown' : 'normal';
+  };
+  const activate = (event, action) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action(); } };
+  const card = node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} kind="domain" state={state} incidents={incidents}
+    onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
+    muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, domainDevices(node.id)).alarms)}/>;
+
+  return <hbr-layout direction="column" gap="lg" class="wan-world-view">
+    <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={state.frame} style={{ height }} role="group" aria-label="World view of operational domains. Domain locations are illustrative; connections come from network inventory.">
+      <svg className="wan-world-svg" viewBox={narrow ? '0 140 1000 425' : `0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} preserveAspectRatio="xMidYMid meet" role="group" aria-label="Geographic anchors and logical network connections">
+        <defs><linearGradient id={gradientId} x1="30" x2="970" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" className="wan-world-gradient-west"/><stop offset=".6" className="wan-world-gradient-center"/><stop offset="1" className="wan-world-gradient-east"/></linearGradient></defs>
+        <g className="wan-world-land" aria-hidden="true">{LAND.map((path, index) => <path key={index} d={path} fill={`url(#${gradientId})`}/>)}</g>
+        {!narrow && <g className="wan-world-leaders" aria-hidden="true">{layout.nodes.flatMap(node => {
+          const placed = byId.get(node.id);
+          const cardX = placed.x / width * WORLD_WIDTH, cardY = placed.y / height * WORLD_HEIGHT;
+          const edgeY = cardY + (node.anchor.y > cardY ? 1 : -1) * 40 / height * WORLD_HEIGHT;
+          return node.anchors.map((anchor, index) => <path key={`${node.id}:${index}`} data-muted={Boolean(highlight && !relatedNode(node.id))} data-multi={node.multiRegion} d={`M ${cardX} ${edgeY} Q ${cardX + (anchor.x - cardX) * .3} ${(edgeY + anchor.y) / 2} ${anchor.x} ${anchor.y}`}/>);
+        })}</g>}
+        <g className="wan-world-routes">{layout.routes.map(route => {
+          const summary = bundleSummary(state, route.id);
+          const label = `Inspect ${domainLabel(route.from)} to ${domainLabel(route.to)}, ${plural(summary.total, 'member link')}, ${plural(summary.active, 'active alarm')}${summary.unavailable ? `, ${plural(summary.unavailable, 'member')} without current observations` : ''}`;
+          return <g key={route.id} className="wan-world-route" role="button" tabIndex={0} aria-label={label}
+            data-corridor={route.id} data-condition={summary.active ? 'major' : 'normal'} data-stale={summary.unavailable > 0}
+            data-emphasized={Boolean(highlight && relatedRoute(route))} data-muted={Boolean(highlight && !relatedRoute(route) && !summary.active)}
+            onPointerEnter={() => setHighlight(route.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => setHighlight(route.id)} onBlur={() => setHighlight(null)}
+            onClick={() => onConnection({ kind: 'domain', id: route.id })} onKeyDown={event => activate(event, () => onConnection({ kind: 'domain', id: route.id }))}>
+            <title>{`${label}. Lines show logical connectivity, not physical cable paths.`}</title>
+            <path className="wan-world-route-hit" d={route.d}/><path className="wan-world-route-line" d={route.d}/>
+            {!summary.unavailable && <path className="wan-world-route-travel" d={route.d} pathLength="100" style={{ animationDelay: `${-layout.routes.indexOf(route) * 1.3}s` }}/>}
+          </g>;
+        })}</g>
+        <g className="wan-world-pins">{layout.nodes.flatMap(node => node.anchors.map((anchor, index) => <g key={`${node.id}:${index}`} className="wan-world-pin" data-condition={condition(node.id)} data-selected={Boolean(highlight && relatedNode(node.id))} data-multi={node.multiRegion}
+          role="button" tabIndex={0} aria-label={`Open ${domainLabel(node.id)} device groups. Illustrative ${node.multiRegion ? 'multi-location domain' : 'location'}: ${anchor.label}.`}
+          onPointerEnter={() => setHighlight(node.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => setHighlight(node.id)} onBlur={() => setHighlight(null)}
+          onClick={() => onNavigate('domain', node.id)} onKeyDown={event => activate(event, () => onNavigate('domain', node.id))}>
+          <title>{`${domainLabel(node.id)} · ${anchor.label} · Illustrative placement`}</title>
+          <circle className="wan-world-pin-target" cx={anchor.x} cy={anchor.y} r="19"/>
+          <circle className="wan-world-pin-halo" cx={anchor.x} cy={anchor.y} r={node.multiRegion ? 10 : 15}/>
+          <circle className="wan-world-pin-core" cx={anchor.x} cy={anchor.y} r={node.multiRegion ? 4 : 7}/>
+          {narrow && index === 0 && <text className="wan-world-pin-label" style={{ fontSize: Math.max(18, 12000 / width) }} x={anchor.x} y={anchor.y + 38} textAnchor="middle">{node.label}</text>}
+        </g>))}</g>
+      </svg>
+      {!narrow && <div className="wan-world-cards">{positioned.map(card)}</div>}
+    </div>
+    <div className="wan-world-caption"><hbr-text size="xs" type="secondary">Real world geography · Illustrative domain locations</hbr-text><hbr-text size="xs" type="secondary">{plural(layout.routes.length, 'logical connection')}</hbr-text></div>
+    {(narrow || layout.unplaced.length > 0) && <div className="wan-world-domain-list" role="group" aria-label="Domains in the world view">{(narrow ? [...layout.nodes, ...layout.unplaced] : layout.unplaced).map(card)}</div>}
+    {layout.unplaced.length > 0 && <hbr-text size="xs" type="secondary">{plural(layout.unplaced.length, 'domain')} without a geographic placement. All connections remain available below.</hbr-text>}
+  </hbr-layout>;
+}
+
 function Pager({ result, pageSize, noun, onChange }) {
   return <div className="wan-pager">
     <hbr-text type="secondary" size="xs">{result.start}–{result.end} of {plural(result.total, noun)}
@@ -401,7 +475,9 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
   const [networkPages, setNetworkPages] = useState({});
   const [connectionPages, setConnectionPages] = useState({});
   const [localConnectionPages, setLocalConnectionPages] = useState({});
+  const [mapViews, setMapViews] = useState({});
   const setupId = ACTIVE_WAN.id;
+  const mapView = mapViews[setupId] || 'world';
   const networkPage = networkPages[setupId] || 0;
   const connectionsPage = connectionPages[setupId] || 0;
   const isGroup = (state.view === 'pop' || state.view === 'group') && Boolean(findGroup(state.popId));
@@ -436,6 +512,10 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
               <hbr-text variant="section-title"><h2>{title}</h2></hbr-text>
               <hbr-text type="secondary" size="sm">{subtitle}</hbr-text>
             </hbr-layout>
+            {!isDomain && !isGroup && <hbr-view-switcher label="WAN overview view" no-fieldset="" size="small" value={mapView} class="wan-overview-view-switcher"
+              onhbr-change={event => { const next = event.currentTarget.value; if (event.target === event.currentTarget && ['world', 'schematic'].includes(next)) setMapViews(previous => ({ ...previous, [setupId]: next })); }}>
+              <hbr-radio-button size="small" value="world">World</hbr-radio-button><hbr-radio-button size="small" value="schematic">Schematic</hbr-radio-button>
+            </hbr-view-switcher>}
             {(isDomain || isGroup) && <hbr-button size="small" variant="text" onClick={() => onNavigate(isGroup ? 'domain' : 'network', isGroup ? state.domain : undefined)}>
               <hbr-icon slot="prefix" name="arrow-left" size="14px" />{isGroup ? 'Domain' : 'All domains'}
             </hbr-button>}
@@ -461,9 +541,9 @@ export default function WanOverview({ state, onNavigate, onInspect, onConnection
               <ObservationTrend points={inspection.trend} fresh={inspection.fresh} label={`${domainLabel(state.domain)} interface utilization${inspection.fresh ? '' : ', last known'} through ${inspection.time}`}/>
             </div>}
             {isGroup ? <RouterInventory state={state} onPatch={onPatch} onInspect={onInspect} onConnection={onConnection} /> : <>
-              <LogicalMap nodes={isDomain ? localGroups : DOMAINS} bundles={isDomain ? localBundles : BUNDLES}
+              {!isDomain && mapView === 'world' ? <WorldMap nodes={DOMAINS} bundles={BUNDLES} state={state} onNavigate={onNavigate} onConnection={onConnection} spotlight={spotlight}/> : <LogicalMap nodes={isDomain ? localGroups : DOMAINS} bundles={isDomain ? localBundles : BUNDLES}
                 state={state} kind={isDomain ? 'group' : 'domain'} page={isDomain ? groupPage.page : domainPage.page}
-                pageSize={isDomain ? PAGE_SIZES.groups : 12} onNavigate={onNavigate} onConnection={onConnection} spotlight={spotlight} />
+                pageSize={isDomain ? PAGE_SIZES.groups : 12} onNavigate={onNavigate} onConnection={onConnection} spotlight={spotlight} />}
               <Pager result={isDomain ? groupPage : domainPage} pageSize={isDomain ? PAGE_SIZES.groups : 12}
                 noun={isDomain ? 'device group' : 'domain'}
                 onChange={page => isDomain ? onPatch({ scopePage: page }) : setNetworkPages(previous => ({ ...previous, [setupId]: page }))} />

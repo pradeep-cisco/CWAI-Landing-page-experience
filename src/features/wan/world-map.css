@@ -1,0 +1,44 @@
+/* Custom geographic canvas; native Magnetic cards and controls retain styling. */
+.wan-overview-view-switcher{flex:none;margin-left:auto;align-self:flex-start;}
+.wan-world-view{min-width:0;width:100%;}
+/* Keep the surrounding surface opaque; color belongs to the land geometry. */
+.wan-overview-surface:has(.wan-world-view)::part(base){background:var(--base-bg-default);}
+.wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;background:none;}
+.wan-world-svg{position:absolute;inset:0;height:100%;width:100%;overflow:visible;}
+.wan-world-gradient-west{stop-color:color-mix(in srgb,var(--accent-c-default) 20%,var(--base-bg-default));}
+.wan-world-gradient-center{stop-color:color-mix(in srgb,var(--accent-a-default) 13%,var(--base-bg-default));}
+.wan-world-gradient-east{stop-color:color-mix(in srgb,var(--accent-b-default) 18%,var(--base-bg-default));}
+.wan-world-land path{stroke:color-mix(in srgb,var(--accent-a-default) 45%,var(--base-border-default));stroke-width:.65;vector-effect:non-scaling-stroke;stroke-linejoin:round;pointer-events:none;}
+.wan-world-leaders path{stroke:var(--base-text-medium-default);stroke-width:.9;stroke-opacity:.65;fill:none;vector-effect:non-scaling-stroke;pointer-events:none;transition:opacity 180ms ease;}
+.wan-world-leaders [data-multi=true]{stroke-dasharray:4 3;stroke-opacity:.5;}
+.wan-world-leaders [data-muted=true]{opacity:.35;}
+.wan-world-route{--world-route:var(--accent-a-default);cursor:pointer;outline:none;transition:opacity 180ms ease;}
+.wan-world-route[data-condition=major]{--world-route:var(--warning-icon-default);}
+.wan-world-route-line{stroke:var(--world-route);stroke-width:1.5;stroke-opacity:.82;fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round;transition:stroke-width 160ms ease,stroke-opacity 160ms ease;}
+.wan-world-route-hit{stroke:transparent;stroke-width:18px;fill:none;pointer-events:stroke;vector-effect:non-scaling-stroke;}
+.wan-world-route:hover .wan-world-route-line,.wan-world-route:focus-visible .wan-world-route-line,.wan-world-route[data-emphasized=true] .wan-world-route-line{stroke-width:2.8;stroke-opacity:1;}
+.wan-world-route:focus-visible .wan-world-route-line{stroke:var(--interact-text-default);stroke-dasharray:5 3;}
+.wan-world-route[data-muted=true]{opacity:.16;}
+.wan-world-route[data-stale=true] .wan-world-route-line{stroke-dasharray:5 5;stroke-opacity:.65;}
+.wan-world-route-travel{fill:none;stroke:color-mix(in srgb,var(--world-route) 30%,var(--base-text-default));stroke-width:2.5;stroke-linecap:round;stroke-dasharray:.15 99.85;pointer-events:none;animation:wan-world-travel 10s linear infinite;vector-effect:non-scaling-stroke;}
+.wan-world-route[data-muted=true] .wan-world-route-travel{display:none;}
+.wan-world-pin{--world-pin:var(--accent-a-default);cursor:pointer;outline:none;}
+.wan-world-pin[data-condition=major]{--world-pin:var(--warning-icon-default);}
+.wan-world-pin[data-condition=critical]{--world-pin:var(--negative-icon-default);}
+.wan-world-pin[data-condition=unknown]{--world-pin:var(--base-text-medium-default);}
+.wan-world-pin-target{fill:transparent;stroke:none;}
+.wan-world-pin-halo{fill:color-mix(in srgb,var(--world-pin) 20%,var(--base-bg-default));stroke:var(--world-pin);stroke-opacity:.6;stroke-width:1;vector-effect:non-scaling-stroke;transition:fill 180ms ease,stroke-opacity 180ms ease;}
+.wan-world-pin-core{fill:var(--world-pin);stroke:var(--base-bg-default);stroke-width:1;vector-effect:non-scaling-stroke;}
+.wan-world-pin:hover .wan-world-pin-halo,.wan-world-pin:focus-visible .wan-world-pin-halo,.wan-world-pin[data-selected=true] .wan-world-pin-halo{stroke-opacity:1;stroke-width:2;fill:color-mix(in srgb,var(--world-pin) 35%,var(--base-bg-default));}
+.wan-world-pin:focus-visible .wan-world-pin-target{stroke:var(--interact-border-default);stroke-width:2;stroke-dasharray:3 3;vector-effect:non-scaling-stroke;}
+.wan-world-pin[data-condition=unknown] .wan-world-pin-halo{stroke-dasharray:3 3;}
+.wan-world-pin-label{font:500 25px Inter,sans-serif;fill:var(--base-text-default);paint-order:stroke;stroke:var(--base-bg-default);stroke-width:3px;pointer-events:none;}
+.wan-world-cards{position:absolute;inset:0;pointer-events:none;}
+.wan-world-cards>.wan-map-node{pointer-events:auto;}
+.wan-world-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
+.wan-world-domain-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
+.wan-world-domain-list>.wan-map-node{position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:80px!important;transform:none;}
+@keyframes wan-world-travel{from{stroke-dashoffset:100;}to{stroke-dashoffset:0;}}
+@media(max-width:700px){.wan-overview-view-switcher{margin-left:0;}}
+@media(max-width:480px){.wan-world-domain-list{grid-template-columns:minmax(0,1fr);}.wan-world-caption{gap:4px;}.wan-world-caption hbr-text{font-size:10px;}}
+@media(prefers-reduced-motion:reduce){.wan-world-view *{animation:none!important;transition:none!important;}.wan-world-route-travel{display:none;}}
