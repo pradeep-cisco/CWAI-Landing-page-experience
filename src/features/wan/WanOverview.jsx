@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   ACTIVE_WAN, DOMAINS, DEVICE_GROUPS, DEVICES, BUNDLES, GROUP_BUNDLES,
   PAGE_SIZES, domainDevices, groupDevices, domainLabel, groupLabel, findGroup,
@@ -7,6 +7,7 @@ import {
 } from './model/scale.js';
 import { layoutBackbone } from './model/backbone-layout.js';
 import { buildWorldLayout, LAND, WIDTH as WORLD_WIDTH, HEIGHT as WORLD_HEIGHT } from './model/world-map.js';
+import { fitMapViewport, panBy, zoomAt, MIN_MAP_SCALE, MAX_MAP_SCALE } from './model/map-viewport.js';
 import { THRESHOLD } from './model/model.js';
 import { domainObservation, networkWatch } from './watch-model.js';
 import './wan-overview.css';
@@ -190,7 +191,7 @@ function domainSummary(observation, summary, population) {
   return population;
 }
 
-function HierarchyCard({ node, state, kind, incidents = [], onNavigate, onHighlight, focused, muted }) {
+function HierarchyCard({ node, state, kind, incidents = [], onNavigate, onHighlight, onReveal, focused, muted }) {
   const devices = kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id);
   const summary = summarize(state, devices);
   const observation = kind === 'domain' ? domainObservation(state, node.id) : null;
@@ -212,7 +213,7 @@ function HierarchyCard({ node, state, kind, incidents = [], onNavigate, onHighli
     data-condition={summary.tone} data-stale={summary.stale > 0} data-observation={observation?.kind} data-observation-tone={observation?.tone}
     data-focused={focused} data-muted={muted}
     onPointerEnter={() => onHighlight(node.id)} onPointerLeave={() => onHighlight(null)}
-    onFocus={() => onHighlight(node.id)} onBlur={() => onHighlight(null)}>
+    onFocus={() => { onHighlight(node.id); onReveal?.(); }} onBlur={() => onHighlight(null)}>
     <hbr-card ref={ref} selectable role="button" style={cardSizing}
       sentiment={summary.critical ? 'negative' : summary.alarms ? 'warning' : undefined}
       aria-label={[`Open ${node.label || node.id}`, population, reachability, kind === 'domain' ? domainIncidents.length ? plural(domainIncidents.length, 'incident') : null : alarmText(summary), summary.stale ? plural(summary.stale, 'telemetry gap') : 'current telemetry'].filter(Boolean).join(', ')}
@@ -314,6 +315,10 @@ function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNa
 function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }) {
   const [ref, width] = useContainerWidth();
   const [hovered, setHighlight] = useState(null);
+  const [viewport, setViewport] = useState({ x: 0, y: 0, scale: 1 });
+  const [dragging, setDragging] = useState(false);
+  const [animateView, setAnimateView] = useState(false);
+  const drag = useRef(null);
   const setupId = ACTIVE_WAN.id;
   const layout = useMemo(() => buildWorldLayout(nodes, bundles, setupId), [nodes, bundles, setupId]);
   const incidents = useMemo(() => networkWatch(state).incidents, [state]);
@@ -321,16 +326,79 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
   // Keep native cards readable; move them below the map before they overlap.
   const narrow = width <= 760;
   const height = narrow ? Math.max(180, width * .425) : width * WORLD_HEIGHT / WORLD_WIDTH;
+  const fit = fitMapViewport(width, height, narrow
+    ? { x: 0, y: 140, width: WORLD_WIDTH, height: 425 }
+    : { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT });
+  const mapTransform = `translate(${(viewport.x + (viewport.scale - 1) * fit.x) / fit.scale} ${(viewport.y + (viewport.scale - 1) * fit.y) / fit.scale}) scale(${viewport.scale})`;
+  const zoom = useCallback((factor, anchor, animate = true) => {
+    setAnimateView(animate);
+    setViewport(current => zoomAt(current, factor, anchor, { width, height }));
+  }, [width, height]);
+  const fitAll = () => { setAnimateView(true); setViewport({ x: 0, y: 0, scale: 1 }); };
+  // Each landing/setup/size starts with every domain in view. Source updates
+  // preserve a deliberate zoom because they do not change the canvas bounds.
+  useEffect(() => {
+    drag.current = null; setDragging(false); setAnimateView(false);
+    setViewport({ x: 0, y: 0, scale: 1 }); setHighlight(null);
+  }, [setupId, width, height]);
+  useEffect(() => {
+    const element = ref.current;
+    if (!element) return undefined;
+    const wheel = event => {
+      if (!event.ctrlKey && !event.metaKey) return;
+      event.preventDefault();
+      const rect = element.getBoundingClientRect();
+      zoom(Math.exp(-Math.max(-120, Math.min(120, event.deltaY)) * .0025), { x: event.clientX - rect.left, y: event.clientY - rect.top }, false);
+    };
+    element.addEventListener('wheel', wheel, { passive: false });
+    return () => element.removeEventListener('wheel', wheel);
+  }, [ref, zoom]);
+  const reveal = (point, margin = 32) => {
+    setAnimateView(true);
+    setViewport(current => {
+      const x = point.x * current.scale + current.x, y = point.y * current.scale + current.y;
+      const dx = x < margin ? margin - x : x > width - margin ? width - margin - x : 0;
+      const dy = y < margin ? margin - y : y > height - margin ? height - margin - y : 0;
+      return dx || dy ? panBy(current, dx, dy, { width, height }) : current;
+    });
+  };
+  const mapPoint = point => ({ x: point.x * fit.scale + fit.x, y: point.y * fit.scale + fit.y });
+  const panStart = event => {
+    if (event.button !== 0 || viewport.scale <= MIN_MAP_SCALE || event.target.closest?.('.wan-map-node,hbr-button,.wan-world-route,.wan-world-pin,.wan-world-zoom')) return;
+    drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, viewport };
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    setAnimateView(false); setDragging(true); setHighlight(null);
+  };
+  const panMove = event => {
+    const start = drag.current;
+    if (start?.id === event.pointerId) setViewport(panBy(start.viewport, event.clientX - start.x, event.clientY - start.y, { width, height }));
+  };
+  const panEnd = event => {
+    if (drag.current?.id !== event.pointerId) return;
+    drag.current = null; setDragging(false);
+    if (event.currentTarget.hasPointerCapture?.(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId);
+  };
+  const keyboard = event => {
+    if (event.target !== event.currentTarget) return;
+    if (event.key === '+' || event.key === '=') { event.preventDefault(); zoom(1.25); }
+    else if (event.key === '-') { event.preventDefault(); zoom(1 / 1.25); }
+    else if (event.key === '0' || event.key === 'Home') { event.preventDefault(); fitAll(); }
+    else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault(); setAnimateView(false);
+      setViewport(current => panBy(current, event.key === 'ArrowLeft' ? 48 : event.key === 'ArrowRight' ? -48 : 0, event.key === 'ArrowUp' ? 48 : event.key === 'ArrowDown' ? -48 : 0, { width, height }));
+    }
+  };
   const highlight = hovered || spotlight;
   const selectedRoute = bundles.find(bundle => bundle.id === highlight);
   const relatedNode = id => id === highlight || selectedRoute?.from === id || selectedRoute?.to === id;
   const relatedRoute = route => !highlight || route.id === highlight || route.from === highlight || route.to === highlight;
   const cardWidth = Math.min(206, Math.max(176, width * .22));
-  const positioned = layout.nodes.map(node => ({ ...node,
+  const baseCards = layout.nodes.map(node => ({ ...node,
     x: Math.max(cardWidth / 2 + 8, Math.min(width - cardWidth / 2 - 8, node.x / WORLD_WIDTH * width)),
     y: node.y / WORLD_HEIGHT * height, width: cardWidth, height: 80,
   }));
-  const byId = new Map(positioned.map(node => [node.id, node]));
+  const byId = new Map(baseCards.map(node => [node.id, node]));
+  const positioned = baseCards.map(node => ({ ...node, x: node.x * viewport.scale + viewport.x, y: node.y * viewport.scale + viewport.y }));
   const condition = id => {
     const summary = summarize(state, domainDevices(id));
     return summary.critical ? 'critical' : summary.alarms || incidents.some(incident => incident.domainId === id) ? 'major' : summary.stale ? 'unknown' : 'normal';
@@ -338,17 +406,23 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
   const activate = (event, action) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action(); } };
   const card = node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} kind="domain" state={state} incidents={incidents}
     onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
+    onReveal={!narrow && byId.has(node.id) ? () => reveal(byId.get(node.id), cardWidth / 2 + 8) : undefined}
     muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, domainDevices(node.id)).alarms)}/>;
 
   return <hbr-layout direction="column" gap="lg" class="wan-world-view">
-    <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={state.frame} style={{ height }} role="group" aria-label="World view of operational domains. Domain locations are illustrative; connections come from network inventory.">
+    <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={state.frame}
+      data-zoom={viewport.scale} data-zoomed={viewport.scale > MIN_MAP_SCALE} data-dragging={dragging} data-animate={animateView && !dragging}
+      style={{ height, backgroundPosition: `${viewport.x}px ${viewport.y}px` }} role="group" tabIndex={0}
+      aria-label="WAN map canvas. Plus and minus zoom; arrow keys pan; Home resets. Control or Command plus scroll zooms at the pointer. Domain locations are illustrative; connections come from network inventory."
+      onPointerDown={panStart} onPointerMove={panMove} onPointerUp={panEnd} onPointerCancel={panEnd} onLostPointerCapture={panEnd} onKeyDown={keyboard}>
       <svg className="wan-world-svg" viewBox={narrow ? '0 140 1000 425' : `0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} preserveAspectRatio="xMidYMid meet" role="group" aria-label="Geographic anchors and logical network connections">
         <defs><linearGradient id={gradientId} x1="30" x2="970" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" className="wan-world-gradient-west"/><stop offset=".6" className="wan-world-gradient-center"/><stop offset="1" className="wan-world-gradient-east"/></linearGradient></defs>
+        <g className="wan-world-scene" transform={mapTransform}>
         <g className="wan-world-land" aria-hidden="true">{LAND.map((path, index) => <path key={index} d={path} fill={`url(#${gradientId})`}/>)}</g>
         {!narrow && <g className="wan-world-leaders" aria-hidden="true">{layout.nodes.flatMap(node => {
           const placed = byId.get(node.id);
           const cardX = placed.x / width * WORLD_WIDTH, cardY = placed.y / height * WORLD_HEIGHT;
-          const edgeY = cardY + (node.anchor.y > cardY ? 1 : -1) * 40 / height * WORLD_HEIGHT;
+          const edgeY = cardY + (node.anchor.y > cardY ? 1 : -1) * 40 / height * WORLD_HEIGHT / viewport.scale;
           return node.anchors.map((anchor, index) => <path key={`${node.id}:${index}`} data-muted={Boolean(highlight && !relatedNode(node.id))} data-multi={node.multiRegion} d={`M ${cardX} ${edgeY} Q ${cardX + (anchor.x - cardX) * .3} ${(edgeY + anchor.y) / 2} ${anchor.x} ${anchor.y}`}/>);
         })}</g>}
         <g className="wan-world-routes">{layout.routes.map(route => {
@@ -357,7 +431,7 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
           return <g key={route.id} className="wan-world-route" role="button" tabIndex={0} aria-label={label}
             data-corridor={route.id} data-condition={summary.active ? 'major' : 'normal'} data-stale={summary.unavailable > 0}
             data-emphasized={Boolean(highlight && relatedRoute(route))} data-muted={Boolean(highlight && !relatedRoute(route) && !summary.active)}
-            onPointerEnter={() => setHighlight(route.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => setHighlight(route.id)} onBlur={() => setHighlight(null)}
+            onPointerEnter={() => setHighlight(route.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => { setHighlight(route.id); reveal(mapPoint(route.midpoint)); }} onBlur={() => setHighlight(null)}
             onClick={() => onConnection({ kind: 'domain', id: route.id })} onKeyDown={event => activate(event, () => onConnection({ kind: 'domain', id: route.id }))}>
             <title>{`${label}. Lines show logical connectivity, not physical cable paths.`}</title>
             <path className="wan-world-route-hit" d={route.d}/><path className="wan-world-route-line" d={route.d}/>
@@ -366,16 +440,23 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
         })}</g>
         <g className="wan-world-pins">{layout.nodes.flatMap(node => node.anchors.map((anchor, index) => <g key={`${node.id}:${index}`} className="wan-world-pin" data-condition={condition(node.id)} data-selected={Boolean(highlight && relatedNode(node.id))} data-multi={node.multiRegion}
           role="button" tabIndex={0} aria-label={`Open ${domainLabel(node.id)} device groups. Illustrative ${node.multiRegion ? 'multi-location domain' : 'location'}: ${anchor.label}.`}
-          onPointerEnter={() => setHighlight(node.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => setHighlight(node.id)} onBlur={() => setHighlight(null)}
+          onPointerEnter={() => setHighlight(node.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => { setHighlight(node.id); reveal(mapPoint(anchor)); }} onBlur={() => setHighlight(null)}
           onClick={() => onNavigate('domain', node.id)} onKeyDown={event => activate(event, () => onNavigate('domain', node.id))}>
           <title>{`${domainLabel(node.id)} · ${anchor.label} · Illustrative placement`}</title>
-          <circle className="wan-world-pin-target" cx={anchor.x} cy={anchor.y} r="19"/>
-          <circle className="wan-world-pin-halo" cx={anchor.x} cy={anchor.y} r={node.multiRegion ? 10 : 15}/>
-          <circle className="wan-world-pin-core" cx={anchor.x} cy={anchor.y} r={node.multiRegion ? 4 : 7}/>
-          {narrow && index === 0 && <text className="wan-world-pin-label" style={{ fontSize: Math.max(18, 12000 / width) }} x={anchor.x} y={anchor.y + 38} textAnchor="middle">{node.label}</text>}
+          <circle className="wan-world-pin-target" cx={anchor.x} cy={anchor.y} r={Math.max(19, 18 / fit.scale) / viewport.scale}/>
+          <circle className="wan-world-pin-halo" cx={anchor.x} cy={anchor.y} r={(node.multiRegion ? 10 : 15) / viewport.scale}/>
+          <circle className="wan-world-pin-core" cx={anchor.x} cy={anchor.y} r={(node.multiRegion ? 4 : 7) / viewport.scale}/>
+          {narrow && index === 0 && <text className="wan-world-pin-label" style={{ fontSize: Math.max(18, 12000 / width) / viewport.scale }} x={anchor.x} y={anchor.y + 38 / viewport.scale} textAnchor="middle">{node.label}</text>}
         </g>))}</g>
+        </g>
       </svg>
       {!narrow && <div className="wan-world-cards">{positioned.map(card)}</div>}
+      <div className="wan-world-zoom" role="group" aria-label="Map zoom controls">
+        <hbr-tooltip content="Zoom out" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom out map" disabled={viewport.scale <= MIN_MAP_SCALE} onClick={() => zoom(1 / 1.25)}><hbr-icon name="minus" aria-hidden="true"/></hbr-button></hbr-tooltip>
+        <output className="wan-world-zoom-value" aria-label="Map zoom" aria-live="polite">{Math.round(viewport.scale * 100)}%</output>
+        <hbr-tooltip content="Zoom in" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom in map" disabled={viewport.scale >= MAX_MAP_SCALE} onClick={() => zoom(1.25)}><hbr-icon name="plus" aria-hidden="true"/></hbr-button></hbr-tooltip>
+        <hbr-tooltip content="Fit all domains · Ctrl/⌘ + scroll to zoom · Drag to pan" placement="top-end" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Fit all domains" onClick={fitAll}><hbr-icon name="crosshair" aria-hidden="true"/></hbr-button></hbr-tooltip>
+      </div>
     </div>
     <div className="wan-world-caption"><hbr-text size="xs" type="secondary">Real world geography · Illustrative domain locations</hbr-text><hbr-text size="xs" type="secondary">{plural(layout.routes.length, 'logical connection')}</hbr-text></div>
     {(narrow || layout.unplaced.length > 0) && <div className="wan-world-domain-list" role="group" aria-label="Domains in the world view">{(narrow ? [...layout.nodes, ...layout.unplaced] : layout.unplaced).map(card)}</div>}

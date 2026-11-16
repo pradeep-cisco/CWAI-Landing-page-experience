@@ -3,8 +3,13 @@
 .wan-world-view{min-width:0;width:100%;}
 /* Keep the surrounding surface opaque; color belongs to the land geometry. */
 .wan-overview-surface:has(.wan-world-view)::part(base){background:var(--base-bg-default);}
-.wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;background:none;}
+.wan-world-viewport{position:relative;isolation:isolate;width:100%;min-width:0;overflow:clip;touch-action:pan-y;background-image:radial-gradient(circle at 1px 1px,color-mix(in srgb,var(--base-text-medium-default) 22%,transparent) .7px,transparent 1px);background-size:20px 20px;}
+.wan-world-viewport:focus-visible{outline:2px solid var(--interact-border-default);outline-offset:2px;}
+.wan-world-viewport[data-zoomed=true]{cursor:grab;touch-action:none;}
+.wan-world-viewport[data-dragging=true]{cursor:grabbing;user-select:none;}
 .wan-world-svg{position:absolute;inset:0;height:100%;width:100%;overflow:visible;}
+.wan-world-viewport[data-animate=true] .wan-world-scene{transition:transform 180ms ease-out;}
+.wan-world-viewport[data-animate=true] .wan-world-cards>.wan-map-node{transition:left 180ms ease-out,top 180ms ease-out;}
 .wan-world-gradient-west{stop-color:color-mix(in srgb,var(--accent-c-default) 20%,var(--base-bg-default));}
 .wan-world-gradient-center{stop-color:color-mix(in srgb,var(--accent-a-default) 13%,var(--base-bg-default));}
 .wan-world-gradient-east{stop-color:color-mix(in srgb,var(--accent-b-default) 18%,var(--base-bg-default));}
@@ -35,6 +40,8 @@
 .wan-world-pin-label{font:500 25px Inter,sans-serif;fill:var(--base-text-default);paint-order:stroke;stroke:var(--base-bg-default);stroke-width:3px;pointer-events:none;}
 .wan-world-cards{position:absolute;inset:0;pointer-events:none;}
 .wan-world-cards>.wan-map-node{pointer-events:auto;}
+.wan-world-zoom{position:absolute;z-index:4;right:8px;bottom:8px;display:flex;align-items:center;gap:4px;padding:4px;border:1px solid var(--base-border-default);border-radius:8px;background:var(--base-bg-default);cursor:default;}
+.wan-world-zoom-value{min-width:40px;text-align:center;color:var(--base-text-medium-default);font-size:var(--hbr-font-size-xs);font-variant-numeric:tabular-nums;}
 .wan-world-caption{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;}
 .wan-world-domain-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;}
 .wan-world-domain-list>.wan-map-node{position:relative!important;left:auto!important;top:auto!important;width:auto!important;height:80px!important;transform:none;}
