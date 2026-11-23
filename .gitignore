@@ -11,7 +11,9 @@ lerna-debug.log*
 node_modules
 /dist
 dist-ssr
-public/
+public/*
+!public/explorations/
+!public/explorations/**
 *.local
 
 # Generated from the committed vendor/harbor-elements snapshot by dev/build.

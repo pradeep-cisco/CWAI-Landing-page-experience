@@ -1,0 +1,49 @@
+/* The active Combined exploration flows through overview, decisions, then jobs. */
+.combined-dashboard[data-combined-arrangement='rows'] .combined-workspace {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 24px;
+  min-width: 0;
+}
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision-row > section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+  container: combined-decision-card / inline-size;
+  scroll-margin-top: 80px;
+}
+.combined-dashboard[data-combined-arrangement='rows'] .combined-workspace > :is(.combined-ribbon, .combined-activity) {
+  min-width: 0;
+  width: 100%;
+  scroll-margin-top: 24px;
+}
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision::part(base) { padding: 16px; }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision-copy { gap: 6px; }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision-copy h3 { font-size: 16px; line-height: 1.4; }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-decision-copy > p { font-size: var(--hbr-font-size-xs, 12px); }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-action::part(base) { padding: 12px 16px; }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-actions-list { gap: 8px; }
+.combined-dashboard[data-combined-arrangement='rows'] .combined-action-time { max-width: 11ch; }
+
+@container combined-decision-card (max-width: 500px) {
+  .combined-decision-row .combined-decision-heading { grid-template-columns: 20px minmax(0, 1fr); }
+  .combined-decision-row .combined-decision-heading > hbr-button { grid-column: 2; justify-self: start; }
+  .combined-decision-row .combined-action-content { display: grid; grid-template-columns: 24px minmax(0, 1fr) 12px; gap: 8px; }
+  .combined-decision-row .combined-action-symbol { width: 24px; height: 24px; }
+  .combined-dashboard[data-combined-arrangement='rows'] .combined-decision-row .combined-action-time { grid-column: 2; grid-row: 2; max-width: none; text-align: left; }
+  .combined-decision-row .combined-action-content > hbr-icon:last-child { grid-column: 3; grid-row: 1; }
+  .combined-decision-row :is(.combined-key-values, .combined-diff, .combined-detail-grid, .combined-context) { grid-template-columns: minmax(0, 1fr); }
+  .combined-decision-row .combined-criterion { grid-template-columns: 20px minmax(0, 1fr); }
+  .combined-decision-row .combined-criterion-state { grid-column: 2; }
+}
+@media (max-width: 640px) {
+  .combined-dashboard[data-combined-arrangement='rows'] .combined-decision-row { grid-template-columns: minmax(0, 1fr); }
+}

@@ -1,0 +1,433 @@
+<div id="wf-storyboard-study">
+  <style>
+    #wf-storyboard-study{--wf-bg:#080d15;--wf-surface:#0c1420;--wf-raised:#111c2b;--wf-selected:#12233a;--wf-text:#e3e9f2;--wf-secondary:#a6b3c6;--wf-rule:#283547;--wf-blue:#7da6ff;--wf-violet:#b39cff;--wf-pink:#d583b8;--wf-amber:#edc778;--wf-green:#88cba6;font-family:Inter,ui-sans-serif,system-ui,sans-serif;width:100%;min-width:0;}
+    #wf-storyboard-study *{box-sizing:border-box;}
+    #wf-storyboard-study button{font:inherit;}
+    #wf-storyboard-study .wf-study-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-right:90px;color:var(--foreground);}
+    #wf-storyboard-study .wf-study-label{font-size:12px;font-weight:500;}
+    #wf-storyboard-study .wf-study-note{font-size:12px;color:var(--muted-foreground);}
+    #wf-storyboard-study .wf-scene-rail{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:26px;margin-bottom:22px;padding:0 8px;}
+    #wf-storyboard-study .wf-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;color:color-mix(in srgb,var(--foreground) 45%,transparent);z-index:0;overflow:visible;}
+    #wf-storyboard-study .wf-scene{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;appearance:none;border:0;background:transparent;padding:0;color:var(--foreground);text-align:left;}
+    #wf-storyboard-study .wf-sketch{display:block;position:relative;aspect-ratio:1.5;min-width:0;background:var(--wf-bg);border:1px solid #516073;border-radius:4px;color:var(--wf-blue);overflow:hidden;}
+    #wf-storyboard-study .wf-scene[aria-pressed=true] .wf-sketch{border-color:var(--wf-blue);box-shadow:0 0 0 1px var(--wf-blue);}
+    #wf-storyboard-study .wf-scene:hover .wf-sketch{background:var(--wf-raised);}
+    #wf-storyboard-study .wf-sketch-top{position:absolute;left:8%;right:8%;top:10%;height:6%;border-radius:1px;background:#40516a;}
+    #wf-storyboard-study .wf-sketch-board{position:absolute;left:8%;top:28%;width:53%;height:57%;display:flex;flex-direction:column;gap:14%;}
+    #wf-storyboard-study .wf-sketch-row{display:flex;align-items:center;gap:9%;height:24%;background:#1c2b40;border-radius:1px;}
+    #wf-storyboard-study .wf-sketch-dot{height:50%;aspect-ratio:1;border-radius:50%;margin-left:6%;background:#6f839e;}
+    #wf-storyboard-study .wf-sketch-line{height:17%;width:55%;background:#6f839e;}
+    #wf-storyboard-study .wf-sketch-attention{position:absolute;left:68%;right:8%;top:28%;height:40%;border-top:3px solid #6f839e;background:#172235;}
+    #wf-storyboard-study .wf-sketch-bottom{position:absolute;left:8%;right:8%;bottom:7%;height:3%;background:#40516a;}
+    #wf-storyboard-study .wf-scene[data-cue=degrade] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=escalate] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:first-child .wf-sketch-dot{background:var(--wf-amber);}
+    #wf-storyboard-study .wf-scene[data-cue=escalate] .wf-sketch-attention{border-top-color:var(--wf-amber);}
+    #wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:nth-child(2),#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:nth-child(2){background:#223d64;}
+    #wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:nth-child(2) .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-blue);}
+    #wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:nth-child(2){background:#34294f;}
+    #wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-violet);}
+    #wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:nth-child(2){background:#1b3c32;}
+    #wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-green);}
+    #wf-storyboard-study .wf-scene-name{font-size:12px;font-weight:500;line-height:1.4;min-height:34px;overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-product{background:var(--wf-bg);color:var(--wf-text);font-size:14px;line-height:1.45;width:100%;min-width:0;border:1px solid var(--wf-rule);border-radius:12px;overflow:hidden;}
+    #wf-storyboard-study .wf-product h1,#wf-storyboard-study .wf-product h2,#wf-storyboard-study .wf-product h3,#wf-storyboard-study .wf-product p{margin:0;}
+    #wf-storyboard-study .wf-product h1{font-size:22px;line-height:1.3;font-weight:500;}
+    #wf-storyboard-study .wf-product h2{font-size:16px;line-height:1.4;font-weight:500;}
+    #wf-storyboard-study .wf-product h3{font-size:14px;line-height:1.45;font-weight:500;}
+    #wf-storyboard-study .wf-product button{appearance:none;color:inherit;border:0;background:transparent;max-width:100%;}
+    #wf-storyboard-study .wf-appbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid var(--wf-rule);background:linear-gradient(110deg,#112138,var(--wf-bg) 65%);}
+    #wf-storyboard-study .wf-brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:500;min-width:0;}
+    #wf-storyboard-study .wf-brand svg{color:var(--wf-blue);flex:none;}
+    #wf-storyboard-study .wf-role{color:var(--wf-secondary);font-size:12px;white-space:nowrap;}
+    #wf-storyboard-study .wf-nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--wf-rule);background:#0b121d;}
+    #wf-storyboard-study .wf-nav button{padding:8px 10px;border-radius:5px;color:var(--wf-secondary);font-size:12px;min-height:34px;}
+    #wf-storyboard-study .wf-nav button:hover{background:var(--wf-raised);color:var(--wf-text);}
+    #wf-storyboard-study .wf-nav button[aria-current=page]{color:var(--wf-blue);background:#14243b;}
+    #wf-storyboard-study .wf-content{padding:22px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+    #wf-storyboard-study .wf-title-group{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+    #wf-storyboard-study .wf-posture{margin-top:8px!important;color:var(--wf-secondary);max-width:76ch;}
+    #wf-storyboard-study .wf-state-label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--wf-secondary);padding-top:5px;white-space:nowrap;}
+    #wf-storyboard-study .wf-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(220px,1fr);gap:22px;min-width:0;align-items:start;}
+    #wf-storyboard-study .wf-main>section,#wf-storyboard-study .wf-main>aside{min-width:0;}
+    #wf-storyboard-study .wf-main>section{grid-column:1;grid-row:1;}
+    #wf-storyboard-study .wf-main>aside{grid-column:2;grid-row:1;}
+    #wf-storyboard-study .wf-section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;}
+    #wf-storyboard-study .wf-section-hint{color:var(--wf-secondary);font-size:11px;}
+    #wf-storyboard-study .wf-worklist{border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-workrow{display:grid;grid-template-columns:minmax(130px,.9fr) minmax(0,1.4fr);gap:16px;width:100%;padding:16px 12px;text-align:left;border-bottom:1px solid var(--wf-rule)!important;transition:background 160ms ease;}
+    #wf-storyboard-study .wf-workrow:hover{background:#101d2e;}
+    #wf-storyboard-study .wf-workrow[aria-pressed=true]{background:var(--wf-selected);box-shadow:inset 3px 0 var(--wf-blue);}
+    #wf-storyboard-study .wf-agent{display:flex;flex-direction:column;gap:7px;min-width:0;}
+    #wf-storyboard-study .wf-agent-name{font-weight:500;}
+    #wf-storyboard-study .wf-agent-meta{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health[data-tone=warning]{color:var(--wf-amber);}
+    #wf-storyboard-study .wf-health[data-tone=positive]{color:var(--wf-green);}
+    #wf-storyboard-study .wf-eligibility{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health svg{width:12px;height:12px;flex:none;margin-top:2px;}
+    #wf-storyboard-study .wf-job{display:flex;flex-direction:column;gap:7px;min-width:0;}
+    #wf-storyboard-study .wf-job-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+    #wf-storyboard-study .wf-job-title{font-weight:500;font-size:13px;}
+    #wf-storyboard-study .wf-status{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:5px;background:#1b293b;color:#b8c8df;font-size:11px;line-height:1.4;}
+    #wf-storyboard-study .wf-status[data-tone=warning]{background:#352c1b;color:var(--wf-amber);}
+    #wf-storyboard-study .wf-status[data-tone=blue]{background:#1d3152;color:#a7c2ff;}
+    #wf-storyboard-study .wf-status[data-tone=violet]{background:#2e2444;color:#cfbaff;}
+    #wf-storyboard-study .wf-status[data-tone=positive]{background:#18382c;color:#a0ddba;}
+    #wf-storyboard-study .wf-job-detail{font-size:12px;color:var(--wf-text);overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-next{font-size:11px;color:var(--wf-secondary);overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-next strong{font-weight:500;color:var(--wf-text);}
+    #wf-storyboard-study .wf-attention-group+.wf-attention-group{margin-top:18px;}
+    #wf-storyboard-study .wf-attention-label{font-size:11px;color:var(--wf-secondary);margin-bottom:8px;font-weight:500;}
+    #wf-storyboard-study .wf-attention-item{border-top:1px solid var(--wf-rule);padding:12px 0;display:flex;flex-direction:column;gap:8px;}
+    #wf-storyboard-study .wf-attention-item[data-emphasis=true]{border-top-color:#967a45;}
+    #wf-storyboard-study .wf-attention-item h3{display:flex;align-items:center;gap:6px;}
+    #wf-storyboard-study .wf-attention-item h3 svg{color:var(--wf-amber);flex:none;}
+    #wf-storyboard-study .wf-attention-detail{font-size:12px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-attention-item .wf-link{align-self:flex-start;}
+    #wf-storyboard-study .wf-link{display:inline-flex;align-items:center;gap:5px;padding:2px 0!important;color:var(--wf-blue)!important;font-size:12px!important;text-align:left;min-height:24px;}
+    #wf-storyboard-study .wf-link:hover{text-decoration:underline;}
+    #wf-storyboard-study .wf-link svg{width:13px;height:13px;flex:none;}
+    #wf-storyboard-study .wf-quiet{color:var(--wf-secondary);font-size:12px;padding:12px 0;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-inspector{margin-top:16px;padding:16px;background:var(--wf-raised);border:1px solid #364964;border-radius:8px;min-width:0;}
+    #wf-storyboard-study .wf-inspector[hidden]{display:none;}
+    #wf-storyboard-study .wf-inspector-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    #wf-storyboard-study .wf-inspector-heading p{font-size:11px;color:var(--wf-secondary);margin-top:3px;}
+    #wf-storyboard-study .wf-icon-button{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:4px;}
+    #wf-storyboard-study .wf-icon-button:hover{background:#22324a;}
+    #wf-storyboard-study .wf-inspector dl{display:grid;grid-template-columns:minmax(80px,.7fr) minmax(0,1.7fr);gap:9px 12px;margin:0;font-size:12px;}
+    #wf-storyboard-study .wf-inspector dt{color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-inspector dd{margin:0;overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-inspector-tools{display:flex;gap:14px;flex-wrap:wrap;margin-top:13px;padding-top:10px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-records{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;}
+    #wf-storyboard-study .wf-records li{display:flex;flex-direction:column;gap:3px;padding:9px 0;border-top:1px solid var(--wf-rule);font-size:12px;}
+    #wf-storyboard-study .wf-records li:first-child{border-top:0;padding-top:0;}
+    #wf-storyboard-study .wf-records small{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-actions{padding-top:18px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-action-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;}
+    #wf-storyboard-study .wf-action{display:flex;align-items:flex-start;gap:10px;padding:11px 0;text-align:left;min-width:0;border-bottom:1px solid #1c293b!important;}
+    #wf-storyboard-study .wf-action:hover .wf-action-title{color:var(--wf-blue);}
+    #wf-storyboard-study .wf-action svg{flex:none;width:14px;height:14px;margin-top:3px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-action[data-tone=warning] svg{color:var(--wf-amber);}
+    #wf-storyboard-study .wf-action[data-tone=positive] svg{color:var(--wf-green);}
+    #wf-storyboard-study .wf-action-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    #wf-storyboard-study .wf-action-title{font-size:12px;font-weight:500;}
+    #wf-storyboard-study .wf-action-meta{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-trust{display:flex;align-items:flex-start;gap:10px;padding-top:16px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-trust>svg{flex:none;width:16px;height:16px;margin-top:2px;color:var(--wf-blue);}
+    #wf-storyboard-study .wf-trust-copy{flex:1;min-width:0;}
+    #wf-storyboard-study .wf-trust-copy strong{font-weight:500;font-size:12px;}
+    #wf-storyboard-study .wf-trust-copy p{font-size:12px;color:var(--wf-secondary);margin-top:3px;}
+    #wf-storyboard-study .wf-updated{animation:wf-confirmed-change 650ms ease-out;}
+    @keyframes wf-confirmed-change{0%{background-color:#223650;}100%{background-color:transparent;}}
+    #wf-storyboard-study .wf-workrow[aria-pressed=true].wf-updated{animation:wf-selected-change 650ms ease-out;}
+    @keyframes wf-selected-change{0%{background-color:#2c466b;}100%{background-color:#12233a;}}
+    #wf-storyboard-study .wf-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    @media(max-width:900px){#wf-storyboard-study .wf-scene-rail{grid-template-columns:repeat(4,minmax(0,1fr));gap:34px 26px;}#wf-storyboard-study .wf-main{grid-template-columns:minmax(0,1.65fr) minmax(205px,1fr);gap:18px;}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(0,1fr);gap:10px;}#wf-storyboard-study .wf-agent{gap:4px;}#wf-storyboard-study .wf-agent-meta{display:inline;}#wf-storyboard-study .wf-content{padding:18px;}}
+    @media(max-width:650px){#wf-storyboard-study .wf-main{grid-template-columns:minmax(0,1fr);}#wf-storyboard-study .wf-attention{padding-top:18px;border-top:1px solid var(--wf-rule);}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(110px,.85fr) minmax(0,1.2fr);}#wf-storyboard-study .wf-action-list{grid-template-columns:minmax(0,1fr);}#wf-storyboard-study .wf-title-group{flex-direction:column;gap:6px;}#wf-storyboard-study .wf-state-label{padding-top:0;}#wf-storyboard-study .wf-trust{flex-wrap:wrap;}#wf-storyboard-study .wf-trust>.wf-link{margin-left:26px;}#wf-storyboard-study .wf-study-heading{padding-right:90px;}}
+    @media(max-width:500px){#wf-storyboard-study .wf-scene-rail{grid-template-columns:minmax(0,1fr);gap:24px;padding:0 8px;}#wf-storyboard-study .wf-scene{display:grid;grid-template-columns:124px minmax(0,1fr);gap:18px;align-items:center;}#wf-storyboard-study .wf-scene-name{min-height:0;font-size:12px;}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(0,1fr);padding:14px 10px;}#wf-storyboard-study .wf-content{padding:16px;}#wf-storyboard-study .wf-appbar{padding:16px;gap:10px;}#wf-storyboard-study .wf-brand{font-size:16px;}#wf-storyboard-study .wf-nav{padding:7px 8px;gap:2px;}#wf-storyboard-study .wf-nav button{padding:7px 8px;font-size:11px;}#wf-storyboard-study .wf-inspector{padding:12px;}#wf-storyboard-study .wf-inspector dl{grid-template-columns:minmax(0,1fr);gap:3px;}#wf-storyboard-study .wf-inspector dd{margin-bottom:8px;}#wf-storyboard-study .wf-inspector dd:last-child{margin-bottom:0;}}
+    @media(pointer:coarse){#wf-storyboard-study .wf-product button{min-height:44px;}#wf-storyboard-study .wf-product .wf-icon-button{width:44px;height:44px;}#wf-storyboard-study .wf-scene{min-height:44px;}}
+    @media(prefers-reduced-motion:reduce){#wf-storyboard-study *,#wf-storyboard-study *::before,#wf-storyboard-study *::after{animation:none!important;transition:none!important;}}
+    @media(max-width:650px){#wf-storyboard-study .wf-main>aside{grid-column:1;grid-row:1;padding-top:0;border-top:0;}#wf-storyboard-study .wf-main>section{grid-column:1;grid-row:2;}}
+  </style>
+
+  <div class="wf-study-heading">
+    <span class="wf-study-label">Illustrative story states</span>
+    <span class="wf-study-note">Review only</span>
+  </div>
+  <div class="wf-scene-rail" aria-label="AI workforce visual storyboard">
+    <svg class="wf-connectors" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.1"></svg>
+  </div>
+
+  <section class="wf-product" aria-label="Crosswork AI workforce landing study">
+    <header class="wf-appbar">
+      <div class="wf-brand"><i data-lucide="layers" aria-hidden="true"></i><span>Crosswork AI</span></div>
+      <span class="wf-role">AI Admin</span>
+    </header>
+    <nav class="wf-nav" aria-label="Crosswork AI capabilities">
+      <button type="button" class="cursor-interaction" data-home aria-current="page">Home</button>
+      <button type="button" class="cursor-interaction" data-capability="agents">Agents</button>
+      <button type="button" class="cursor-interaction" data-capability="integrations">Integrations</button>
+      <button type="button" class="cursor-interaction" data-capability="models">Models</button>
+      <button type="button" class="cursor-interaction" data-capability="observability">Observability</button>
+      <button type="button" class="cursor-interaction" data-capability="help">Help</button>
+    </nav>
+    <main class="wf-content">
+      <div class="wf-title-group">
+        <div><h1>Workforce</h1><p class="wf-posture"></p></div>
+        <span class="wf-state-label"><i data-lucide="activity" aria-hidden="true"></i><span>Current watch</span></span>
+      </div>
+      <div class="wf-main">
+        <aside class="wf-attention" aria-label="Supervisory attention">
+          <div class="wf-section-heading"><h2>Attention</h2></div>
+          <div class="wf-attention-group"><p class="wf-attention-label">Your decision</p><div class="wf-decisions"></div></div>
+          <div class="wf-attention-group"><p class="wf-attention-label">Being handled</p><div class="wf-handled"></div></div>
+        </aside>
+        <section aria-label="Agent activity and assigned jobs">
+          <div class="wf-section-heading"><h2>Activity</h2><span class="wf-section-hint">Agent → assigned work</span></div>
+          <div class="wf-worklist">
+            <button type="button" class="wf-workrow cursor-interaction" data-job="J17" aria-pressed="false">
+              <span class="wf-agent"><span class="wf-agent-name">Network Troubleshooter</span><span class="wf-agent-meta">T1 · Collection capability</span><span class="wf-health"><i data-lucide="activity" aria-hidden="true"></i><span class="wf-health-text"></span></span></span>
+              <span class="wf-job"><span class="wf-job-top"><span class="wf-job-title">Investigation · J17</span><span class="wf-status"></span></span><span class="wf-job-detail"></span><span class="wf-next"></span></span>
+            </button>
+            <button type="button" class="wf-workrow cursor-interaction" data-job="J21" aria-pressed="false">
+              <span class="wf-agent"><span class="wf-agent-name">Remediation</span><span class="wf-agent-meta">R1 · Corrective execution</span><span class="wf-health"><i data-lucide="check" aria-hidden="true"></i><span class="wf-health-text"></span></span></span>
+              <span class="wf-job"><span class="wf-job-top"><span class="wf-job-title">Remediation · J21</span><span class="wf-status"></span></span><span class="wf-job-detail"></span><span class="wf-next"></span></span>
+            </button>
+            <button type="button" class="wf-workrow cursor-interaction" data-job="J23" aria-pressed="false">
+              <span class="wf-agent"><span class="wf-agent-name">Config Drift</span><span class="wf-agent-meta">D1 · Baseline assessment</span><span class="wf-health"><i data-lucide="check" aria-hidden="true"></i><span class="wf-health-text"></span></span></span>
+              <span class="wf-job"><span class="wf-job-top"><span class="wf-job-title">Assessment · J23</span><span class="wf-status"></span></span><span class="wf-job-detail"></span><span class="wf-next"></span></span>
+            </button>
+          </div>
+          <section class="wf-inspector" aria-label="Selected work inspection" hidden>
+            <div class="wf-inspector-heading"><div><h3 class="wf-inspector-title"></h3><p class="wf-inspector-subtitle"></p></div><button type="button" class="wf-icon-button cursor-interaction" data-close-inspector aria-label="Close inspection"><i data-lucide="x" aria-hidden="true"></i></button></div>
+            <div class="wf-inspector-body"></div>
+            <div class="wf-inspector-tools"></div>
+          </section>
+        </section>
+      </div>
+      <section class="wf-actions" aria-label="Consequential automated actions">
+        <div class="wf-section-heading"><h2>Actions</h2><span class="wf-section-hint">Confirmed events</span></div>
+        <div class="wf-action-list"></div>
+      </section>
+      <section class="wf-trust" aria-label="Trust and authority context">
+        <i data-lucide="shield" aria-hidden="true"></i><div class="wf-trust-copy"><strong>Trust</strong><p class="wf-trust-text"></p></div><button type="button" class="wf-link cursor-interaction" data-trust>Inspect trace<i data-lucide="chevron-right" aria-hidden="true"></i></button>
+      </section>
+    </main>
+  </section>
+  <div class="wf-sr-only wf-announcement" aria-live="polite" aria-atomic="true"></div>
+
+  <script>
+  (() => {
+    const root = document.getElementById('wf-storyboard-study');
+    if (!root) return;
+    const scenes = [
+      { name:'Work continues', cue:'arrival', posture:'Work is underway. A remediation approval is waiting; an investigation is collecting delayed evidence.', tState:'Gathering', tHealth:'Collection delayed', tDetail:'Required tool responses are delayed. No production write is in progress.', tNext:'Check the collection dependency', rState:'Awaiting approval', rDetail:'The reviewed corrective proposal needs policy-required authorization.', rNext:'Confirm effective approval before execution', decision:'approval', handled:'delayed', events:['proposal','collection','access'], trust:'J21 requires a policy approval. No controller operation has been issued.' },
+      { name:'Notice deterioration', cue:'degrade', posture:'A collection capability is degrading. Crosswork AI is checking permitted recovery paths.', tState:'Recovery checks', tHealth:'Degraded collection', tDetail:'Repeated tool timeouts have produced no suitable new evidence.', tNext:'Finish bounded recovery and eligibility checks', rState:'Awaiting approval', rDetail:'The same corrective proposal remains waiting for its own authorization.', rNext:'Confirm effective approval before execution', decision:'approval', handled:'recovery', events:['recovery','proposal','access'], trust:'J21 still requires approval. T1 capability degradation is not itself a policy violation.' },
+      { name:'Address an escalation', cue:'escalate', posture:'Unsupported collection work is held. A production-eligibility decision now needs review.', tState:'Constrained', tHealth:'Degraded collection', tDetail:'Recovery has not restored the capability; no eligible authorized replacement is available.', tNext:'Review the proposed new-assignment restriction', rState:'Awaiting approval', rDetail:'J21 has its own valid proposal and remains independent of the collection exception.', rNext:'Confirm effective approval before execution', decision:'both', handled:'held', events:['restriction-request','recovery-exhausted','proposal'], trust:'T1 restriction is requested, not applied. Unsupported assignments are already held.' },
+      { name:'Review authorization', cue:'authorize', posture:'T1 new collection assignments are restricted. J21 is authorized; prerequisites are being rechecked.', tState:'Constrained', tHealth:'Degraded collection', tDetail:'The assignment restriction is confirmed. Existing work retains its actual status and owner.', tNext:'Check capability restoration and re-evaluate eligibility', rState:'Authorized', rDetail:'The grant is effective. Required prerequisites are being revalidated; no controller operation has been issued.', rNext:'Confirm prerequisites before issuing the unchanged proposal', decision:'none', handled:'constrained', events:['prechecks','grant','decision-submitted','restriction-confirmed'], trust:'J21 authorization and T1 assignment restriction are confirmed. Prerequisites are rechecking; no J21 operation has been issued.' },
+      { name:'Follow execution', cue:'execute', posture:'J21 execution has started. The investigation and baseline-access constraint remain separate.', tState:'Constrained', tHealth:'Degraded · New work restricted', tDetail:'J17 remains held at its unsupported collection step; the new-assignment restriction remains effective.', tNext:'Check capability restoration and re-evaluate eligibility', rState:'Executing', rDetail:'RUN-021 has a confirmed start after authorization and prerequisite checks.', rNext:'Follow the controller result', decision:'none', handled:'execution', events:['execution-started','grant','restriction-confirmed','access'], trust:'RUN-021 is linked to the effective J21 authorization. Verification follows execution.' },
+      { name:'Inspect actions', cue:'verify', posture:'J21 execution completed. Its remediation is still verifying the intended effect.', tState:'Constrained', tHealth:'Degraded · New work restricted', tDetail:'J17 remains constrained; completion of another job does not restore this capability.', tNext:'Check capability restoration and re-evaluate eligibility', rState:'Verifying', rDetail:'RUN-021 completed. The job still requires its own verification evidence.', rNext:'Evaluate J21 outcome criteria', decision:'none', handled:'verification', events:['verification-started','execution-completed','restriction-confirmed','access'], trust:'J21 execution completed within its recorded grant. Objective achievement is not yet established.' },
+      { name:'Confirm a result', cue:'verified', posture:'J21 is verified. J17 remains constrained and J23 still requires baseline-source access.', tState:'Constrained', tHealth:'Degraded · New work restricted', tDetail:'The collection capability is still degraded. Its affected work remains independently owned.', tNext:'Check capability restoration and re-evaluate eligibility', rState:'Verified', rDetail:'J21 outcome criteria are met using its own observations and execution record.', rNext:'Retain the result and supporting proof', decision:'none', handled:'remaining', events:['criteria-met','execution-completed','restriction-confirmed','access'], trust:'J21 has linked authorization, execution, and verification proof. The other jobs remain unresolved.' }
+    ];
+    const events = {
+      proposal:{job:'J21',title:'Corrective proposal ready for review',detail:'The proposal is prepared; policy requires authorization before a controller operation can be issued.',record:'PLAN-J21',actor:'Remediation R1',status:'Awaiting approval',tone:'warning'},
+      collection:{job:'J17',title:'Collection dependency identified',detail:'Required tool responses are delayed; no production write has been issued for this read-only investigation.',record:'J17 collection record',actor:'Network Troubleshooter T1',status:'Gathering',tone:'neutral'},
+      access:{job:'J23',title:'Baseline access remains required',detail:'Config Drift D1 is healthy. Access to the baseline source for this assessment scope remains a separate prerequisite.',record:'J23 access prerequisite',actor:'Config Drift D1',status:'Waiting for source access',tone:'neutral'},
+      recovery:{job:'J17',title:'Bounded recovery checks started',detail:'Crosswork AI checks the collection dependency and eligible authorized recovery paths. No new evidence has yet been established.',record:'J17 recovery checks',actor:'Crosswork AI',status:'Recovery checks',tone:'warning'},
+      'restriction-request':{job:'J17',title:'Assignment restriction requested',detail:'The configured policy reserves this production-eligibility decision for the AI Admin. No restriction has yet been applied; unsupported assignments are already held.',record:'T1 eligibility request',actor:'Crosswork AI',status:'Requested',tone:'warning'},
+      'recovery-exhausted':{job:'J17',title:'Supported recovery paths exhausted',detail:'The capability remains degraded after bounded checks, and no suitable authorized replacement is available in this illustrated branch.',record:'J17 recovery result',actor:'Crosswork AI',status:'Constrained',tone:'warning'},
+      'restriction-confirmed':{job:'J17',title:'New-assignment restriction confirmed',detail:'The restriction covers new production assignments to T1’s affected collection capability/version. Existing job ownership and actual state are retained.',record:'T1 eligibility record',actor:'AI Admin decision / Crosswork AI enforcement',status:'Effective restriction',tone:'warning'},
+      'decision-submitted':{job:'J21',title:'Bounded approval decision submitted',detail:'The AI Admin submitted a decision for the reviewed J21 proposal. Submission is distinct from effective authorization or execution.',record:'J21 decision record',actor:'AI Admin',status:'Decision submitted',tone:'neutral'},
+      grant:{job:'J21',title:'J21 authorization confirmed',detail:'The effective grant is limited to the reviewed proposal and declared scope. Material proposal changes require renewed applicable checks.',record:'AUTH-J21',actor:'Crosswork AI authorization record',status:'Grant confirmed',tone:'neutral'},
+      prechecks:{job:'J21',title:'Execution prerequisites rechecking',detail:'The effective grant is confirmed. Crosswork AI is revalidating the unchanged proposal and its required prerequisites. No controller operation has been issued at this checkpoint.',record:'J21 precheck record',actor:'Crosswork AI',status:'Rechecking prerequisites',tone:'neutral'},
+      'execution-started':{job:'J21',title:'RUN-021 execution started',detail:'The controller operation has a confirmed start after the effective grant and renewed prerequisite checks.',record:'RUN-021 start record',actor:'Remediation R1 / controller',status:'Executing',tone:'neutral'},
+      'execution-completed':{job:'J21',title:'RUN-021 execution completed',detail:'The operation reports completion. This event alone does not establish the intended remediation outcome.',record:'RUN-021 result record',actor:'Controller execution source',status:'Execution completed',tone:'neutral'},
+      'verification-started':{job:'J21',title:'Outcome verification underway',detail:'J21 is checking its own required observations and outcome criteria. T1 and D1 jobs retain separate states and evidence.',record:'J21 verification record',actor:'Crosswork AI',status:'Verifying',tone:'neutral'},
+      'criteria-met':{job:'J21',title:'J21 outcome criteria met',detail:'J21’s own observations satisfy the defined outcome criteria. Authorization, execution, and verification records remain linked for inspection.',record:'J21 verified result',actor:'Crosswork AI / outcome evidence',status:'Verified result',tone:'positive'}
+    };
+    const validJobs = ['J17','J21','J23'];
+    const allowedModes = ['job','approval','restriction','trust','event','agents','integrations','models','observability','help'];
+    const restoredState = value => {
+      const v = value && typeof value === 'object' ? value : {};
+      const p = v.privateContent && typeof v.privateContent === 'object' ? v.privateContent : v;
+      const m = v.modelContent && typeof v.modelContent === 'object' ? v.modelContent : v;
+      const n = Number(m.scene ?? p.scene);
+      return { scene:Number.isInteger(n) && n>=0 && n<scenes.length ? n : 0, selectedJob:validJobs.includes(m.selectedJob ?? p.selectedJob) ? (m.selectedJob ?? p.selectedJob) : null, mode:allowedModes.includes(p.mode) ? p.mode : null, event:events[p.event] ? p.event : null };
+    };
+    const state = restoredState(window.openai?.widgetState);
+    let lastScene = state.scene;
+    let renderedScene = null;
+    const rail = root.querySelector('.wf-scene-rail');
+    const connector = root.querySelector('.wf-connectors');
+    const inspector = root.querySelector('.wf-inspector');
+    const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    const icon = name => `<i data-lucide="${name}" aria-hidden="true"></i>`;
+    const link = (label,attrs) => `<button type="button" class="wf-link cursor-interaction" ${attrs}>${escapeHTML(label)}${icon('chevron-right')}</button>`;
+    const fieldList = rows => `<dl>${rows.map(([label,value])=>`<dt>${escapeHTML(label)}</dt><dd>${escapeHTML(value)}</dd>`).join('')}</dl>`;
+    const records = rows => `<ul class="wf-records">${rows.map(row=>`<li><span>${escapeHTML(row[0])}</span><small>${escapeHTML(row[1])}</small></li>`).join('')}</ul>`;
+    const persist = () => {
+      try {
+        const result = window.openai?.setWidgetState?.({modelContent:{story:'ai-workforce-supervision',scene:state.scene,sceneName:scenes[state.scene].name,selectedJob:state.selectedJob},privateContent:{scene:state.scene,selectedJob:state.selectedJob,mode:state.mode,event:state.event}});
+        if (result && typeof result.catch === 'function') result.catch(()=>{});
+      } catch (_) {}
+    };
+    const refreshIcons = () => { if (window.lucide?.createIcons) window.lucide.createIcons({attrs:{width:16,height:16}}); };
+    const announce = text => { root.querySelector('.wf-announcement').textContent = text; };
+
+    scenes.forEach((scene,index) => {
+      const button = document.createElement('button');
+      button.type='button'; button.className='wf-scene cursor-interaction'; button.dataset.scene=String(index); button.dataset.cue=scene.cue;
+      button.setAttribute('aria-label',`Show illustrated state: ${scene.name}`);
+      button.setAttribute('aria-pressed',String(index===state.scene));
+      button.innerHTML=`<span class="wf-sketch" aria-hidden="true"><span class="wf-sketch-top"></span><span class="wf-sketch-board">${[0,1,2].map(()=>'<span class="wf-sketch-row"><span class="wf-sketch-dot"></span><span class="wf-sketch-line"></span></span>').join('')}</span><span class="wf-sketch-attention"></span><span class="wf-sketch-bottom"></span></span><span class="wf-scene-name">${escapeHTML(scene.name)}</span>`;
+      rail.appendChild(button);
+    });
+
+    function jobData(id) {
+      const scene=scenes[state.scene];
+      if(id==='J17') return {agent:'Network Troubleshooter T1',kind:'Read-only investigation',status:scene.tState,health:state.scene>0?'Degraded collection':'Reachable · collection delayed',eligibility:state.scene>=3?'New assignments restricted':state.scene===2?'Restriction requested':'',detail:scene.tDetail,next:scene.tNext,tone:state.scene>0?'warning':'neutral',healthTone:state.scene>0?'warning':'neutral'};
+      if(id==='J21') return {agent:'Remediation R1',kind:'Corrective work',status:scene.rState,health:'Healthy',detail:scene.rDetail,next:scene.rNext,tone:state.scene<3?'warning':state.scene===5?'violet':state.scene===6?'positive':'blue',healthTone:'positive'};
+      return {agent:'Config Drift D1',kind:'Baseline assessment',status:'Waiting for access',health:'Healthy',detail:'Baseline-source access for the declared assessment scope is not configured.',next:'Establish the permitted source-access prerequisite',tone:'neutral',healthTone:'positive'};
+    }
+
+    function attentionItem(title,detail,label,attrs,emphasis=false) {
+      return `<article class="wf-attention-item" data-emphasis="${emphasis}"><h3>${emphasis?icon('alert-triangle'):''}${escapeHTML(title)}</h3><p class="wf-attention-detail">${escapeHTML(detail)}</p>${link(label,attrs)}</article>`;
+    }
+    function renderAttention() {
+      const scene=scenes[state.scene];
+      const decision=[];
+      if(scene.decision==='both') decision.push(attentionItem('T1 assignment restriction','Recovery has not restored collection. Policy reserves this eligibility decision for the AI Admin.','Review escalation','data-inspect="restriction" data-for-job="J17"',true));
+      if(scene.decision==='approval'||scene.decision==='both') decision.push(attentionItem('J21 approval','Authorize only the reviewed corrective proposal and its declared scope. No operation has been issued.','Review approval','data-inspect="approval" data-for-job="J21"',true));
+      root.querySelector('.wf-decisions').innerHTML=decision.length?decision.join(''):'<p class="wf-quiet">No supervisory decision is pending in these illustrated records.</p>';
+      let handled='';
+      if(scene.handled==='delayed') handled=attentionItem('J17 collection delayed','The investigation is waiting on a required tool response. Crosswork AI is checking the dependency.','Inspect investigation','data-inspect="job" data-for-job="J17"');
+      if(scene.handled==='recovery') handled=attentionItem('J17 recovery checks','Crosswork AI is evaluating supported recovery and eligible authorized alternatives.','Inspect recovery','data-inspect="job" data-for-job="J17"');
+      if(scene.handled==='held') handled=attentionItem('Unsupported work held','The collection step is constrained while the eligibility decision is reviewed. Existing ownership remains.','Inspect held work','data-inspect="job" data-for-job="J17"');
+      if(scene.handled==='constrained') handled=attentionItem('T1 new work restricted','The restriction is effective. J17 remains constrained with supported capability checks retained.','Inspect restriction','data-inspect="restriction" data-for-job="J17"');
+      if(scene.handled==='execution') handled=attentionItem('J21 executing','RUN-021 has started. Crosswork AI is following the controller record before evaluating the result.','Follow remediation','data-inspect="job" data-for-job="J21"');
+      if(scene.handled==='verification') handled=attentionItem('J21 verifying','The operation completed. The remediation still requires its own measured outcome evidence.','Inspect checks','data-inspect="job" data-for-job="J21"');
+      if(scene.handled==='remaining') handled=attentionItem('Remaining constraints','J17 remains constrained and J23 still needs source access. J21’s success does not resolve either job.','Inspect constrained work','data-inspect="job" data-for-job="J17"');
+      root.querySelector('.wf-handled').innerHTML=handled;
+    }
+
+    function renderInspector() {
+      if(!state.mode){inspector.hidden=true;return;}
+      inspector.hidden=false;
+      const job=state.selectedJob || 'J21';
+      const data=jobData(job);
+      let title='',subtitle='',body='',tools='';
+      if(state.mode==='job') {
+        title=`${job} · ${data.kind}`; subtitle=`${data.agent} · Current illustrated state`;
+        body=fieldList([['Job state',data.status],['Agent health',data.health],...(data.eligibility?[['Assignment eligibility',data.eligibility]]:[]),['Current evidence',data.detail],['Next checkpoint',data.next],['Work identity','This is the same job in Activity, Attention, and Actions.']]);
+        if(job==='J17') tools=link('Observability','data-capability="observability"')+link('Agent record','data-capability="agents"');
+        if(job==='J21') tools=link(state.scene<3?'Review approval':'Inspect authorization','data-inspect="approval" data-for-job="J21"')+link('Authority trace','data-trust');
+        if(job==='J23') tools=link('Integration context','data-capability="integrations"')+link('Agent record','data-capability="agents"');
+      } else if(state.mode==='approval') {
+        title=state.scene<3?'J21 · Approval review':'J21 · Authorization';subtitle='Remediation R1 · PLAN-J21';
+        const stage=state.scene<3?'Policy-required decision is pending.':state.scene===3?'Effective authorization confirmed; no controller operation issued.':state.scene===4?'Authorized execution RUN-021 is in progress.':state.scene===5?'Execution completed; outcome verification is pending.':'Execution and J21 outcome verification are recorded separately.';
+        body=fieldList([['Current state',stage],['Purpose','Execute the reviewed corrective proposal for J21.'],['Declared boundary','The reviewed proposal and its declared resource scope only.'],['Policy basis','This proposal falls outside the configured unattended-action set.'],['Validity conditions','Revalidate prerequisites; a changed or expired proposal cannot reuse an earlier approval.'],['Expiry record','An expiry value is not supplied in this illustrative snapshot.'],state.scene<3?['If approval is withheld','No controller operation is issued; the remediation remains constrained and owned.']:['Decision consequence','The effective grant permits only the reviewed proposal. Actual execution and verification have separate records.']]);
+        if(state.scene>=3) body+=`<div style="margin-top:14px">${records([['Decision submitted','A decision record exists for the bounded proposal.'],['Grant confirmed','AUTH-J21 establishes effective authorization.'],[state.scene===3?'Prerequisites rechecking':'Prechecks revalidated',state.scene===3?'Required checks are underway. No controller operation has been issued.':'The unchanged proposal and prerequisites were checked before issuance.']])}</div>`;
+        tools=link('Policy and action trace','data-trust')+link('J21 current work','data-inspect="job" data-for-job="J21"');
+      } else if(state.mode==='restriction') {
+        title='T1 · Collection eligibility';subtitle='Network Troubleshooter · J17 remains independently owned';
+        body=fieldList([['Decision state',state.scene<2?'No eligibility request is represented yet.':state.scene===2?'Restriction requested; not yet applied.':'New-assignment restriction confirmed.'],['Observed condition',jobData('J17').health],['Control scope','New production assignments to T1’s affected collection capability/version.'],['Existing work',state.scene<2?'J17 retains its current evidence-gathering or recovery state and owner.': 'J17 retains its actual constrained state and owner. Restriction does not mean cancellation, rollback, or repair.'],['Policy basis','The configured policy reserves this production-eligibility decision for the AI Admin.'],['Governor response',state.scene<2?'Permitted dependency and recovery checks continue.':'Unsupported assignments are already held while permitted dependency checks continue.'],['Next checkpoint','Capability restoration and eligibility re-evaluation; no restoration ETA is supplied.']]);
+        tools=link('Observability','data-capability="observability"')+link('J17 current work','data-inspect="job" data-for-job="J17"');
+      } else if(state.mode==='trust') {
+        title='Current authority records';subtitle='Scoped evidence · No workforce-wide compliance score';
+        const rows=[['J21 proposal',state.scene<3?'Policy-required approval pending; no operation issued.':'Decision submission and effective grant are separate records.'],['J21 execution',state.scene<4?'No controller operation has started.':state.scene===4?'RUN-021 started after the grant and revalidated prechecks.':'RUN-021 completed; the execution record remains retained.'],['J21 result',state.scene<5?'No verified outcome is established.':state.scene===5?'Verification is pending.':'J21-specific criteria are met and proof is retained.'],['T1 eligibility',state.scene<2?'No assignment restriction has been requested in this snapshot.':state.scene===2?'Restriction requested; unsupported assignments held.':'New-assignment restriction is effective; agent health remains degraded.'],['J23 prerequisite','D1 is healthy; baseline-source access is still missing.']];
+        body=records(rows);tools=link('J21 authorization','data-inspect="approval" data-for-job="J21"')+link('T1 eligibility','data-inspect="restriction" data-for-job="J17"');
+      } else if(state.mode==='event' && events[state.event]) {
+        const event=events[state.event];title=event.title;subtitle=`${event.job} · ${event.record}`;
+        body=fieldList([['Recorded event',event.status],['Actor',event.actor],['What it establishes',event.detail],['Current job state',jobData(event.job).status],['Evidence boundary','This event retains its own meaning; later states do not rewrite it.']]);
+        tools=link('Current job','data-inspect="job" data-for-job="'+event.job+'"')+link('Authority trace','data-trust');
+      } else if(state.mode==='agents') {
+        title='Agent records';subtitle='Identity, health, and eligibility remain separate';
+        body=records([['Network Troubleshooter T1',jobData('J17').health+' · Investigation J17 remains '+jobData('J17').status.toLowerCase()+'.'],['Remediation R1','Healthy · Remediation J21 is '+jobData('J21').status.toLowerCase()+'.'],['Config Drift D1','Healthy · Assessment J23 waits for baseline-source access.']]);
+        tools=link('Inspect T1 work','data-inspect="job" data-for-job="J17"')+link('Inspect R1 work','data-inspect="job" data-for-job="J21"')+link('Inspect D1 work','data-inspect="job" data-for-job="J23"');
+      } else if(state.mode==='integrations') {
+        title='J23 · Integration context';subtitle='Baseline-source access prerequisite';
+        body=fieldList([['Affected work','Assessment J23 · Config Drift D1'],['Known constraint','Baseline-source access for the declared assessment scope is not configured.'],['Agent health','D1 is healthy; this job state does not establish connector or agent failure.'],['Supported next step','Establish the permitted source-access prerequisite through its authorized owner, then confirm access and recheck job prerequisites.'],['Permission boundary','This study provides inspection only and does not change integration settings.']]);
+        tools=link('J23 current work','data-inspect="job" data-for-job="J23"')+link('Help with states','data-capability="help"');
+      } else if(state.mode==='observability') {
+        title='J17 · Observability';subtitle='Collection capability · Network Troubleshooter T1';
+        body=records([['Latest evidence',state.scene===0?'Required tool responses are delayed.':'Repeated collection timeouts produced no suitable new evidence.'],['Recovery',state.scene===0?'Dependency checks are the next checkpoint.':state.scene===1?'Bounded recovery and eligibility checks are underway.':'Bounded checks have not restored the capability; no suitable authorized replacement is available in this branch.'],['Work impact',state.scene<2?'J17 cannot advance its required evidence step yet.':'J17 remains constrained. Unsupported collection work is held.'],['Eligibility',state.scene<2?'No eligibility change is represented.':state.scene===2?'A restriction has been requested, not applied.':'The new-assignment restriction is confirmed; existing state remains intact.']]);
+        tools=link('J17 current work','data-inspect="job" data-for-job="J17"')+link('Agent record','data-capability="agents"');
+      } else if(state.mode==='models') {
+        title='Model configuration context';subtitle='No model cause is inferred';
+        body=fieldList([['Available evidence','No model configuration or model-version source records are supplied in these illustrative snapshots.'],['Current distinction','T1’s collection timeouts and J23’s source-access constraint are not attributed to a model.'],['Supervisory use','Model settings become relevant when a work or evaluation record establishes the connection, subject to the person’s permissions.']]);
+        tools=link('Observed T1 evidence','data-capability="observability"');
+      } else {
+        title='Workforce state guide';subtitle='Inspect the record before choosing a control';
+        body=records([['Agent health','Availability and effectiveness are separate; an affected capability can degrade while the agent remains reachable.'],['Waiting job','A healthy agent can own a job waiting for access, authority, evidence, or another prerequisite.'],['Approval','A policy-required decision for a specific proposal; review alone does not authorize an action.'],['Restriction','A supported eligibility control. It does not imply repair, cancellation, rollback, or job success.'],['Verification','A completed operation requires its own outcome evidence before a remediation is verified.']]);
+        tools=link('J17 investigation','data-inspect="job" data-for-job="J17"')+link('J21 remediation','data-inspect="job" data-for-job="J21"');
+      }
+      root.querySelector('.wf-inspector-title').textContent=title;
+      root.querySelector('.wf-inspector-subtitle').textContent=subtitle;
+      root.querySelector('.wf-inspector-body').innerHTML=body;
+      root.querySelector('.wf-inspector-tools').innerHTML=tools;
+    }
+
+    function drawConnectors() {
+      const bounds=rail.getBoundingClientRect();
+      if(!bounds.width) return;
+      const plates=[...rail.querySelectorAll('.wf-sketch')].map(el=>{const r=el.getBoundingClientRect();return {left:r.left-bounds.left,right:r.right-bounds.left,top:r.top-bounds.top,bottom:r.bottom-bounds.top,cx:r.left-bounds.left+r.width/2,cy:r.top-bounds.top+r.height/2};});
+      const buttons=[...rail.querySelectorAll('.wf-scene')].map(el=>{const r=el.getBoundingClientRect();return {top:r.top-bounds.top,bottom:r.bottom-bounds.top};});
+      let markup='';
+      for(let i=0;i<plates.length-1;i++) {
+        const a=plates[i],b=plates[i+1];let pts=[];
+        if(Math.abs(a.top-b.top)<4) pts=[[a.right+7,a.cy],[b.left-7,b.cy]];
+        else if(bounds.width<=500) pts=[[a.cx,a.bottom+7],[b.cx,b.top-7]];
+        else {const lane=(buttons[i].bottom+buttons[i+1].top)/2;pts=[[a.right+7,a.cy],[bounds.width-2,a.cy],[bounds.width-2,lane],[2,lane],[2,b.cy],[b.left-7,b.cy]];}
+        const end=pts[pts.length-1],prev=pts[pts.length-2],dx=end[0]-prev[0],dy=end[1]-prev[1],length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length;
+        const left=[end[0]-ux*5-uy*3,end[1]-uy*5+ux*3],right=[end[0]-ux*5+uy*3,end[1]-uy*5-ux*3];
+        markup+=`<polyline points="${pts.map(p=>p.map(n=>n.toFixed(1)).join(',')).join(' ')}" fill="none"/><polyline points="${left.join(',')} ${end.join(',')} ${right.join(',')}" fill="none"/>`;
+      }
+      connector.innerHTML=markup;
+    }
+
+    function render(animate=false) {
+      const scene=scenes[state.scene];
+      const changedScene=renderedScene!==state.scene;
+      const focusedInspectorButton=inspector.contains(document.activeElement)?document.activeElement.closest('button'):null;
+      const focusAttributes=focusedInspectorButton?[...focusedInspectorButton.attributes].filter(attr=>attr.name.startsWith('data-')).map(attr=>[attr.name,attr.value]):[];
+      const knownEvents=new Set(scenes.slice(0,state.scene+1).flatMap(item=>item.events));
+      if(state.mode==='event'&&!knownEvents.has(state.event)){state.mode='job';state.event=null;}
+      root.querySelector('.wf-posture').textContent=scene.posture;
+      root.querySelectorAll('.wf-scene').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.scene)===state.scene)));
+      root.querySelectorAll('.wf-workrow').forEach(row=>{
+        const id=row.dataset.job,data=jobData(id),oldSignature=row.dataset.signature;
+        const signature=[data.status,data.health,data.detail,data.next].join('|');
+        row.setAttribute('aria-pressed',String(state.selectedJob===id));
+        row.setAttribute('aria-label',`${data.agent}. ${id}, ${data.kind}. ${data.status}. ${data.health}. Inspect current work.`);
+        row.querySelector('.wf-health').dataset.tone=data.healthTone;
+        row.querySelector('.wf-health-text').textContent=data.health;
+        let eligibility=row.querySelector('.wf-eligibility');
+        if(data.eligibility){if(!eligibility){eligibility=document.createElement('span');eligibility.className='wf-eligibility';row.querySelector('.wf-agent').appendChild(eligibility);}eligibility.textContent=data.eligibility;}else if(eligibility){eligibility.remove();}
+        row.querySelector('.wf-status').textContent=data.status;
+        row.querySelector('.wf-status').dataset.tone=data.tone;
+        row.querySelector('.wf-job-detail').textContent=data.detail;
+        row.querySelector('.wf-next').innerHTML=`<strong>Next:</strong> ${escapeHTML(data.next)}`;
+        row.classList.remove('wf-updated');
+        if(animate && oldSignature && oldSignature!==signature){void row.offsetWidth;row.classList.add('wf-updated');}
+        row.dataset.signature=signature;
+      });
+      if(changedScene){renderAttention();
+      root.querySelector('.wf-action-list').innerHTML=scene.events.map(id=>{const e=events[id];return `<button type="button" class="wf-action cursor-interaction" data-event="${id}" data-tone="${e.tone}">${icon(e.tone==='positive'?'check':e.tone==='warning'?'alert-triangle':'activity')}<span class="wf-action-copy"><span class="wf-action-title">${escapeHTML(e.title)}</span><span class="wf-action-meta">${escapeHTML(e.job)} · ${escapeHTML(e.record)}</span></span></button>`;}).join('');}
+      root.querySelector('.wf-trust-text').textContent=scene.trust;
+      renderInspector();refreshIcons();requestAnimationFrame(drawConnectors);
+      if(focusedInspectorButton&&!focusedInspectorButton.isConnected&&!inspector.hidden){
+        const replacement=[...inspector.querySelectorAll('button')].find(button=>focusAttributes.length&&focusAttributes.every(([name,value])=>button.getAttribute(name)===value));
+        (replacement||inspector.querySelector('[data-close-inspector]')).focus({preventScroll:true});
+      }
+      renderedScene=state.scene;
+      lastScene=state.scene;
+    }
+
+    root.addEventListener('click',event=>{
+      const button=event.target.closest('button');
+      if(!button || !root.contains(button))return;
+      if(button.hasAttribute('data-scene')) {
+        const next=Number(button.dataset.scene);
+        if(next===state.scene)return;
+        state.scene=next;render(true);persist();announce(`${scenes[next].name}. ${scenes[next].posture}`);return;
+      }
+      if(button.hasAttribute('data-close-inspector')||button.hasAttribute('data-home')) {
+        const closedInspection=button.hasAttribute('data-close-inspector');state.mode=null;state.event=null;render(false);if(closedInspection&&state.selectedJob)root.querySelector(`[data-job="${state.selectedJob}"]`).focus({preventScroll:true});persist();announce('Inspection closed. Current workforce and attention remain available.');return;
+      }
+      if(button.hasAttribute('data-job')) {state.selectedJob=button.dataset.job;state.mode='job';state.event=null;}
+      else if(button.hasAttribute('data-inspect')) {state.mode=button.dataset.inspect;if(validJobs.includes(button.dataset.forJob))state.selectedJob=button.dataset.forJob;state.event=null;}
+      else if(button.hasAttribute('data-trust')) {state.mode='trust';state.event=null;}
+      else if(button.hasAttribute('data-capability')) {state.mode=button.dataset.capability;state.event=null;if(state.mode==='integrations')state.selectedJob='J23';if(state.mode==='observability')state.selectedJob='J17';}
+      else if(button.hasAttribute('data-event')) {state.event=button.dataset.event;state.selectedJob=events[state.event].job;state.mode='event';}
+      else return;
+      render(false);persist();announce(`${root.querySelector('.wf-inspector-title').textContent} selected for inspection.`);
+    });
+    window.addEventListener('openai:set_globals',event=>{
+      if(!event.detail?.globals || !Object.prototype.hasOwnProperty.call(event.detail.globals,'widgetState'))return;
+      Object.assign(state,restoredState(event.detail.globals.widgetState));render(false);
+    });
+    if(typeof ResizeObserver!=='undefined')new ResizeObserver(drawConnectors).observe(rail);
+    window.addEventListener('resize',drawConnectors);
+    render(false);
+  })();
+  </script>
+</div>

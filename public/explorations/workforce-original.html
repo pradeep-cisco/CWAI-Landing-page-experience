@@ -1,0 +1,3227 @@
+<!doctype html>
+<html lang="en" data-visualize-standalone>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://persistent.oaistatic.com/plugins/visualize/; style-src 'unsafe-inline' blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://persistent.oaistatic.com/plugins/visualize/charts/; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<title>Original workforce exploration</title>
+<style>:root{color-scheme:light dark;background:light-dark(rgb(255 255 255), rgb(24 24 24))}html,body{margin:0}body{box-sizing:border-box;padding:1rem;background:inherit}iframe{display:block;width:100%;height:calc(100vh - 2rem);margin:0 auto;border:0}</style>
+
+</head>
+<body>
+<iframe id="codex-visualization" sandbox="allow-scripts" referrerpolicy="no-referrer" title="Original workforce exploration" data-srcdoc="&lt;!doctype html&gt;
+&lt;html lang=&quot;en&quot; data-visualize-standalone&gt;
+&lt;head&gt;
+&lt;meta charset=&quot;utf-8&quot;&gt;
+&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1&quot;&gt;
+&lt;meta name=&quot;referrer&quot; content=&quot;no-referrer&quot;&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot; content=&quot;default-src &#x27;none&#x27;; script-src &#x27;unsafe-inline&#x27; &#x27;unsafe-eval&#x27; &#x27;wasm-unsafe-eval&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://persistent.oaistatic.com/plugins/visualize/; style-src &#x27;unsafe-inline&#x27; blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com https://persistent.oaistatic.com/plugins/visualize/charts/; img-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; font-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; media-src blob: data: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://esm.sh https://fonts.bunny.net https://fonts.googleapis.com https://fonts.gstatic.com https://unpkg.com; worker-src blob:; connect-src blob: data:; frame-src &#x27;none&#x27;; object-src &#x27;none&#x27;; base-uri &#x27;none&#x27;; form-action &#x27;none&#x27;&quot;&gt;
+&lt;title&gt;Original workforce exploration&lt;/title&gt;
+&lt;style&gt;:root {
+  color-scheme: light dark;
+  background-color: var(
+    --background,
+    var(--color-background-primary, light-dark(rgb(255 255 255), rgb(24 24 24)))
+  ) !important;
+
+  /* Agent-facing contract; keep in sync with SKILL.md. */
+  --background: var(
+    --color-background-primary,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --card: color-mix(in oklab, var(--foreground) 5%, var(--background));
+  --card-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --popover: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255), rgb(45 45 45))
+  );
+  --popover-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --primary: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --primary-foreground: var(
+    --color-text-inverse,
+    light-dark(rgb(255 255 255), rgb(13 13 13))
+  );
+  --secondary: var(
+    --color-background-secondary,
+    light-dark(rgb(255 255 255 / 96%), rgb(54 54 54 / 96%))
+  );
+  --secondary-foreground: var(
+    --color-text-primary,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --muted: color-mix(in srgb, var(--foreground) 10%, transparent);
+  --muted-foreground: var(
+    --color-text-secondary,
+    light-dark(rgb(26 28 31 / 49.4%), rgb(255 255 255 / 49.8%))
+  );
+  --accent: var(
+    --color-background-info,
+    light-dark(rgb(229 242 255), rgb(13 39 63))
+  );
+  --accent-foreground: var(
+    --color-text-info,
+    light-dark(rgb(51 156 255), rgb(131 195 255))
+  );
+  --destructive: var(
+    --color-text-warning,
+    light-dark(rgb(226 85 7), rgb(255 133 73))
+  );
+  --border: var(
+    --color-border-secondary,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+  --input: var(
+    --color-border-primary,
+    light-dark(
+      rgb(26 28 31 / 11.8%),
+      color-mix(in oklab, rgb(0 0 0) 10%, transparent)
+    )
+  );
+  --ring: var(
+    --color-ring-primary,
+    light-dark(rgb(51 156 255), rgb(131 195 255 / 76%))
+  );
+  --font-size-base: var(--font-text-md-size, 16px);
+  --blue: light-dark(rgb(51 156 255), rgb(51 156 255));
+  --orange: light-dark(rgb(226 85 7), rgb(251 106 34));
+  --green: light-dark(rgb(0 162 64), rgb(64 201 119));
+  --red: light-dark(rgb(224 46 42), rgb(255 103 100));
+  --purple: light-dark(rgb(146 79 247), rgb(173 123 249));
+  --yellow: light-dark(rgb(255 195 0), rgb(255 210 64));
+  --viz-series-1: light-dark(rgb(51 156 255), rgb(131 195 255));
+  --viz-series-2: light-dark(rgb(243 136 59), rgb(245 154 86));
+  --viz-series-3: light-dark(rgb(93 201 119), rgb(116 213 139));
+  --viz-series-4: light-dark(rgb(235 119 177), rgb(240 143 192));
+  --viz-series-5: light-dark(rgb(155 121 236), rgb(170 145 239));
+  --viz-series-6: light-dark(rgb(58 185 177), rgb(90 203 194));
+
+  /* Internal implementation variables; not part of the agent contract. */
+  --font-sans:
+    -apple-system-body, ui-sans-serif, -apple-system, system-ui, &quot;Segoe UI&quot;,
+    Helvetica, &quot;Apple Color Emoji&quot;, Arial, sans-serif, &quot;Segoe UI Emoji&quot;,
+    &quot;Segoe UI Symbol&quot;;
+  --font-mono:
+    ui-monospace, SFMono-Regular, &quot;SF Mono&quot;, Menlo, Consolas, &quot;Liberation Mono&quot;,
+    monospace;
+  --font-size-normal: max(11px, var(--font-size-base));
+  --font-size-tooltip: calc(var(--font-size-base) - 1px);
+  --font-size-small: max(11px, calc(var(--font-size-base) - 2px));
+  --font-size-h1: calc(var(--font-size-normal) * 1.7142857143);
+  --font-size-h2: calc(var(--font-size-normal) * 1.4285714286);
+  --font-size-h3: calc(var(--font-size-normal) * 1.2857142857);
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --icon-size: 16px;
+  --line-height-normal: calc(var(--font-size-normal) * 1.5);
+  --line-height-tooltip: calc(var(--font-size-tooltip) * 1.4285714286);
+  --line-height-small: calc(var(--font-size-small) + 4px);
+  --corner-shape: round;
+  --radius: var(--border-radius-lg, 8px);
+  --radius-sm: calc(var(--radius) * 0.5);
+  --radius-md: calc(var(--radius) * 0.75);
+  --radius-lg: var(--radius);
+  --radius-2xl: calc(var(--radius) * 2);
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px -1px rgb(0 0 0 / 8%);
+  --checkmark-image: url(&quot;data:image/svg+xml,%3Csvg xmlns=&#x27;http://www.w3.org/2000/svg&#x27; viewBox=&#x27;0 0 17 17&#x27;%3E%3Cpath d=&#x27;M12.8961 3.64101C13.1297 3.41418 13.4984 3.37523 13.7779 3.56581C14.0571 3.75635 14.1554 4.11331 14.0299 4.41347L13.9615 4.53847L7.71151 13.7045C7.59411 13.8767 7.4063 13.9877 7.19881 14.0072C6.99136 14.0267 6.78564 13.9533 6.63826 13.806L2.88826 10.056L2.79842 9.9457C2.6192 9.67407 2.64927 9.30496 2.88826 9.06581C3.12738 8.82669 3.49647 8.79676 3.76815 8.97597L3.8785 9.06581L7.03084 12.2182L12.8053 3.74941L12.8961 3.64101Z&#x27;/%3E%3C/svg%3E&quot;);
+
+  /* Legacy aliases; not part of the current agent contract. */
+  --viz-bg: transparent;
+  --viz-panel: var(--card);
+  --viz-border: var(--border);
+  --viz-text: var(--foreground);
+  --viz-muted: var(--muted-foreground);
+  --viz-accent: var(--primary);
+  --viz-accent-text: var(--primary-foreground);
+  --viz-accent-bg: var(--accent);
+  --viz-font-size: var(--font-size-base);
+  --viz-warning: var(--destructive);
+}
+
+:root[data-theme=&quot;light&quot;] {
+  color-scheme: light;
+}
+
+:root[data-theme=&quot;dark&quot;] {
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html &gt; body {
+  /* Preserve MCP aliases for older inline renderers without creating :root cycles. */
+  --color-background-primary: var(
+    --background,
+    light-dark(rgb(255 255 255), rgb(24 24 24))
+  );
+  --color-text-primary: var(
+    --foreground,
+    light-dark(rgb(26 28 31), rgb(255 255 255))
+  );
+  --color-border-secondary: var(
+    --border,
+    light-dark(rgb(26 28 31 / 8%), rgb(255 255 255 / 8.2%))
+  );
+
+  margin: 0;
+  padding: var(--visualize-paint-gutter, 0px);
+  color: var(--foreground);
+  background: transparent !important;
+  font-family: var(--font-sans) !important;
+  -webkit-font-smoothing: antialiased;
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-weight: var(--font-weight-normal);
+}
+
+.cursor-interaction {
+  cursor: var(--cursor-interaction, pointer);
+}
+
+a {
+  color: color-mix(in srgb, var(--viz-accent) 80%, var(--viz-text) 20%);
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+  text-underline-offset: 2px;
+  font-weight: inherit;
+}
+
+a:is(:hover, :focus-visible) {
+  text-decoration-line: underline;
+  text-decoration-style: dashed;
+  text-decoration-thickness: 0.5px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p {
+  margin-block: 0;
+}
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+li,
+.table {
+  font-family: var(--font-sans);
+}
+
+h1 {
+  font-size: calc(var(--font-size-base) * 1.5);
+  line-height: 1.3333333333;
+}
+
+h2 {
+  font-size: calc(var(--font-size-base) * 1.25);
+  line-height: 1.4;
+}
+h3 {
+  font-size: calc(var(--font-size-base) * 1.125);
+  line-height: 1.5555555556;
+}
+h4 {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+h5,
+h6 {
+  font-size: var(--font-size-base);
+  line-height: calc(var(--font-size-base) * 1.625);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+b,
+strong,
+th {
+  font-weight: 600;
+}
+
+code:not(pre code) {
+  display: inline;
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  corner-shape: var(--corner-shape);
+  background: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 0.92em;
+  overflow-wrap: anywhere;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+  word-break: break-word;
+}
+pre,
+pre code {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  line-height: 20px;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
+
+.table {
+  width: 100%;
+  color: var(--foreground);
+  font: inherit;
+  text-align: start;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: calc(var(--font-size-base) * 0.875);
+  line-height: calc(var(--font-size-base) * 1.625);
+  font-family: var(--font-sans);
+}
+
+.table :is(th, td) {
+  padding-block: 10px;
+  padding-inline: 0 24px;
+  overflow-wrap: anywhere;
+  border-bottom: 1px solid var(--border);
+  text-align: start;
+  vertical-align: top;
+  border-bottom-color: color-mix(in srgb, var(--foreground) 5%, transparent);
+}
+.table :is(th, td):not(:last-child) {
+  padding-inline-end: calc(var(--font-size-base) * 1.5);
+}
+
+.table-responsive &gt; .table :is(th, td) {
+  overflow-wrap: break-word;
+}
+
+.table :is(th, td):last-child {
+  padding-inline-end: 0;
+}
+
+.table :is(caption, thead th) {
+  font-weight: 600;
+}
+
+.table thead :is(th, td) {
+  border-bottom-color: var(--border-strong, var(--input));
+  padding-block: calc(var(--font-size-base) / 2);
+  line-height: var(--font-size-base);
+}
+
+.table tbody tr:last-child :is(th, td) {
+  border-bottom: 0;
+}
+.table tbody :is(th, td) {
+  padding-block: calc(var(--font-size-base) * 0.625);
+}
+
+.table.table-sm :is(th, td) {
+  padding-block: 8px;
+}
+
+.table.table-sm :is(th, td):not(:last-child) {
+  padding-inline-end: 16px;
+}
+
+.table :is(.text-end, [align=&quot;right&quot;]) {
+  text-align: end;
+  font-variant-numeric: tabular-nums;
+}
+
+.table :is(.text-center, [align=&quot;center&quot;]) {
+  text-align: center;
+}
+
+.table .text-nowrap {
+  white-space: nowrap;
+}
+
+#widget {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  background: transparent !important;
+}
+
+.card {
+  min-width: 0;
+  padding: 12px;
+  overflow: hidden;
+  overflow-wrap: break-word;
+  border-radius: var(--radius-2xl);
+  corner-shape: var(--corner-shape);
+  color: var(--card-foreground);
+  background: var(--card);
+}
+
+.widget {
+  min-width: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-lg);
+  corner-shape: var(--corner-shape);
+  box-shadow: 0 0 0 0.5px var(--border-strong, var(--border));
+  color: var(--foreground);
+  background: var(--background);
+}
+
+#widget &gt; :not(.card, .widget, .progress) {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.tooltip {
+  position: fixed;
+  z-index: 50;
+  top: 0;
+  left: 0;
+  width: max-content;
+  max-width: min(
+    20rem,
+    var(--tooltip-available-width, calc(100vw - 10px)),
+    calc(100vw - 10px)
+  );
+  max-height: min(
+    var(--tooltip-available-height, calc(100vh - 10px)),
+    calc(100vh - 10px)
+  );
+  border: 1px solid var(--border);
+  corner-shape: var(--corner-shape);
+  overflow-wrap: break-word;
+  white-space: normal;
+  pointer-events: none;
+  user-select: none;
+  font-family: var(--font-sans);
+  padding: 5px 12px;
+  border-color: color-mix(
+    in oklab,
+    light-dark(var(--primary-foreground), var(--foreground)) 5%,
+    transparent
+  );
+  border-radius: var(--radius-2xl);
+  color: light-dark(var(--primary-foreground), var(--foreground));
+  background: light-dark(var(--foreground), var(--popover));
+  box-shadow: 0 8px 18px rgb(15 23 42 / 20%);
+  letter-spacing: -0.15px;
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
+}
+
+.viz-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(max(180px, 24%), 1fr));
+  gap: 10px;
+}
+
+.viz-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.viz-stat-value {
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.25;
+}
+
+.viz-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+hr {
+  width: 100%;
+  height: 1px;
+  margin-block: 6px;
+  border: 0;
+  background: var(--border);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 4px;
+}
+
+.progress {
+  display: flex;
+  height: 8px;
+  margin-block: calc((var(--line-height-normal, 1.5em) - 8px) / 2);
+  overflow: hidden;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+}
+
+.progress-bar:only-child {
+  border-radius: var(--radius-full);
+}
+
+.progress-bar {
+  height: 100%;
+  flex-shrink: 0;
+  border: 0;
+  background: var(--viz-series-1);
+}
+
+.viz-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: color-mix(in srgb, var(--foreground) 40%, var(--muted-foreground));
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-family: var(--font-sans);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1;
+}
+
+small,
+.text-small {
+  font-size: var(--font-size-small);
+  line-height: var(--line-height-small);
+}
+
+.text-muted {
+  color: var(--muted-foreground);
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.viz-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.viz-controls &gt; .form-label {
+  display: grid;
+  min-width: min(100%, 260px);
+  flex: 1 1 280px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 2px 12px;
+  margin-bottom: 0;
+}
+
+.viz-controls &gt; .form-label &gt; :is(.form-control, .form-range, .form-select) {
+  grid-column: 1 / -1;
+}
+
+.btn,
+.nav-link,
+.form-check-input,
+.form-control,
+.form-range,
+.form-select {
+  font: inherit;
+}
+
+/* Match inline alignment without overriding a containing flex or grid layout. */
+.btn,
+.nav-link,
+.form-control,
+.form-select,
+.form-range,
+.form-check {
+  vertical-align: middle;
+}
+
+.btn,
+.nav-link {
+  --btn-size: calc(12px + 2 * var(--control-spacing, 12px));
+  appearance: button;
+  display: inline-flex;
+  inline-size: fit-content;
+  max-inline-size: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin: 0;
+  padding: 0 8px;
+  -webkit-app-region: no-drag;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  cursor: var(--cursor-interaction, pointer);
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  user-select: none;
+  -webkit-font-smoothing: inherit;
+  font-family: var(--font-sans);
+  height: fit-content;
+  min-height: var(--btn-size);
+  padding-inline: var(--control-spacing, 12px);
+  border-color: transparent;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.btn {
+  border-color: var(--border);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+}
+
+/* Codex Button size=&quot;compact&quot;; appearance stays with the button variant. */
+.btn-sm {
+  --btn-size: 24px;
+  padding-inline: 8px;
+  font-size: calc(var(--font-size-base) * 12 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 12 / 16), 1px);
+  line-height: 16px;
+}
+
+.btn:is(.btn-block, .viz-tile) {
+  inline-size: 100%;
+}
+
+.btn.viz-tile {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+a.btn {
+  cursor: var(--cursor-interaction, pointer);
+  text-decoration: none;
+}
+
+.btn:not(:disabled):hover {
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-link:not(:disabled):not([aria-disabled=&quot;true&quot;]):hover {
+  background: color-mix(in srgb, var(--foreground) 10%, transparent);
+}
+
+.btn-primary {
+  border-color: var(--border);
+  color: var(--primary-foreground);
+  background: var(--foreground);
+  background-clip: border-box;
+}
+
+.btn-primary .text-muted {
+  color: color-mix(in srgb, var(--primary-foreground) 50%, transparent);
+}
+
+.btn-primary:not(:disabled):hover {
+  background: color-mix(in srgb, var(--foreground) 80%, transparent);
+  background-clip: border-box;
+}
+
+.btn-ghost {
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.btn-ghost:not(:disabled):hover {
+  color: var(--muted-foreground);
+  background: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.nav-pills .nav-link {
+  min-width: 0;
+  border-color: transparent;
+  color: var(--muted-foreground);
+  background: transparent;
+}
+
+.nav-justified .nav-link {
+  flex: 1 1 0;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.nav-pills .nav-link.active {
+  color: var(--foreground);
+  background: var(--muted);
+}
+
+/* Shared preview chrome; product styles stay inside each variant. */
+.viz-dotted-background {
+  background-image: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--foreground) 14%, transparent) 0.8px,
+    transparent 0.8px
+  );
+  background-position: center;
+  background-size: 16px 16px;
+}
+
+.viz-carousel {
+  position: relative;
+  min-width: 0;
+}
+
+.viz-carousel:has(&gt; .viz-carousel-controls) {
+  min-height: calc(60px + var(--viz-carousel-picker-height, 0px));
+  padding-bottom: 60px;
+}
+
+.viz-carousel &gt; [data-variant][hidden] {
+  display: none !important;
+}
+
+.viz-carousel &gt; [data-variant] {
+  isolation: isolate;
+}
+
+.viz-carousel-controls {
+  --viz-carousel-hover: light-dark(
+    color-mix(in srgb, var(--foreground) 5.4%, transparent),
+    color-mix(in srgb, var(--foreground) 7.8%, transparent)
+  );
+  position: absolute;
+  z-index: 2;
+  bottom: 8px;
+  left: 50%;
+  display: flex;
+  width: max-content;
+  /* Leave room for the host&#x27;s design-controls launcher at the trailing edge. */
+  max-width: calc(100% - 96px);
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-sans);
+  /* Match the settings dropdown chrome independently of the content font size. */
+  font-size: 13px;
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+  transform: translateX(-50%);
+  user-select: none;
+}
+
+/* Keep authored mockup button styles out of the shared carousel chrome. */
+.viz-carousel-controls button,
+.viz-carousel-picker &gt; summary {
+  display: flex !important;
+  height: auto !important;
+  min-height: 30px;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px;
+  padding: 0 6px !important;
+  -webkit-app-region: no-drag;
+  border: 0 !important;
+  border-radius: 14px !important;
+  color: inherit !important;
+  background: transparent !important;
+  font: inherit !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-picker &gt; summary {
+  position: relative;
+  isolation: isolate;
+}
+
+.viz-carousel-controls &gt; button {
+  --icon-size: 16px;
+  width: 30px !important;
+  padding: 0 !important;
+}
+
+.viz-carousel-picker &gt; summary {
+  padding-inline: 12px !important;
+}
+
+.viz-carousel-controls .viz-carousel-caret {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  margin: 0;
+  color: inherit;
+  transform: rotate(180deg);
+}
+
+.viz-carousel-controls &gt; button &gt; svg,
+.viz-carousel-controls .viz-carousel-caret,
+.viz-carousel-count {
+  opacity: 0.5;
+}
+
+.viz-carousel-controls &gt; button::before,
+.viz-carousel-picker &gt; summary::before {
+  position: absolute;
+  z-index: -1;
+  inset: 3px;
+  border-radius: 12px;
+  content: &quot;&quot;;
+  pointer-events: none;
+}
+
+.viz-carousel-controls &gt; button:hover::before,
+.viz-carousel-picker &gt; summary:hover::before {
+  background: var(--viz-carousel-hover);
+}
+
+.viz-carousel-controls &gt; button,
+.viz-carousel-controls [data-lucide],
+.viz-carousel-controls .lucide {
+  flex-shrink: 0;
+}
+
+.viz-carousel-picker {
+  min-width: 0;
+}
+
+.viz-carousel-picker &gt; summary {
+  min-width: 0;
+  list-style: none;
+}
+
+.viz-carousel-picker &gt; summary::-webkit-details-marker {
+  display: none;
+}
+
+.viz-carousel-count {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.viz-carousel-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viz-carousel-options {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 4px);
+  left: 0;
+  display: flex;
+  max-height: 240px;
+  flex-direction: column;
+  gap: 2px;
+  overflow: auto;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--background);
+  box-shadow: 0 4px 12px light-dark(rgb(0 0 0 / 6%), rgb(0 0 0 / 25%));
+}
+
+.viz-carousel-options &gt; button {
+  border-radius: max(0px, calc(var(--radius-lg) - 5px)) !important;
+  width: 100% !important;
+  min-height: 28px;
+  justify-content: flex-start !important;
+  padding: 4px 8px !important;
+  font-size: var(--font-size-small) !important;
+  text-align: start;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.viz-carousel-options &gt; [aria-current=&quot;true&quot;],
+.viz-carousel-options &gt; button:hover {
+  background: var(--viz-carousel-hover) !important;
+}
+
+.btn:disabled,
+.nav-link:disabled,
+.nav-link[aria-disabled=&quot;true&quot;] {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+[data-lucide] {
+  stroke-width: 1.6;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--foreground);
+}
+
+.form-control {
+  display: block;
+  width: 100%;
+  padding: 0 8px;
+  outline: none;
+  border: 1px solid var(--input);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding-inline: calc(4px + var(--control-spacing, 12px) / 2);
+  border-color: var(--input);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--popover) 96%, transparent);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 1.4285714286;
+}
+.form-control:is(
+  [type=&quot;file&quot;],
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;],
+  [type=&quot;color&quot;]
+) {
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  line-height: 18px;
+}
+.form-control:is(
+  [type=&quot;date&quot;],
+  [type=&quot;datetime-local&quot;],
+  [type=&quot;month&quot;],
+  [type=&quot;week&quot;]
+) {
+  padding-inline: var(--control-spacing, 12px);
+}
+
+.form-control::placeholder {
+  color: var(--muted-foreground);
+}
+
+.form-control[type=&quot;file&quot;] {
+  overflow: hidden;
+  cursor: var(--cursor-interaction, pointer);
+  padding: 0;
+}
+
+.form-control[type=&quot;file&quot;]::file-selector-button {
+  padding: 0 8px;
+  border: 0;
+  border-right: 1px solid var(--input);
+  color: var(--secondary-foreground);
+  background: var(--secondary);
+  cursor: inherit;
+  font: inherit;
+  min-height: calc(10px + 2 * var(--control-spacing, 12px));
+  padding-inline: var(--control-spacing, 12px);
+  margin-inline-end: var(--control-spacing, 12px);
+}
+
+.form-control[type=&quot;file&quot;]:not(:disabled):hover::file-selector-button {
+  background: color-mix(in srgb, var(--foreground) 6%, var(--secondary));
+}
+
+.form-control-color[type=&quot;color&quot;] {
+  width: 40px;
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  padding: 3px;
+  cursor: var(--cursor-interaction, pointer);
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.form-control-color[type=&quot;color&quot;]::-webkit-color-swatch {
+  border: 0;
+  border-radius: calc(var(--radius-lg) - 4px);
+  corner-shape: var(--corner-shape);
+}
+
+textarea.form-control {
+  height: auto;
+  resize: vertical;
+  min-height: 96px;
+  padding: 8px 10px;
+}
+
+.form-control:focus-visible {
+  border-color: var(--ring);
+  box-shadow: none;
+}
+.form-control:disabled {
+  color: var(--muted-foreground);
+  background: color-mix(in srgb, var(--foreground) 5%, transparent);
+  opacity: 1;
+}
+.form-control[aria-invalid=&quot;true&quot;] {
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--red) 20%, transparent);
+}
+
+.form-control:disabled,
+.form-select:disabled {
+  cursor: not-allowed;
+}
+
+.form-select {
+  appearance: none;
+  display: block;
+  width: 100%;
+  height: fit-content;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  margin: 0;
+  /* The secondary icon role is 14px at compact density and 16px at web density. */
+  --icon-size: calc(10px + var(--control-spacing, 12px) / 2);
+  /* Settings dropdowns retain a 12px inset and a 4px text-to-chevron gap. */
+  padding: 0 calc(16px + var(--icon-size)) 0 12px;
+  outline: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  corner-shape: var(--corner-shape);
+  color: var(--foreground);
+  background-color: var(--secondary);
+  background-image:
+    linear-gradient(
+      45deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    ),
+    linear-gradient(
+      135deg,
+      transparent calc(50% - 0.6px),
+      var(--muted-foreground) calc(50% - 0.6px) calc(50% + 0.6px),
+      transparent calc(50% + 0.6px)
+    );
+  background-position:
+    calc(100% - 12px - var(--icon-size) / 2) 50%,
+    calc(100% - 12px - var(--icon-size) * 0.18) 50%;
+  background-repeat: no-repeat;
+  background-size: calc(var(--icon-size) * 0.32) calc(var(--icon-size) * 0.32);
+  cursor: var(--cursor-interaction, default);
+  font-size: calc(var(--font-size-base) * 14 / 16);
+  font-size: round(nearest, calc(var(--font-size-base) * 14 / 16), 1px);
+  font-weight: var(--font-weight-normal);
+  line-height: 18px;
+}
+
+.form-select :is(option, optgroup) {
+  color: var(--popover-foreground);
+  background-color: var(--popover);
+}
+
+.form-select :is(option, optgroup):disabled {
+  color: var(--muted-foreground);
+}
+
+.form-select:not(:disabled):hover {
+  background-color: light-dark(
+    color-mix(in srgb, var(--foreground) 5.5%, transparent),
+    color-mix(in srgb, var(--foreground) 8%, transparent)
+  );
+}
+
+.form-select:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+.form-select:disabled {
+  opacity: 0.4;
+}
+
+.form-check {
+  display: flex;
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  align-items: center;
+  gap: 6px;
+}
+
+.form-check-input {
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  margin: 0;
+  border: 1px solid var(--input);
+  color: var(--primary-foreground);
+  background-color: transparent;
+  cursor: var(--cursor-interaction, default);
+  transition:
+    background-color 150ms,
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+  corner-shape: round;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  width: calc(10px + var(--control-spacing, 12px) / 2);
+  height: calc(10px + var(--control-spacing, 12px) / 2);
+  border-color: var(--border-strong, var(--input));
+  border-radius: calc(var(--radius-sm) / 2);
+  background-color: transparent;
+  color: var(--foreground);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input:not(:disabled):not(:checked):hover {
+  background-color: var(--card);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:is(:checked, :indeterminate) {
+  border-color: var(--border-strong, var(--input));
+  background-color: color-mix(in srgb, var(--popover) 96%, transparent);
+}
+
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:checked::before {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--primary-foreground);
+  content: &quot;&quot;;
+  mask: var(--checkmark-image) center / 12px 12px no-repeat;
+  background-color: var(--foreground);
+}
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;checkbox&quot;]:indeterminate::before {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 65%;
+  height: 6.65%;
+  margin: auto;
+  border-radius: var(--radius-full);
+  background: var(--foreground);
+  mask: none;
+  content: &quot;&quot;;
+}
+
+.form-check-input[type=&quot;radio&quot;] {
+  border-radius: var(--radius-full);
+  width: 16px;
+  height: 16px;
+  border: 0;
+  box-shadow: inset 0 0 0 1px var(--input);
+}
+
+.form-check-input[type=&quot;radio&quot;]:checked {
+  border: 0;
+  background: radial-gradient(
+    circle,
+    var(--primary-foreground) 0 3px,
+    var(--foreground) 3px
+  );
+  box-shadow: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;]:focus-visible {
+  border-color: var(--ring);
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled {
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.form-check:not(.form-switch) .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+}
+.form-check:not(.form-switch) .form-check-input[type=&quot;radio&quot;]:disabled,
+.form-check:not(.form-switch)
+  .form-check-input[type=&quot;radio&quot;]:disabled
+  + .form-check-label {
+  opacity: 0.5;
+}
+
+.form-switch .form-check-input:disabled,
+.form-switch .form-check-input:disabled + .form-check-label {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.form-check-label {
+  color: var(--foreground);
+  cursor: var(--cursor-interaction, default);
+}
+
+.form-switch .form-check-input {
+  position: relative;
+  width: 32px;
+  height: 20px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: var(--muted);
+  box-shadow: none;
+  transition: background-color 200ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.form-switch .form-check-input::before {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 16px;
+  height: 16px;
+  box-sizing: border-box;
+  border: 1px solid light-dark(var(--primary-foreground), var(--foreground));
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+  content: &quot;&quot;;
+  transform: translate(2px, -50%);
+  transition: transform 200ms cubic-bezier(0, 0, 0.2, 1);
+  border-color: #fff;
+  background: #fff;
+}
+
+.form-switch .form-check-input:checked {
+  background: var(--blue);
+}
+
+.form-switch .form-check-input:checked::before {
+  transform: translate(14px, -50%);
+}
+
+.form-switch .form-check-input:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+  outline: none;
+}
+
+.form-range {
+  appearance: none;
+  display: block;
+  width: 100%;
+  flex: 1;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  accent-color: var(--primary);
+  height: calc(12px + 2 * var(--control-spacing, 12px));
+  min-height: calc(12px + 2 * var(--control-spacing, 12px));
+  outline: none;
+  border-radius: var(--radius-full);
+  color: var(--foreground);
+  background: transparent;
+}
+
+.form-range::-webkit-slider-runnable-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-webkit-slider-thumb {
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  margin-top: -9px;
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+/* Outline the native track and thumb, preserving the larger input hit area. */
+.form-range:focus-visible::-webkit-slider-runnable-track {
+  outline: 2px auto Highlight;
+  outline-color: -webkit-focus-ring-color;
+}
+
+.form-range::-moz-range-track {
+  background: var(--form-range-track, var(--border));
+  height: 2px;
+  border-radius: var(--radius-full);
+}
+
+.form-range::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-full);
+  border-color: transparent;
+  background: currentColor;
+  box-shadow: var(--shadow-sm);
+}
+
+.form-range:focus-visible::-moz-range-thumb {
+  outline: 2px solid Highlight;
+  outline-offset: 2px;
+}
+
+.form-range:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.btn:not(.btn-primary, .viz-tile):is(
+  [aria-pressed=&quot;true&quot;],
+  [aria-selected=&quot;true&quot;],
+  .is-selected
+) {
+  border-color: transparent;
+  color: var(--primary-foreground);
+  background: var(--blue);
+}
+
+.btn.viz-tile:is([aria-pressed=&quot;true&quot;], [aria-selected=&quot;true&quot;], .is-selected) {
+  border-color: var(--primary);
+  box-shadow: inset 0 0 0 1px var(--primary);
+}
+
+.btn:focus-visible,
+.nav-link:focus-visible {
+  outline-offset: 2px;
+  outline: none;
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.viz-carousel-controls :is(button, summary):focus-visible {
+  outline: 2px solid var(--ring) !important;
+  outline-offset: 2px !important;
+}
+
+/* Web recipes are the default, including on renderers without inline style queries. */
+@supports (border-radius: if(style(--corner-shape: round): 1px; else: 2px)) {
+  /* Match the host&#x27;s proportional text-sm scale at every text preference. */
+  .tooltip,
+  .viz-badge,
+  .btn,
+  .nav-link,
+  .form-control,
+  .form-select {
+    font-size: if(
+      style(--corner-shape: round): round(
+          nearest,
+          calc(var(--font-size-base) * 14 / 16),
+          1px
+        );
+        else: round(nearest, calc(var(--font-size-base) * 13 / 14), 1px)
+    );
+  }
+
+  .btn-sm {
+    font-size: if(
+      style(--corner-shape: round): round(
+          nearest,
+          calc(var(--font-size-base) * 12 / 16),
+          1px
+        );
+        else: round(nearest, calc(var(--font-size-base) * 12 / 14), 1px)
+    );
+  }
+
+  .btn,
+  .nav-link,
+  .form-select {
+    border-radius: if(
+      style(--corner-shape: round): var(--radius-full); else: var(--radius-lg)
+    );
+  }
+
+  .form-check:not(.form-switch) .form-check-input[type=&quot;checkbox&quot;] {
+    border-radius: if(
+      style(--corner-shape: round): calc(var(--radius-sm) / 2);
+        else: calc(var(--radius-lg) * 0.4)
+    );
+  }
+
+  .tooltip {
+    font-weight: if(
+      style(--corner-shape: round): 600; else: var(--font-weight-normal)
+    );
+  }
+}
+
+@media (pointer: coarse) {
+  .viz-carousel:has(&gt; .viz-carousel-controls) {
+    min-height: calc(76px + var(--viz-carousel-picker-height, 0px));
+    padding-bottom: 76px;
+  }
+
+  .btn,
+  .nav-link,
+  .viz-carousel-controls button,
+  .viz-carousel-picker &gt; summary,
+  .form-control,
+  .form-select {
+    --btn-size: 44px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Keep small-screen WebKit from zooming when a text field receives focus. */
+  .form-control,
+  .form-select {
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+  .form-control:is(
+    [type=&quot;file&quot;],
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;week&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;color&quot;]
+  ) {
+    height: 44px;
+    min-height: 44px;
+    font-size: max(16px, calc(var(--font-size-base) * 14 / 16));
+    font-size: max(
+      16px,
+      round(nearest, calc(var(--font-size-base) * 14 / 16), 1px)
+    );
+  }
+
+  .form-control[type=&quot;file&quot;]::file-selector-button {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .form-control-color[type=&quot;color&quot;] {
+    width: 44px;
+    height: 44px;
+  }
+
+  .form-control:is(
+    [type=&quot;date&quot;],
+    [type=&quot;datetime-local&quot;],
+    [type=&quot;month&quot;],
+    [type=&quot;time&quot;],
+    [type=&quot;week&quot;]
+  ) {
+    min-width: 0;
+    max-width: 100%;
+    padding-block: 8px;
+  }
+
+  .form-check {
+    min-height: 44px;
+    padding-inline: 15px;
+  }
+
+  .form-check-input {
+    position: relative;
+  }
+
+  .form-check-input::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 44px;
+    height: 44px;
+    content: &quot;&quot;;
+    transform: translate(-50%, -50%);
+  }
+
+  .form-check-label {
+    display: inline-flex;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+  }
+
+  .form-range {
+    height: 44px;
+    touch-action: pan-y;
+  }
+}
+
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+#widget &gt; svg {
+  width: 100%;
+}
+
+/* Model-authored chart rules can otherwise stretch icons after these styles load. */
+svg.lucide {
+  display: block;
+  width: var(--icon-size) !important;
+  height: var(--icon-size) !important;
+  flex: none;
+  margin: 0 !important;
+  stroke-width: 1.6;
+}
+
+.text-warning,
+.text-destructive {
+  color: var(--destructive);
+}
+
+html&gt;body{padding:0}&lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+&lt;script type=&quot;application/json&quot; id=&quot;codex-visualization-widget-state&quot;&gt;__CODEX_VISUALIZATION_WIDGET_STATE__&lt;/script&gt;
+&lt;script&gt;(() =&gt; {
+  const root = document.documentElement;
+  const mediaQuery = globalThis.matchMedia(&quot;(prefers-color-scheme: dark)&quot;);
+  const apply = Reflect.apply;
+  const isArray = Array.isArray;
+  const hasOwn = Object.hasOwn;
+  const parentWindow = globalThis.parent;
+  const stringify = JSON.stringify;
+  const parse = JSON.parse;
+  const encode = TextEncoder.prototype.encode.bind(new TextEncoder());
+  const initialStateElement = document.getElementById(
+    &quot;codex-visualization-widget-state&quot;,
+  );
+  const initialGlobals = parse(initialStateElement?.textContent ?? &quot;{}&quot;);
+  initialStateElement?.remove();
+  /** @type {Record&lt;string, unknown&gt; | null} */
+  let state = initialGlobals.widgetState ?? null;
+  const statePersistence = initialGlobals.statePersistence ?? &quot;none&quot;;
+  let nextStateRequestId = 0;
+  /** @type {Map&lt;number, { resolve: () =&gt; void; reject: (error: Error) =&gt; void; timeout: ReturnType&lt;typeof globalThis.setTimeout&gt;; serializedState: string }&gt;} */
+  const pendingStateWrites = new Map();
+  const persistenceError = () =&gt;
+    Object.assign(
+      new Error(&quot;The host could not persist the widget state update&quot;),
+      {
+        code: -32000,
+        data: { code: &quot;widget_state_persistence_failed&quot;, retryable: false },
+      },
+    );
+  /**
+   * @param {object} prototype
+   * @param {string} property
+   */
+  const getPrototypeGetter = (prototype, property) =&gt; {
+    // oxlint-disable-next-line typescript/unbound-method -- invoked through captured Reflect.apply
+    const getter = Object.getOwnPropertyDescriptor(prototype, property)?.get;
+    if (getter == null) {
+      throw new Error(`Missing ${property} getter`);
+    }
+    return getter;
+  };
+  const getMessageData = getPrototypeGetter(MessageEvent.prototype, &quot;data&quot;);
+  const getMessagePorts = getPrototypeGetter(MessageEvent.prototype, &quot;ports&quot;);
+  const getMessageSource = getPrototypeGetter(MessageEvent.prototype, &quot;source&quot;);
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const addHostMessageListener = MessagePort.prototype.addEventListener;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const postHostMessage = MessagePort.prototype.postMessage;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const startHostPort = MessagePort.prototype.start;
+  // oxlint-disable-next-line typescript/unbound-method -- captured before the untrusted fragment runs
+  const stopMessagePropagation = Event.prototype.stopImmediatePropagation;
+  /** @type {MessagePort | null} */
+  let hostPort = null;
+  const postToHost = (type, payload) =&gt; {
+    if (hostPort != null) {
+      apply(postHostMessage, hostPort, [{ type, ...payload }]);
+    }
+  };
+  const openExternal = ({ href }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;open-external&quot;, { href });
+    }
+  };
+  const sendFollowUpMessage = ({ context, prompt, title }) =&gt; {
+    if (globalThis.navigator.userActivation?.isActive === true) {
+      postToHost(&quot;follow-up&quot;, { context, prompt, title });
+    }
+    return Promise.resolve();
+  };
+  /**
+   * @param {Record&lt;string, unknown&gt; | ((previous: Record&lt;string, unknown&gt; | null) =&gt; Record&lt;string, unknown&gt;)} next
+   * @returns {Promise&lt;void&gt;}
+   */
+  const setWidgetState = async (next) =&gt; {
+    const nextState = typeof next === &quot;function&quot; ? next(state) : next;
+    if (
+      nextState == null ||
+      typeof nextState !== &quot;object&quot; ||
+      isArray(nextState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const inputState = stringify(
+      nextState,
+      (_key, /** @type {unknown} */ value) =&gt; {
+        if (
+          typeof value === &quot;undefined&quot; ||
+          typeof value === &quot;function&quot; ||
+          typeof value === &quot;symbol&quot; ||
+          (typeof value === &quot;number&quot; &amp;&amp; !Number.isFinite(value))
+        ) {
+          throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+        }
+        return value;
+      },
+    );
+    const parsedState = parse(inputState);
+    if (
+      parsedState == null ||
+      typeof parsedState !== &quot;object&quot; ||
+      isArray(parsedState)
+    ) {
+      throw new TypeError(&quot;Widget state must be a JSON object&quot;);
+    }
+    const storedState = {
+      modelContent: null,
+      privateContent: null,
+      ...parsedState,
+    };
+    const serializedState = stringify(storedState);
+    if (encode(serializedState).length &gt; 16 * 1024) {
+      throw new TypeError(
+        &quot;Widget state must be a JSON object of at most 16 KiB&quot;,
+      );
+    }
+    if (
+      hasOwn(storedState, &quot;imageIds&quot;) &amp;&amp;
+      (!isArray(storedState.imageIds) ||
+        storedState.imageIds.some(
+          (/** @type {unknown} */ id) =&gt; typeof id !== &quot;string&quot;,
+        ))
+    ) {
+      throw new TypeError(&quot;Widget state imageIds must be an array of strings&quot;);
+    }
+    if (storedState.imageIds?.length &gt; 0) {
+      throw Object.assign(
+        new TypeError(&quot;Visualization state does not support image attachments&quot;),
+        { code: -32602, data: { code: &quot;images_unsupported&quot; } },
+      );
+    }
+    state = storedState;
+    globalThis.openai.widgetState = state;
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: { widgetState: state } },
+      }),
+    );
+    if (statePersistence === &quot;none&quot;) {
+      throw persistenceError();
+    }
+    const id = ++nextStateRequestId;
+    return new Promise((resolve, reject) =&gt; {
+      const timeout = globalThis.setTimeout(() =&gt; {
+        pendingStateWrites.delete(id);
+        reject(persistenceError());
+      }, 30_000);
+      pendingStateWrites.set(id, { resolve, reject, timeout, serializedState });
+      postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+    });
+  };
+  const bindingElement = document.getElementById(&quot;codex-visualization-bindings&quot;);
+  const mockElement = document.getElementById(&quot;codex-connector-mocks&quot;);
+  const fileElement = document.getElementById(&quot;codex-preview-files&quot;);
+  const connectorGlobals = {};
+  if (bindingElement != null || mockElement != null || fileElement != null) {
+    const bindings = parse(bindingElement?.textContent ?? &quot;{}&quot;);
+    bindingElement?.remove();
+    const values = new Map();
+    for (const [name, binding] of Object.entries(bindings)) {
+      if (binding.type === &quot;json&quot;) values.set(name, structuredClone(binding.value));
+    }
+    const pending = [bindings];
+    while (pending.length) {
+      const object = pending.pop();
+      Object.freeze(object);
+      for (const child of Object.values(object)) {
+        if (child !== null &amp;&amp; typeof child === &quot;object&quot;) pending.push(child);
+      }
+    }
+    const updates = [];
+    if (mockElement != null) {
+      const mocks = Object.entries(parse(mockElement.textContent));
+      mockElement.remove();
+      for (const [name, value] of mocks) {
+        values.set(name, value);
+        updates.push({ name, revision: 1, state: &quot;ready&quot;, value: { type: &quot;json&quot;, value } });
+      }
+    }
+    if (fileElement != null) {
+      const files = parse(fileElement.textContent);
+      fileElement.remove();
+      const blobs = new Map();
+      const urls = [];
+      for (const [name, binding] of Object.entries(bindings)) {
+        if (binding.type !== &quot;file&quot; || !hasOwn(files, binding.path)) continue;
+        const file = files[binding.path];
+        let blob = blobs.get(binding.path);
+        if (blob == null) {
+          const bytes = Uint8Array.fromBase64?.(file.base64) ??
+            Uint8Array.from(atob(file.base64), (char) =&gt; char.charCodeAt(0));
+          blob = new Blob([bytes], { type: file.mimeType });
+          blobs.set(binding.path, blob);
+        }
+        const url = URL.createObjectURL(blob);
+        urls.push(url);
+        values.set(name, { name: file.name, blob, url });
+        updates.push({ name, revision: 1, state: &quot;ready&quot;, value: { type: &quot;file&quot;, ...file } });
+      }
+      globalThis.addEventListener(&quot;pagehide&quot;, (event) =&gt; {
+        // A persisted pagehide can restore this same document and its subscriptions.
+        if (event.persisted) return;
+        for (const url of urls) URL.revokeObjectURL(url);
+        urls.length = 0;
+      });
+    }
+    if (mockElement != null || fileElement != null) connectorGlobals.visualizationData = { updates };
+    connectorGlobals.visualization = {
+      get bindings() {
+        return bindings;
+      },
+      /** @param {string} name @param {(value: unknown) =&gt; void} callback */
+      onData(name, callback) {
+        if (typeof callback !== &quot;function&quot;) {
+          throw new TypeError(&quot;onData requires a callback&quot;);
+        }
+        try {
+          callback(values.get(name));
+        } catch (error) {
+          // oxlint-disable-next-line no-console -- Keep authored callback failures local.
+          console.error(&quot;Live visualization data callback failed&quot;, error);
+        }
+        // A static preview delivers the current value once per subscription.
+        return () =&gt; {};
+      },
+    };
+  }
+  const syncTheme = () =&gt; {
+    const theme = mediaQuery.matches ? &quot;dark&quot; : &quot;light&quot;;
+    root.dataset.theme = theme;
+    globalThis.openai = {
+      ...globalThis.openai,
+      ...connectorGlobals,
+      openExternal,
+      sendFollowUpMessage,
+      setWidgetState,
+      theme,
+      visualizationStyleVariables: {},
+      visualizationTheme: theme,
+      widgetState: state,
+      statePersistence,
+      stateModelContext: &quot;none&quot;,
+    };
+    globalThis.dispatchEvent(
+      new CustomEvent(&quot;openai:set_globals&quot;, {
+        detail: { globals: globalThis.openai },
+      }),
+    );
+  };
+  const sendHeight = () =&gt; {
+    postToHost(&quot;height&quot;, {
+      height: Math.ceil(
+        Math.max(
+          document.body.scrollHeight,
+          document.body.getBoundingClientRect().height,
+        ),
+      ),
+    });
+  };
+
+  globalThis.addEventListener(
+    &quot;message&quot;,
+    (event) =&gt; {
+      const data = apply(getMessageData, event, []);
+      const ports = apply(getMessagePorts, event, []);
+      const source = apply(getMessageSource, event, []);
+      if (
+        hostPort != null ||
+        source !== parentWindow ||
+        typeof data !== &quot;object&quot; ||
+        data?.type !== &quot;codex-visualization-initialize&quot; ||
+        !isArray(ports) ||
+        ports.length !== 1
+      ) {
+        return;
+      }
+      apply(stopMessagePropagation, event, []);
+      const nextHostPort = ports[0];
+      try {
+        apply(addHostMessageListener, nextHostPort, [
+          &quot;message&quot;,
+          (event) =&gt; {
+            const data = apply(getMessageData, event, []);
+            if (typeof data === &quot;object&quot; &amp;&amp; data?.type === &quot;measure&quot;) {
+              sendHeight();
+            } else if (
+              typeof data === &quot;object&quot; &amp;&amp;
+              data?.type === &quot;widget-state-result&quot;
+            ) {
+              /** @type {unknown} */
+              const id = data.id;
+              if (typeof id !== &quot;number&quot;) {
+                return;
+              }
+              const pending = pendingStateWrites.get(id);
+              if (pending != null) {
+                pendingStateWrites.delete(id);
+                globalThis.clearTimeout(pending.timeout);
+                if (data.ok === true) {
+                  pending.resolve();
+                } else {
+                  pending.reject(persistenceError());
+                }
+              }
+            }
+          },
+        ]);
+        apply(startHostPort, nextHostPort, []);
+      } catch {
+        return;
+      }
+      hostPort = nextHostPort;
+      for (const [id, { serializedState }] of pendingStateWrites) {
+        postToHost(&quot;widget-state-write&quot;, { id, state: serializedState });
+      }
+      sendHeight();
+    },
+    { capture: true },
+  );
+  document.currentScript?.remove();
+  mediaQuery.addEventListener(&quot;change&quot;, syncTheme);
+  globalThis.addEventListener(&quot;click&quot;, (event) =&gt; {
+    if (event.defaultPrevented) {
+      return;
+    }
+    let element = null;
+    if (event.target instanceof globalThis.Element) {
+      element = event.target;
+    } else if (event.target instanceof globalThis.Node) {
+      element = event.target.parentElement;
+    }
+    const link = element?.closest(&quot;a[href]&quot;);
+    const href = link?.getAttribute(&quot;href&quot;);
+    if (href == null) {
+      return;
+    }
+    if (href.startsWith(&quot;#&quot;)) {
+      let id;
+      try {
+        id = decodeURIComponent(href.slice(1));
+      } catch {
+        return;
+      }
+      const target = id.length === 0 ? root : document.getElementById(id);
+      if (
+        target == null ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      event.preventDefault();
+      postToHost(&quot;scroll-to&quot;, {
+        top: target.getBoundingClientRect().top + globalThis.scrollY,
+      });
+      return;
+    }
+    event.preventDefault();
+    openExternal({ href });
+  });
+  new ResizeObserver(sendHeight).observe(document.body);
+  syncTheme();
+})();
+&lt;/script&gt;
+&lt;div id=&quot;wf-storyboard-study&quot;&gt;
+  &lt;style&gt;
+    #wf-storyboard-study{--wf-bg:#080d15;--wf-surface:#0c1420;--wf-raised:#111c2b;--wf-selected:#12233a;--wf-text:#e3e9f2;--wf-secondary:#a6b3c6;--wf-rule:#283547;--wf-blue:#7da6ff;--wf-violet:#b39cff;--wf-pink:#d583b8;--wf-amber:#edc778;--wf-green:#88cba6;font-family:Inter,ui-sans-serif,system-ui,sans-serif;width:100%;min-width:0;}
+    #wf-storyboard-study *{box-sizing:border-box;}
+    #wf-storyboard-study button{font:inherit;}
+    #wf-storyboard-study .wf-study-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px;padding-right:90px;color:var(--foreground);}
+    #wf-storyboard-study .wf-study-label{font-size:12px;font-weight:500;}
+    #wf-storyboard-study .wf-study-note{font-size:12px;color:var(--muted-foreground);}
+    #wf-storyboard-study .wf-scene-rail{position:relative;display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:26px;margin-bottom:22px;padding:0 8px;}
+    #wf-storyboard-study .wf-connectors{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;color:color-mix(in srgb,var(--foreground) 45%,transparent);z-index:0;overflow:visible;}
+    #wf-storyboard-study .wf-scene{position:relative;z-index:1;display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;appearance:none;border:0;background:transparent;padding:0;color:var(--foreground);text-align:left;}
+    #wf-storyboard-study .wf-sketch{display:block;position:relative;aspect-ratio:1.5;min-width:0;background:var(--wf-bg);border:1px solid #516073;border-radius:4px;color:var(--wf-blue);overflow:hidden;}
+    #wf-storyboard-study .wf-scene[aria-pressed=true] .wf-sketch{border-color:var(--wf-blue);box-shadow:0 0 0 1px var(--wf-blue);}
+    #wf-storyboard-study .wf-scene:hover .wf-sketch{background:var(--wf-raised);}
+    #wf-storyboard-study .wf-sketch-top{position:absolute;left:8%;right:8%;top:10%;height:6%;border-radius:1px;background:#40516a;}
+    #wf-storyboard-study .wf-sketch-board{position:absolute;left:8%;top:28%;width:53%;height:57%;display:flex;flex-direction:column;gap:14%;}
+    #wf-storyboard-study .wf-sketch-row{display:flex;align-items:center;gap:9%;height:24%;background:#1c2b40;border-radius:1px;}
+    #wf-storyboard-study .wf-sketch-dot{height:50%;aspect-ratio:1;border-radius:50%;margin-left:6%;background:#6f839e;}
+    #wf-storyboard-study .wf-sketch-line{height:17%;width:55%;background:#6f839e;}
+    #wf-storyboard-study .wf-sketch-attention{position:absolute;left:68%;right:8%;top:28%;height:40%;border-top:3px solid #6f839e;background:#172235;}
+    #wf-storyboard-study .wf-sketch-bottom{position:absolute;left:8%;right:8%;bottom:7%;height:3%;background:#40516a;}
+    #wf-storyboard-study .wf-scene[data-cue=degrade] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=escalate] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:first-child .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:first-child .wf-sketch-dot{background:var(--wf-amber);}
+    #wf-storyboard-study .wf-scene[data-cue=escalate] .wf-sketch-attention{border-top-color:var(--wf-amber);}
+    #wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:nth-child(2),#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:nth-child(2){background:#223d64;}
+    #wf-storyboard-study .wf-scene[data-cue=authorize] .wf-sketch-row:nth-child(2) .wf-sketch-dot,#wf-storyboard-study .wf-scene[data-cue=execute] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-blue);}
+    #wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:nth-child(2){background:#34294f;}
+    #wf-storyboard-study .wf-scene[data-cue=verify] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-violet);}
+    #wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:nth-child(2){background:#1b3c32;}
+    #wf-storyboard-study .wf-scene[data-cue=verified] .wf-sketch-row:nth-child(2) .wf-sketch-dot{background:var(--wf-green);}
+    #wf-storyboard-study .wf-scene-name{font-size:12px;font-weight:500;line-height:1.4;min-height:34px;overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-product{background:var(--wf-bg);color:var(--wf-text);font-size:14px;line-height:1.45;width:100%;min-width:0;border:1px solid var(--wf-rule);border-radius:12px;overflow:hidden;}
+    #wf-storyboard-study .wf-product h1,#wf-storyboard-study .wf-product h2,#wf-storyboard-study .wf-product h3,#wf-storyboard-study .wf-product p{margin:0;}
+    #wf-storyboard-study .wf-product h1{font-size:22px;line-height:1.3;font-weight:500;}
+    #wf-storyboard-study .wf-product h2{font-size:16px;line-height:1.4;font-weight:500;}
+    #wf-storyboard-study .wf-product h3{font-size:14px;line-height:1.45;font-weight:500;}
+    #wf-storyboard-study .wf-product button{appearance:none;color:inherit;border:0;background:transparent;max-width:100%;}
+    #wf-storyboard-study .wf-appbar{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:18px 22px;border-bottom:1px solid var(--wf-rule);background:linear-gradient(110deg,#112138,var(--wf-bg) 65%);}
+    #wf-storyboard-study .wf-brand{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:500;min-width:0;}
+    #wf-storyboard-study .wf-brand svg{color:var(--wf-blue);flex:none;}
+    #wf-storyboard-study .wf-role{color:var(--wf-secondary);font-size:12px;white-space:nowrap;}
+    #wf-storyboard-study .wf-nav{display:flex;align-items:center;gap:4px;flex-wrap:wrap;padding:8px 16px;border-bottom:1px solid var(--wf-rule);background:#0b121d;}
+    #wf-storyboard-study .wf-nav button{padding:8px 10px;border-radius:5px;color:var(--wf-secondary);font-size:12px;min-height:34px;}
+    #wf-storyboard-study .wf-nav button:hover{background:var(--wf-raised);color:var(--wf-text);}
+    #wf-storyboard-study .wf-nav button[aria-current=page]{color:var(--wf-blue);background:#14243b;}
+    #wf-storyboard-study .wf-content{padding:22px;display:flex;flex-direction:column;gap:20px;min-width:0;}
+    #wf-storyboard-study .wf-title-group{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;}
+    #wf-storyboard-study .wf-posture{margin-top:8px!important;color:var(--wf-secondary);max-width:76ch;}
+    #wf-storyboard-study .wf-state-label{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--wf-secondary);padding-top:5px;white-space:nowrap;}
+    #wf-storyboard-study .wf-main{display:grid;grid-template-columns:minmax(0,1.9fr) minmax(220px,1fr);gap:22px;min-width:0;align-items:start;}
+    #wf-storyboard-study .wf-main&gt;section,#wf-storyboard-study .wf-main&gt;aside{min-width:0;}
+    #wf-storyboard-study .wf-main&gt;section{grid-column:1;grid-row:1;}
+    #wf-storyboard-study .wf-main&gt;aside{grid-column:2;grid-row:1;}
+    #wf-storyboard-study .wf-section-heading{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:12px;}
+    #wf-storyboard-study .wf-section-hint{color:var(--wf-secondary);font-size:11px;}
+    #wf-storyboard-study .wf-worklist{border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-workrow{display:grid;grid-template-columns:minmax(130px,.9fr) minmax(0,1.4fr);gap:16px;width:100%;padding:16px 12px;text-align:left;border-bottom:1px solid var(--wf-rule)!important;transition:background 160ms ease;}
+    #wf-storyboard-study .wf-workrow:hover{background:#101d2e;}
+    #wf-storyboard-study .wf-workrow[aria-pressed=true]{background:var(--wf-selected);box-shadow:inset 3px 0 var(--wf-blue);}
+    #wf-storyboard-study .wf-agent{display:flex;flex-direction:column;gap:7px;min-width:0;}
+    #wf-storyboard-study .wf-agent-name{font-weight:500;}
+    #wf-storyboard-study .wf-agent-meta{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health{display:flex;align-items:flex-start;gap:5px;font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health[data-tone=warning]{color:var(--wf-amber);}
+    #wf-storyboard-study .wf-health[data-tone=positive]{color:var(--wf-green);}
+    #wf-storyboard-study .wf-eligibility{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-health svg{width:12px;height:12px;flex:none;margin-top:2px;}
+    #wf-storyboard-study .wf-job{display:flex;flex-direction:column;gap:7px;min-width:0;}
+    #wf-storyboard-study .wf-job-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+    #wf-storyboard-study .wf-job-title{font-weight:500;font-size:13px;}
+    #wf-storyboard-study .wf-status{display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:5px;background:#1b293b;color:#b8c8df;font-size:11px;line-height:1.4;}
+    #wf-storyboard-study .wf-status[data-tone=warning]{background:#352c1b;color:var(--wf-amber);}
+    #wf-storyboard-study .wf-status[data-tone=blue]{background:#1d3152;color:#a7c2ff;}
+    #wf-storyboard-study .wf-status[data-tone=violet]{background:#2e2444;color:#cfbaff;}
+    #wf-storyboard-study .wf-status[data-tone=positive]{background:#18382c;color:#a0ddba;}
+    #wf-storyboard-study .wf-job-detail{font-size:12px;color:var(--wf-text);overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-next{font-size:11px;color:var(--wf-secondary);overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-next strong{font-weight:500;color:var(--wf-text);}
+    #wf-storyboard-study .wf-attention-group+.wf-attention-group{margin-top:18px;}
+    #wf-storyboard-study .wf-attention-label{font-size:11px;color:var(--wf-secondary);margin-bottom:8px;font-weight:500;}
+    #wf-storyboard-study .wf-attention-item{border-top:1px solid var(--wf-rule);padding:12px 0;display:flex;flex-direction:column;gap:8px;}
+    #wf-storyboard-study .wf-attention-item[data-emphasis=true]{border-top-color:#967a45;}
+    #wf-storyboard-study .wf-attention-item h3{display:flex;align-items:center;gap:6px;}
+    #wf-storyboard-study .wf-attention-item h3 svg{color:var(--wf-amber);flex:none;}
+    #wf-storyboard-study .wf-attention-detail{font-size:12px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-attention-item .wf-link{align-self:flex-start;}
+    #wf-storyboard-study .wf-link{display:inline-flex;align-items:center;gap:5px;padding:2px 0!important;color:var(--wf-blue)!important;font-size:12px!important;text-align:left;min-height:24px;}
+    #wf-storyboard-study .wf-link:hover{text-decoration:underline;}
+    #wf-storyboard-study .wf-link svg{width:13px;height:13px;flex:none;}
+    #wf-storyboard-study .wf-quiet{color:var(--wf-secondary);font-size:12px;padding:12px 0;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-inspector{margin-top:16px;padding:16px;background:var(--wf-raised);border:1px solid #364964;border-radius:8px;min-width:0;}
+    #wf-storyboard-study .wf-inspector[hidden]{display:none;}
+    #wf-storyboard-study .wf-inspector-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+    #wf-storyboard-study .wf-inspector-heading p{font-size:11px;color:var(--wf-secondary);margin-top:3px;}
+    #wf-storyboard-study .wf-icon-button{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:4px;}
+    #wf-storyboard-study .wf-icon-button:hover{background:#22324a;}
+    #wf-storyboard-study .wf-inspector dl{display:grid;grid-template-columns:minmax(80px,.7fr) minmax(0,1.7fr);gap:9px 12px;margin:0;font-size:12px;}
+    #wf-storyboard-study .wf-inspector dt{color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-inspector dd{margin:0;overflow-wrap:anywhere;}
+    #wf-storyboard-study .wf-inspector-tools{display:flex;gap:14px;flex-wrap:wrap;margin-top:13px;padding-top:10px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-records{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:0;}
+    #wf-storyboard-study .wf-records li{display:flex;flex-direction:column;gap:3px;padding:9px 0;border-top:1px solid var(--wf-rule);font-size:12px;}
+    #wf-storyboard-study .wf-records li:first-child{border-top:0;padding-top:0;}
+    #wf-storyboard-study .wf-records small{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-actions{padding-top:18px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-action-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px;}
+    #wf-storyboard-study .wf-action{display:flex;align-items:flex-start;gap:10px;padding:11px 0;text-align:left;min-width:0;border-bottom:1px solid #1c293b!important;}
+    #wf-storyboard-study .wf-action:hover .wf-action-title{color:var(--wf-blue);}
+    #wf-storyboard-study .wf-action svg{flex:none;width:14px;height:14px;margin-top:3px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-action[data-tone=warning] svg{color:var(--wf-amber);}
+    #wf-storyboard-study .wf-action[data-tone=positive] svg{color:var(--wf-green);}
+    #wf-storyboard-study .wf-action-copy{display:flex;flex-direction:column;gap:4px;min-width:0;}
+    #wf-storyboard-study .wf-action-title{font-size:12px;font-weight:500;}
+    #wf-storyboard-study .wf-action-meta{font-size:11px;color:var(--wf-secondary);}
+    #wf-storyboard-study .wf-trust{display:flex;align-items:flex-start;gap:10px;padding-top:16px;border-top:1px solid var(--wf-rule);}
+    #wf-storyboard-study .wf-trust&gt;svg{flex:none;width:16px;height:16px;margin-top:2px;color:var(--wf-blue);}
+    #wf-storyboard-study .wf-trust-copy{flex:1;min-width:0;}
+    #wf-storyboard-study .wf-trust-copy strong{font-weight:500;font-size:12px;}
+    #wf-storyboard-study .wf-trust-copy p{font-size:12px;color:var(--wf-secondary);margin-top:3px;}
+    #wf-storyboard-study .wf-updated{animation:wf-confirmed-change 650ms ease-out;}
+    @keyframes wf-confirmed-change{0%{background-color:#223650;}100%{background-color:transparent;}}
+    #wf-storyboard-study .wf-workrow[aria-pressed=true].wf-updated{animation:wf-selected-change 650ms ease-out;}
+    @keyframes wf-selected-change{0%{background-color:#2c466b;}100%{background-color:#12233a;}}
+    #wf-storyboard-study .wf-sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;}
+    @media(max-width:900px){#wf-storyboard-study .wf-scene-rail{grid-template-columns:repeat(4,minmax(0,1fr));gap:34px 26px;}#wf-storyboard-study .wf-main{grid-template-columns:minmax(0,1.65fr) minmax(205px,1fr);gap:18px;}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(0,1fr);gap:10px;}#wf-storyboard-study .wf-agent{gap:4px;}#wf-storyboard-study .wf-agent-meta{display:inline;}#wf-storyboard-study .wf-content{padding:18px;}}
+    @media(max-width:650px){#wf-storyboard-study .wf-main{grid-template-columns:minmax(0,1fr);}#wf-storyboard-study .wf-attention{padding-top:18px;border-top:1px solid var(--wf-rule);}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(110px,.85fr) minmax(0,1.2fr);}#wf-storyboard-study .wf-action-list{grid-template-columns:minmax(0,1fr);}#wf-storyboard-study .wf-title-group{flex-direction:column;gap:6px;}#wf-storyboard-study .wf-state-label{padding-top:0;}#wf-storyboard-study .wf-trust{flex-wrap:wrap;}#wf-storyboard-study .wf-trust&gt;.wf-link{margin-left:26px;}#wf-storyboard-study .wf-study-heading{padding-right:90px;}}
+    @media(max-width:500px){#wf-storyboard-study .wf-scene-rail{grid-template-columns:minmax(0,1fr);gap:24px;padding:0 8px;}#wf-storyboard-study .wf-scene{display:grid;grid-template-columns:124px minmax(0,1fr);gap:18px;align-items:center;}#wf-storyboard-study .wf-scene-name{min-height:0;font-size:12px;}#wf-storyboard-study .wf-workrow{grid-template-columns:minmax(0,1fr);padding:14px 10px;}#wf-storyboard-study .wf-content{padding:16px;}#wf-storyboard-study .wf-appbar{padding:16px;gap:10px;}#wf-storyboard-study .wf-brand{font-size:16px;}#wf-storyboard-study .wf-nav{padding:7px 8px;gap:2px;}#wf-storyboard-study .wf-nav button{padding:7px 8px;font-size:11px;}#wf-storyboard-study .wf-inspector{padding:12px;}#wf-storyboard-study .wf-inspector dl{grid-template-columns:minmax(0,1fr);gap:3px;}#wf-storyboard-study .wf-inspector dd{margin-bottom:8px;}#wf-storyboard-study .wf-inspector dd:last-child{margin-bottom:0;}}
+    @media(pointer:coarse){#wf-storyboard-study .wf-product button{min-height:44px;}#wf-storyboard-study .wf-product .wf-icon-button{width:44px;height:44px;}#wf-storyboard-study .wf-scene{min-height:44px;}}
+    @media(prefers-reduced-motion:reduce){#wf-storyboard-study *,#wf-storyboard-study *::before,#wf-storyboard-study *::after{animation:none!important;transition:none!important;}}
+    @media(max-width:650px){#wf-storyboard-study .wf-main&gt;aside{grid-column:1;grid-row:1;padding-top:0;border-top:0;}#wf-storyboard-study .wf-main&gt;section{grid-column:1;grid-row:2;}}
+  &lt;/style&gt;
+
+  &lt;div class=&quot;wf-study-heading&quot;&gt;
+    &lt;span class=&quot;wf-study-label&quot;&gt;Illustrative story states&lt;/span&gt;
+    &lt;span class=&quot;wf-study-note&quot;&gt;Review only&lt;/span&gt;
+  &lt;/div&gt;
+  &lt;div class=&quot;wf-scene-rail&quot; aria-label=&quot;AI workforce visual storyboard&quot;&gt;
+    &lt;svg class=&quot;wf-connectors&quot; aria-hidden=&quot;true&quot; fill=&quot;none&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;1.1&quot;&gt;&lt;/svg&gt;
+  &lt;/div&gt;
+
+  &lt;section class=&quot;wf-product&quot; aria-label=&quot;Crosswork AI workforce landing study&quot;&gt;
+    &lt;header class=&quot;wf-appbar&quot;&gt;
+      &lt;div class=&quot;wf-brand&quot;&gt;&lt;i data-lucide=&quot;layers&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Crosswork AI&lt;/span&gt;&lt;/div&gt;
+      &lt;span class=&quot;wf-role&quot;&gt;AI Admin&lt;/span&gt;
+    &lt;/header&gt;
+    &lt;nav class=&quot;wf-nav&quot; aria-label=&quot;Crosswork AI capabilities&quot;&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-home aria-current=&quot;page&quot;&gt;Home&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-capability=&quot;agents&quot;&gt;Agents&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-capability=&quot;integrations&quot;&gt;Integrations&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-capability=&quot;models&quot;&gt;Models&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-capability=&quot;observability&quot;&gt;Observability&lt;/button&gt;
+      &lt;button type=&quot;button&quot; class=&quot;cursor-interaction&quot; data-capability=&quot;help&quot;&gt;Help&lt;/button&gt;
+    &lt;/nav&gt;
+    &lt;main class=&quot;wf-content&quot;&gt;
+      &lt;div class=&quot;wf-title-group&quot;&gt;
+        &lt;div&gt;&lt;h1&gt;Workforce&lt;/h1&gt;&lt;p class=&quot;wf-posture&quot;&gt;&lt;/p&gt;&lt;/div&gt;
+        &lt;span class=&quot;wf-state-label&quot;&gt;&lt;i data-lucide=&quot;activity&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span&gt;Current watch&lt;/span&gt;&lt;/span&gt;
+      &lt;/div&gt;
+      &lt;div class=&quot;wf-main&quot;&gt;
+        &lt;aside class=&quot;wf-attention&quot; aria-label=&quot;Supervisory attention&quot;&gt;
+          &lt;div class=&quot;wf-section-heading&quot;&gt;&lt;h2&gt;Attention&lt;/h2&gt;&lt;/div&gt;
+          &lt;div class=&quot;wf-attention-group&quot;&gt;&lt;p class=&quot;wf-attention-label&quot;&gt;Your decision&lt;/p&gt;&lt;div class=&quot;wf-decisions&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+          &lt;div class=&quot;wf-attention-group&quot;&gt;&lt;p class=&quot;wf-attention-label&quot;&gt;Being handled&lt;/p&gt;&lt;div class=&quot;wf-handled&quot;&gt;&lt;/div&gt;&lt;/div&gt;
+        &lt;/aside&gt;
+        &lt;section aria-label=&quot;Agent activity and assigned jobs&quot;&gt;
+          &lt;div class=&quot;wf-section-heading&quot;&gt;&lt;h2&gt;Activity&lt;/h2&gt;&lt;span class=&quot;wf-section-hint&quot;&gt;Agent → assigned work&lt;/span&gt;&lt;/div&gt;
+          &lt;div class=&quot;wf-worklist&quot;&gt;
+            &lt;button type=&quot;button&quot; class=&quot;wf-workrow cursor-interaction&quot; data-job=&quot;J17&quot; aria-pressed=&quot;false&quot;&gt;
+              &lt;span class=&quot;wf-agent&quot;&gt;&lt;span class=&quot;wf-agent-name&quot;&gt;Network Troubleshooter&lt;/span&gt;&lt;span class=&quot;wf-agent-meta&quot;&gt;T1 · Collection capability&lt;/span&gt;&lt;span class=&quot;wf-health&quot;&gt;&lt;i data-lucide=&quot;activity&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span class=&quot;wf-health-text&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+              &lt;span class=&quot;wf-job&quot;&gt;&lt;span class=&quot;wf-job-top&quot;&gt;&lt;span class=&quot;wf-job-title&quot;&gt;Investigation · J17&lt;/span&gt;&lt;span class=&quot;wf-status&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;wf-job-detail&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-next&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+            &lt;/button&gt;
+            &lt;button type=&quot;button&quot; class=&quot;wf-workrow cursor-interaction&quot; data-job=&quot;J21&quot; aria-pressed=&quot;false&quot;&gt;
+              &lt;span class=&quot;wf-agent&quot;&gt;&lt;span class=&quot;wf-agent-name&quot;&gt;Remediation&lt;/span&gt;&lt;span class=&quot;wf-agent-meta&quot;&gt;R1 · Corrective execution&lt;/span&gt;&lt;span class=&quot;wf-health&quot;&gt;&lt;i data-lucide=&quot;check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span class=&quot;wf-health-text&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+              &lt;span class=&quot;wf-job&quot;&gt;&lt;span class=&quot;wf-job-top&quot;&gt;&lt;span class=&quot;wf-job-title&quot;&gt;Remediation · J21&lt;/span&gt;&lt;span class=&quot;wf-status&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;wf-job-detail&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-next&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+            &lt;/button&gt;
+            &lt;button type=&quot;button&quot; class=&quot;wf-workrow cursor-interaction&quot; data-job=&quot;J23&quot; aria-pressed=&quot;false&quot;&gt;
+              &lt;span class=&quot;wf-agent&quot;&gt;&lt;span class=&quot;wf-agent-name&quot;&gt;Config Drift&lt;/span&gt;&lt;span class=&quot;wf-agent-meta&quot;&gt;D1 · Baseline assessment&lt;/span&gt;&lt;span class=&quot;wf-health&quot;&gt;&lt;i data-lucide=&quot;check&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;span class=&quot;wf-health-text&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;
+              &lt;span class=&quot;wf-job&quot;&gt;&lt;span class=&quot;wf-job-top&quot;&gt;&lt;span class=&quot;wf-job-title&quot;&gt;Assessment · J23&lt;/span&gt;&lt;span class=&quot;wf-status&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;wf-job-detail&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-next&quot;&gt;&lt;/span&gt;&lt;/span&gt;
+            &lt;/button&gt;
+          &lt;/div&gt;
+          &lt;section class=&quot;wf-inspector&quot; aria-label=&quot;Selected work inspection&quot; hidden&gt;
+            &lt;div class=&quot;wf-inspector-heading&quot;&gt;&lt;div&gt;&lt;h3 class=&quot;wf-inspector-title&quot;&gt;&lt;/h3&gt;&lt;p class=&quot;wf-inspector-subtitle&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;wf-icon-button cursor-interaction&quot; data-close-inspector aria-label=&quot;Close inspection&quot;&gt;&lt;i data-lucide=&quot;x&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;&lt;/div&gt;
+            &lt;div class=&quot;wf-inspector-body&quot;&gt;&lt;/div&gt;
+            &lt;div class=&quot;wf-inspector-tools&quot;&gt;&lt;/div&gt;
+          &lt;/section&gt;
+        &lt;/section&gt;
+      &lt;/div&gt;
+      &lt;section class=&quot;wf-actions&quot; aria-label=&quot;Consequential automated actions&quot;&gt;
+        &lt;div class=&quot;wf-section-heading&quot;&gt;&lt;h2&gt;Actions&lt;/h2&gt;&lt;span class=&quot;wf-section-hint&quot;&gt;Confirmed events&lt;/span&gt;&lt;/div&gt;
+        &lt;div class=&quot;wf-action-list&quot;&gt;&lt;/div&gt;
+      &lt;/section&gt;
+      &lt;section class=&quot;wf-trust&quot; aria-label=&quot;Trust and authority context&quot;&gt;
+        &lt;i data-lucide=&quot;shield&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;div class=&quot;wf-trust-copy&quot;&gt;&lt;strong&gt;Trust&lt;/strong&gt;&lt;p class=&quot;wf-trust-text&quot;&gt;&lt;/p&gt;&lt;/div&gt;&lt;button type=&quot;button&quot; class=&quot;wf-link cursor-interaction&quot; data-trust&gt;Inspect trace&lt;i data-lucide=&quot;chevron-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+      &lt;/section&gt;
+    &lt;/main&gt;
+  &lt;/section&gt;
+  &lt;div class=&quot;wf-sr-only wf-announcement&quot; aria-live=&quot;polite&quot; aria-atomic=&quot;true&quot;&gt;&lt;/div&gt;
+
+  &lt;script&gt;
+  (() =&gt; {
+    const root = document.getElementById(&#x27;wf-storyboard-study&#x27;);
+    if (!root) return;
+    const scenes = [
+      { name:&#x27;Work continues&#x27;, cue:&#x27;arrival&#x27;, posture:&#x27;Work is underway. A remediation approval is waiting; an investigation is collecting delayed evidence.&#x27;, tState:&#x27;Gathering&#x27;, tHealth:&#x27;Collection delayed&#x27;, tDetail:&#x27;Required tool responses are delayed. No production write is in progress.&#x27;, tNext:&#x27;Check the collection dependency&#x27;, rState:&#x27;Awaiting approval&#x27;, rDetail:&#x27;The reviewed corrective proposal needs policy-required authorization.&#x27;, rNext:&#x27;Confirm effective approval before execution&#x27;, decision:&#x27;approval&#x27;, handled:&#x27;delayed&#x27;, events:[&#x27;proposal&#x27;,&#x27;collection&#x27;,&#x27;access&#x27;], trust:&#x27;J21 requires a policy approval. No controller operation has been issued.&#x27; },
+      { name:&#x27;Notice deterioration&#x27;, cue:&#x27;degrade&#x27;, posture:&#x27;A collection capability is degrading. Crosswork AI is checking permitted recovery paths.&#x27;, tState:&#x27;Recovery checks&#x27;, tHealth:&#x27;Degraded collection&#x27;, tDetail:&#x27;Repeated tool timeouts have produced no suitable new evidence.&#x27;, tNext:&#x27;Finish bounded recovery and eligibility checks&#x27;, rState:&#x27;Awaiting approval&#x27;, rDetail:&#x27;The same corrective proposal remains waiting for its own authorization.&#x27;, rNext:&#x27;Confirm effective approval before execution&#x27;, decision:&#x27;approval&#x27;, handled:&#x27;recovery&#x27;, events:[&#x27;recovery&#x27;,&#x27;proposal&#x27;,&#x27;access&#x27;], trust:&#x27;J21 still requires approval. T1 capability degradation is not itself a policy violation.&#x27; },
+      { name:&#x27;Address an escalation&#x27;, cue:&#x27;escalate&#x27;, posture:&#x27;Unsupported collection work is held. A production-eligibility decision now needs review.&#x27;, tState:&#x27;Constrained&#x27;, tHealth:&#x27;Degraded collection&#x27;, tDetail:&#x27;Recovery has not restored the capability; no eligible authorized replacement is available.&#x27;, tNext:&#x27;Review the proposed new-assignment restriction&#x27;, rState:&#x27;Awaiting approval&#x27;, rDetail:&#x27;J21 has its own valid proposal and remains independent of the collection exception.&#x27;, rNext:&#x27;Confirm effective approval before execution&#x27;, decision:&#x27;both&#x27;, handled:&#x27;held&#x27;, events:[&#x27;restriction-request&#x27;,&#x27;recovery-exhausted&#x27;,&#x27;proposal&#x27;], trust:&#x27;T1 restriction is requested, not applied. Unsupported assignments are already held.&#x27; },
+      { name:&#x27;Review authorization&#x27;, cue:&#x27;authorize&#x27;, posture:&#x27;T1 new collection assignments are restricted. J21 is authorized; prerequisites are being rechecked.&#x27;, tState:&#x27;Constrained&#x27;, tHealth:&#x27;Degraded collection&#x27;, tDetail:&#x27;The assignment restriction is confirmed. Existing work retains its actual status and owner.&#x27;, tNext:&#x27;Check capability restoration and re-evaluate eligibility&#x27;, rState:&#x27;Authorized&#x27;, rDetail:&#x27;The grant is effective. Required prerequisites are being revalidated; no controller operation has been issued.&#x27;, rNext:&#x27;Confirm prerequisites before issuing the unchanged proposal&#x27;, decision:&#x27;none&#x27;, handled:&#x27;constrained&#x27;, events:[&#x27;prechecks&#x27;,&#x27;grant&#x27;,&#x27;decision-submitted&#x27;,&#x27;restriction-confirmed&#x27;], trust:&#x27;J21 authorization and T1 assignment restriction are confirmed. Prerequisites are rechecking; no J21 operation has been issued.&#x27; },
+      { name:&#x27;Follow execution&#x27;, cue:&#x27;execute&#x27;, posture:&#x27;J21 execution has started. The investigation and baseline-access constraint remain separate.&#x27;, tState:&#x27;Constrained&#x27;, tHealth:&#x27;Degraded · New work restricted&#x27;, tDetail:&#x27;J17 remains held at its unsupported collection step; the new-assignment restriction remains effective.&#x27;, tNext:&#x27;Check capability restoration and re-evaluate eligibility&#x27;, rState:&#x27;Executing&#x27;, rDetail:&#x27;RUN-021 has a confirmed start after authorization and prerequisite checks.&#x27;, rNext:&#x27;Follow the controller result&#x27;, decision:&#x27;none&#x27;, handled:&#x27;execution&#x27;, events:[&#x27;execution-started&#x27;,&#x27;grant&#x27;,&#x27;restriction-confirmed&#x27;,&#x27;access&#x27;], trust:&#x27;RUN-021 is linked to the effective J21 authorization. Verification follows execution.&#x27; },
+      { name:&#x27;Inspect actions&#x27;, cue:&#x27;verify&#x27;, posture:&#x27;J21 execution completed. Its remediation is still verifying the intended effect.&#x27;, tState:&#x27;Constrained&#x27;, tHealth:&#x27;Degraded · New work restricted&#x27;, tDetail:&#x27;J17 remains constrained; completion of another job does not restore this capability.&#x27;, tNext:&#x27;Check capability restoration and re-evaluate eligibility&#x27;, rState:&#x27;Verifying&#x27;, rDetail:&#x27;RUN-021 completed. The job still requires its own verification evidence.&#x27;, rNext:&#x27;Evaluate J21 outcome criteria&#x27;, decision:&#x27;none&#x27;, handled:&#x27;verification&#x27;, events:[&#x27;verification-started&#x27;,&#x27;execution-completed&#x27;,&#x27;restriction-confirmed&#x27;,&#x27;access&#x27;], trust:&#x27;J21 execution completed within its recorded grant. Objective achievement is not yet established.&#x27; },
+      { name:&#x27;Confirm a result&#x27;, cue:&#x27;verified&#x27;, posture:&#x27;J21 is verified. J17 remains constrained and J23 still requires baseline-source access.&#x27;, tState:&#x27;Constrained&#x27;, tHealth:&#x27;Degraded · New work restricted&#x27;, tDetail:&#x27;The collection capability is still degraded. Its affected work remains independently owned.&#x27;, tNext:&#x27;Check capability restoration and re-evaluate eligibility&#x27;, rState:&#x27;Verified&#x27;, rDetail:&#x27;J21 outcome criteria are met using its own observations and execution record.&#x27;, rNext:&#x27;Retain the result and supporting proof&#x27;, decision:&#x27;none&#x27;, handled:&#x27;remaining&#x27;, events:[&#x27;criteria-met&#x27;,&#x27;execution-completed&#x27;,&#x27;restriction-confirmed&#x27;,&#x27;access&#x27;], trust:&#x27;J21 has linked authorization, execution, and verification proof. The other jobs remain unresolved.&#x27; }
+    ];
+    const events = {
+      proposal:{job:&#x27;J21&#x27;,title:&#x27;Corrective proposal ready for review&#x27;,detail:&#x27;The proposal is prepared; policy requires authorization before a controller operation can be issued.&#x27;,record:&#x27;PLAN-J21&#x27;,actor:&#x27;Remediation R1&#x27;,status:&#x27;Awaiting approval&#x27;,tone:&#x27;warning&#x27;},
+      collection:{job:&#x27;J17&#x27;,title:&#x27;Collection dependency identified&#x27;,detail:&#x27;Required tool responses are delayed; no production write has been issued for this read-only investigation.&#x27;,record:&#x27;J17 collection record&#x27;,actor:&#x27;Network Troubleshooter T1&#x27;,status:&#x27;Gathering&#x27;,tone:&#x27;neutral&#x27;},
+      access:{job:&#x27;J23&#x27;,title:&#x27;Baseline access remains required&#x27;,detail:&#x27;Config Drift D1 is healthy. Access to the baseline source for this assessment scope remains a separate prerequisite.&#x27;,record:&#x27;J23 access prerequisite&#x27;,actor:&#x27;Config Drift D1&#x27;,status:&#x27;Waiting for source access&#x27;,tone:&#x27;neutral&#x27;},
+      recovery:{job:&#x27;J17&#x27;,title:&#x27;Bounded recovery checks started&#x27;,detail:&#x27;Crosswork AI checks the collection dependency and eligible authorized recovery paths. No new evidence has yet been established.&#x27;,record:&#x27;J17 recovery checks&#x27;,actor:&#x27;Crosswork AI&#x27;,status:&#x27;Recovery checks&#x27;,tone:&#x27;warning&#x27;},
+      &#x27;restriction-request&#x27;:{job:&#x27;J17&#x27;,title:&#x27;Assignment restriction requested&#x27;,detail:&#x27;The configured policy reserves this production-eligibility decision for the AI Admin. No restriction has yet been applied; unsupported assignments are already held.&#x27;,record:&#x27;T1 eligibility request&#x27;,actor:&#x27;Crosswork AI&#x27;,status:&#x27;Requested&#x27;,tone:&#x27;warning&#x27;},
+      &#x27;recovery-exhausted&#x27;:{job:&#x27;J17&#x27;,title:&#x27;Supported recovery paths exhausted&#x27;,detail:&#x27;The capability remains degraded after bounded checks, and no suitable authorized replacement is available in this illustrated branch.&#x27;,record:&#x27;J17 recovery result&#x27;,actor:&#x27;Crosswork AI&#x27;,status:&#x27;Constrained&#x27;,tone:&#x27;warning&#x27;},
+      &#x27;restriction-confirmed&#x27;:{job:&#x27;J17&#x27;,title:&#x27;New-assignment restriction confirmed&#x27;,detail:&#x27;The restriction covers new production assignments to T1’s affected collection capability/version. Existing job ownership and actual state are retained.&#x27;,record:&#x27;T1 eligibility record&#x27;,actor:&#x27;AI Admin decision / Crosswork AI enforcement&#x27;,status:&#x27;Effective restriction&#x27;,tone:&#x27;warning&#x27;},
+      &#x27;decision-submitted&#x27;:{job:&#x27;J21&#x27;,title:&#x27;Bounded approval decision submitted&#x27;,detail:&#x27;The AI Admin submitted a decision for the reviewed J21 proposal. Submission is distinct from effective authorization or execution.&#x27;,record:&#x27;J21 decision record&#x27;,actor:&#x27;AI Admin&#x27;,status:&#x27;Decision submitted&#x27;,tone:&#x27;neutral&#x27;},
+      grant:{job:&#x27;J21&#x27;,title:&#x27;J21 authorization confirmed&#x27;,detail:&#x27;The effective grant is limited to the reviewed proposal and declared scope. Material proposal changes require renewed applicable checks.&#x27;,record:&#x27;AUTH-J21&#x27;,actor:&#x27;Crosswork AI authorization record&#x27;,status:&#x27;Grant confirmed&#x27;,tone:&#x27;neutral&#x27;},
+      prechecks:{job:&#x27;J21&#x27;,title:&#x27;Execution prerequisites rechecking&#x27;,detail:&#x27;The effective grant is confirmed. Crosswork AI is revalidating the unchanged proposal and its required prerequisites. No controller operation has been issued at this checkpoint.&#x27;,record:&#x27;J21 precheck record&#x27;,actor:&#x27;Crosswork AI&#x27;,status:&#x27;Rechecking prerequisites&#x27;,tone:&#x27;neutral&#x27;},
+      &#x27;execution-started&#x27;:{job:&#x27;J21&#x27;,title:&#x27;RUN-021 execution started&#x27;,detail:&#x27;The controller operation has a confirmed start after the effective grant and renewed prerequisite checks.&#x27;,record:&#x27;RUN-021 start record&#x27;,actor:&#x27;Remediation R1 / controller&#x27;,status:&#x27;Executing&#x27;,tone:&#x27;neutral&#x27;},
+      &#x27;execution-completed&#x27;:{job:&#x27;J21&#x27;,title:&#x27;RUN-021 execution completed&#x27;,detail:&#x27;The operation reports completion. This event alone does not establish the intended remediation outcome.&#x27;,record:&#x27;RUN-021 result record&#x27;,actor:&#x27;Controller execution source&#x27;,status:&#x27;Execution completed&#x27;,tone:&#x27;neutral&#x27;},
+      &#x27;verification-started&#x27;:{job:&#x27;J21&#x27;,title:&#x27;Outcome verification underway&#x27;,detail:&#x27;J21 is checking its own required observations and outcome criteria. T1 and D1 jobs retain separate states and evidence.&#x27;,record:&#x27;J21 verification record&#x27;,actor:&#x27;Crosswork AI&#x27;,status:&#x27;Verifying&#x27;,tone:&#x27;neutral&#x27;},
+      &#x27;criteria-met&#x27;:{job:&#x27;J21&#x27;,title:&#x27;J21 outcome criteria met&#x27;,detail:&#x27;J21’s own observations satisfy the defined outcome criteria. Authorization, execution, and verification records remain linked for inspection.&#x27;,record:&#x27;J21 verified result&#x27;,actor:&#x27;Crosswork AI / outcome evidence&#x27;,status:&#x27;Verified result&#x27;,tone:&#x27;positive&#x27;}
+    };
+    const validJobs = [&#x27;J17&#x27;,&#x27;J21&#x27;,&#x27;J23&#x27;];
+    const allowedModes = [&#x27;job&#x27;,&#x27;approval&#x27;,&#x27;restriction&#x27;,&#x27;trust&#x27;,&#x27;event&#x27;,&#x27;agents&#x27;,&#x27;integrations&#x27;,&#x27;models&#x27;,&#x27;observability&#x27;,&#x27;help&#x27;];
+    const restoredState = value =&gt; {
+      const v = value &amp;&amp; typeof value === &#x27;object&#x27; ? value : {};
+      const p = v.privateContent &amp;&amp; typeof v.privateContent === &#x27;object&#x27; ? v.privateContent : v;
+      const m = v.modelContent &amp;&amp; typeof v.modelContent === &#x27;object&#x27; ? v.modelContent : v;
+      const n = Number(m.scene ?? p.scene);
+      return { scene:Number.isInteger(n) &amp;&amp; n&gt;=0 &amp;&amp; n&lt;scenes.length ? n : 0, selectedJob:validJobs.includes(m.selectedJob ?? p.selectedJob) ? (m.selectedJob ?? p.selectedJob) : null, mode:allowedModes.includes(p.mode) ? p.mode : null, event:events[p.event] ? p.event : null };
+    };
+    const state = restoredState(window.openai?.widgetState);
+    let lastScene = state.scene;
+    let renderedScene = null;
+    const rail = root.querySelector(&#x27;.wf-scene-rail&#x27;);
+    const connector = root.querySelector(&#x27;.wf-connectors&#x27;);
+    const inspector = root.querySelector(&#x27;.wf-inspector&#x27;);
+    const escapeHTML = value =&gt; String(value ?? &#x27;&#x27;).replace(/[&amp;&lt;&gt;&quot;&#x27;]/g,char=&gt;({&#x27;&amp;&#x27;:&#x27;&amp;amp;&#x27;,&#x27;&lt;&#x27;:&#x27;&amp;lt;&#x27;,&#x27;&gt;&#x27;:&#x27;&amp;gt;&#x27;,&#x27;&quot;&#x27;:&#x27;&amp;quot;&#x27;,&quot;&#x27;&quot;:&#x27;&amp;#39;&#x27;}[char]));
+    const icon = name =&gt; `&lt;i data-lucide=&quot;${name}&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;`;
+    const link = (label,attrs) =&gt; `&lt;button type=&quot;button&quot; class=&quot;wf-link cursor-interaction&quot; ${attrs}&gt;${escapeHTML(label)}${icon(&#x27;chevron-right&#x27;)}&lt;/button&gt;`;
+    const fieldList = rows =&gt; `&lt;dl&gt;${rows.map(([label,value])=&gt;`&lt;dt&gt;${escapeHTML(label)}&lt;/dt&gt;&lt;dd&gt;${escapeHTML(value)}&lt;/dd&gt;`).join(&#x27;&#x27;)}&lt;/dl&gt;`;
+    const records = rows =&gt; `&lt;ul class=&quot;wf-records&quot;&gt;${rows.map(row=&gt;`&lt;li&gt;&lt;span&gt;${escapeHTML(row[0])}&lt;/span&gt;&lt;small&gt;${escapeHTML(row[1])}&lt;/small&gt;&lt;/li&gt;`).join(&#x27;&#x27;)}&lt;/ul&gt;`;
+    const persist = () =&gt; {
+      try {
+        const result = window.openai?.setWidgetState?.({modelContent:{story:&#x27;ai-workforce-supervision&#x27;,scene:state.scene,sceneName:scenes[state.scene].name,selectedJob:state.selectedJob},privateContent:{scene:state.scene,selectedJob:state.selectedJob,mode:state.mode,event:state.event}});
+        if (result &amp;&amp; typeof result.catch === &#x27;function&#x27;) result.catch(()=&gt;{});
+      } catch (_) {}
+    };
+    const refreshIcons = () =&gt; { if (window.lucide?.createIcons) window.lucide.createIcons({attrs:{width:16,height:16}}); };
+    const announce = text =&gt; { root.querySelector(&#x27;.wf-announcement&#x27;).textContent = text; };
+
+    scenes.forEach((scene,index) =&gt; {
+      const button = document.createElement(&#x27;button&#x27;);
+      button.type=&#x27;button&#x27;; button.className=&#x27;wf-scene cursor-interaction&#x27;; button.dataset.scene=String(index); button.dataset.cue=scene.cue;
+      button.setAttribute(&#x27;aria-label&#x27;,`Show illustrated state: ${scene.name}`);
+      button.setAttribute(&#x27;aria-pressed&#x27;,String(index===state.scene));
+      button.innerHTML=`&lt;span class=&quot;wf-sketch&quot; aria-hidden=&quot;true&quot;&gt;&lt;span class=&quot;wf-sketch-top&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-sketch-board&quot;&gt;${[0,1,2].map(()=&gt;&#x27;&lt;span class=&quot;wf-sketch-row&quot;&gt;&lt;span class=&quot;wf-sketch-dot&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-sketch-line&quot;&gt;&lt;/span&gt;&lt;/span&gt;&#x27;).join(&#x27;&#x27;)}&lt;/span&gt;&lt;span class=&quot;wf-sketch-attention&quot;&gt;&lt;/span&gt;&lt;span class=&quot;wf-sketch-bottom&quot;&gt;&lt;/span&gt;&lt;/span&gt;&lt;span class=&quot;wf-scene-name&quot;&gt;${escapeHTML(scene.name)}&lt;/span&gt;`;
+      rail.appendChild(button);
+    });
+
+    function jobData(id) {
+      const scene=scenes[state.scene];
+      if(id===&#x27;J17&#x27;) return {agent:&#x27;Network Troubleshooter T1&#x27;,kind:&#x27;Read-only investigation&#x27;,status:scene.tState,health:state.scene&gt;0?&#x27;Degraded collection&#x27;:&#x27;Reachable · collection delayed&#x27;,eligibility:state.scene&gt;=3?&#x27;New assignments restricted&#x27;:state.scene===2?&#x27;Restriction requested&#x27;:&#x27;&#x27;,detail:scene.tDetail,next:scene.tNext,tone:state.scene&gt;0?&#x27;warning&#x27;:&#x27;neutral&#x27;,healthTone:state.scene&gt;0?&#x27;warning&#x27;:&#x27;neutral&#x27;};
+      if(id===&#x27;J21&#x27;) return {agent:&#x27;Remediation R1&#x27;,kind:&#x27;Corrective work&#x27;,status:scene.rState,health:&#x27;Healthy&#x27;,detail:scene.rDetail,next:scene.rNext,tone:state.scene&lt;3?&#x27;warning&#x27;:state.scene===5?&#x27;violet&#x27;:state.scene===6?&#x27;positive&#x27;:&#x27;blue&#x27;,healthTone:&#x27;positive&#x27;};
+      return {agent:&#x27;Config Drift D1&#x27;,kind:&#x27;Baseline assessment&#x27;,status:&#x27;Waiting for access&#x27;,health:&#x27;Healthy&#x27;,detail:&#x27;Baseline-source access for the declared assessment scope is not configured.&#x27;,next:&#x27;Establish the permitted source-access prerequisite&#x27;,tone:&#x27;neutral&#x27;,healthTone:&#x27;positive&#x27;};
+    }
+
+    function attentionItem(title,detail,label,attrs,emphasis=false) {
+      return `&lt;article class=&quot;wf-attention-item&quot; data-emphasis=&quot;${emphasis}&quot;&gt;&lt;h3&gt;${emphasis?icon(&#x27;alert-triangle&#x27;):&#x27;&#x27;}${escapeHTML(title)}&lt;/h3&gt;&lt;p class=&quot;wf-attention-detail&quot;&gt;${escapeHTML(detail)}&lt;/p&gt;${link(label,attrs)}&lt;/article&gt;`;
+    }
+    function renderAttention() {
+      const scene=scenes[state.scene];
+      const decision=[];
+      if(scene.decision===&#x27;both&#x27;) decision.push(attentionItem(&#x27;T1 assignment restriction&#x27;,&#x27;Recovery has not restored collection. Policy reserves this eligibility decision for the AI Admin.&#x27;,&#x27;Review escalation&#x27;,&#x27;data-inspect=&quot;restriction&quot; data-for-job=&quot;J17&quot;&#x27;,true));
+      if(scene.decision===&#x27;approval&#x27;||scene.decision===&#x27;both&#x27;) decision.push(attentionItem(&#x27;J21 approval&#x27;,&#x27;Authorize only the reviewed corrective proposal and its declared scope. No operation has been issued.&#x27;,&#x27;Review approval&#x27;,&#x27;data-inspect=&quot;approval&quot; data-for-job=&quot;J21&quot;&#x27;,true));
+      root.querySelector(&#x27;.wf-decisions&#x27;).innerHTML=decision.length?decision.join(&#x27;&#x27;):&#x27;&lt;p class=&quot;wf-quiet&quot;&gt;No supervisory decision is pending in these illustrated records.&lt;/p&gt;&#x27;;
+      let handled=&#x27;&#x27;;
+      if(scene.handled===&#x27;delayed&#x27;) handled=attentionItem(&#x27;J17 collection delayed&#x27;,&#x27;The investigation is waiting on a required tool response. Crosswork AI is checking the dependency.&#x27;,&#x27;Inspect investigation&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;);
+      if(scene.handled===&#x27;recovery&#x27;) handled=attentionItem(&#x27;J17 recovery checks&#x27;,&#x27;Crosswork AI is evaluating supported recovery and eligible authorized alternatives.&#x27;,&#x27;Inspect recovery&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;);
+      if(scene.handled===&#x27;held&#x27;) handled=attentionItem(&#x27;Unsupported work held&#x27;,&#x27;The collection step is constrained while the eligibility decision is reviewed. Existing ownership remains.&#x27;,&#x27;Inspect held work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;);
+      if(scene.handled===&#x27;constrained&#x27;) handled=attentionItem(&#x27;T1 new work restricted&#x27;,&#x27;The restriction is effective. J17 remains constrained with supported capability checks retained.&#x27;,&#x27;Inspect restriction&#x27;,&#x27;data-inspect=&quot;restriction&quot; data-for-job=&quot;J17&quot;&#x27;);
+      if(scene.handled===&#x27;execution&#x27;) handled=attentionItem(&#x27;J21 executing&#x27;,&#x27;RUN-021 has started. Crosswork AI is following the controller record before evaluating the result.&#x27;,&#x27;Follow remediation&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J21&quot;&#x27;);
+      if(scene.handled===&#x27;verification&#x27;) handled=attentionItem(&#x27;J21 verifying&#x27;,&#x27;The operation completed. The remediation still requires its own measured outcome evidence.&#x27;,&#x27;Inspect checks&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J21&quot;&#x27;);
+      if(scene.handled===&#x27;remaining&#x27;) handled=attentionItem(&#x27;Remaining constraints&#x27;,&#x27;J17 remains constrained and J23 still needs source access. J21’s success does not resolve either job.&#x27;,&#x27;Inspect constrained work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;);
+      root.querySelector(&#x27;.wf-handled&#x27;).innerHTML=handled;
+    }
+
+    function renderInspector() {
+      if(!state.mode){inspector.hidden=true;return;}
+      inspector.hidden=false;
+      const job=state.selectedJob || &#x27;J21&#x27;;
+      const data=jobData(job);
+      let title=&#x27;&#x27;,subtitle=&#x27;&#x27;,body=&#x27;&#x27;,tools=&#x27;&#x27;;
+      if(state.mode===&#x27;job&#x27;) {
+        title=`${job} · ${data.kind}`; subtitle=`${data.agent} · Current illustrated state`;
+        body=fieldList([[&#x27;Job state&#x27;,data.status],[&#x27;Agent health&#x27;,data.health],...(data.eligibility?[[&#x27;Assignment eligibility&#x27;,data.eligibility]]:[]),[&#x27;Current evidence&#x27;,data.detail],[&#x27;Next checkpoint&#x27;,data.next],[&#x27;Work identity&#x27;,&#x27;This is the same job in Activity, Attention, and Actions.&#x27;]]);
+        if(job===&#x27;J17&#x27;) tools=link(&#x27;Observability&#x27;,&#x27;data-capability=&quot;observability&quot;&#x27;)+link(&#x27;Agent record&#x27;,&#x27;data-capability=&quot;agents&quot;&#x27;);
+        if(job===&#x27;J21&#x27;) tools=link(state.scene&lt;3?&#x27;Review approval&#x27;:&#x27;Inspect authorization&#x27;,&#x27;data-inspect=&quot;approval&quot; data-for-job=&quot;J21&quot;&#x27;)+link(&#x27;Authority trace&#x27;,&#x27;data-trust&#x27;);
+        if(job===&#x27;J23&#x27;) tools=link(&#x27;Integration context&#x27;,&#x27;data-capability=&quot;integrations&quot;&#x27;)+link(&#x27;Agent record&#x27;,&#x27;data-capability=&quot;agents&quot;&#x27;);
+      } else if(state.mode===&#x27;approval&#x27;) {
+        title=state.scene&lt;3?&#x27;J21 · Approval review&#x27;:&#x27;J21 · Authorization&#x27;;subtitle=&#x27;Remediation R1 · PLAN-J21&#x27;;
+        const stage=state.scene&lt;3?&#x27;Policy-required decision is pending.&#x27;:state.scene===3?&#x27;Effective authorization confirmed; no controller operation issued.&#x27;:state.scene===4?&#x27;Authorized execution RUN-021 is in progress.&#x27;:state.scene===5?&#x27;Execution completed; outcome verification is pending.&#x27;:&#x27;Execution and J21 outcome verification are recorded separately.&#x27;;
+        body=fieldList([[&#x27;Current state&#x27;,stage],[&#x27;Purpose&#x27;,&#x27;Execute the reviewed corrective proposal for J21.&#x27;],[&#x27;Declared boundary&#x27;,&#x27;The reviewed proposal and its declared resource scope only.&#x27;],[&#x27;Policy basis&#x27;,&#x27;This proposal falls outside the configured unattended-action set.&#x27;],[&#x27;Validity conditions&#x27;,&#x27;Revalidate prerequisites; a changed or expired proposal cannot reuse an earlier approval.&#x27;],[&#x27;Expiry record&#x27;,&#x27;An expiry value is not supplied in this illustrative snapshot.&#x27;],state.scene&lt;3?[&#x27;If approval is withheld&#x27;,&#x27;No controller operation is issued; the remediation remains constrained and owned.&#x27;]:[&#x27;Decision consequence&#x27;,&#x27;The effective grant permits only the reviewed proposal. Actual execution and verification have separate records.&#x27;]]);
+        if(state.scene&gt;=3) body+=`&lt;div style=&quot;margin-top:14px&quot;&gt;${records([[&#x27;Decision submitted&#x27;,&#x27;A decision record exists for the bounded proposal.&#x27;],[&#x27;Grant confirmed&#x27;,&#x27;AUTH-J21 establishes effective authorization.&#x27;],[state.scene===3?&#x27;Prerequisites rechecking&#x27;:&#x27;Prechecks revalidated&#x27;,state.scene===3?&#x27;Required checks are underway. No controller operation has been issued.&#x27;:&#x27;The unchanged proposal and prerequisites were checked before issuance.&#x27;]])}&lt;/div&gt;`;
+        tools=link(&#x27;Policy and action trace&#x27;,&#x27;data-trust&#x27;)+link(&#x27;J21 current work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J21&quot;&#x27;);
+      } else if(state.mode===&#x27;restriction&#x27;) {
+        title=&#x27;T1 · Collection eligibility&#x27;;subtitle=&#x27;Network Troubleshooter · J17 remains independently owned&#x27;;
+        body=fieldList([[&#x27;Decision state&#x27;,state.scene&lt;2?&#x27;No eligibility request is represented yet.&#x27;:state.scene===2?&#x27;Restriction requested; not yet applied.&#x27;:&#x27;New-assignment restriction confirmed.&#x27;],[&#x27;Observed condition&#x27;,jobData(&#x27;J17&#x27;).health],[&#x27;Control scope&#x27;,&#x27;New production assignments to T1’s affected collection capability/version.&#x27;],[&#x27;Existing work&#x27;,state.scene&lt;2?&#x27;J17 retains its current evidence-gathering or recovery state and owner.&#x27;: &#x27;J17 retains its actual constrained state and owner. Restriction does not mean cancellation, rollback, or repair.&#x27;],[&#x27;Policy basis&#x27;,&#x27;The configured policy reserves this production-eligibility decision for the AI Admin.&#x27;],[&#x27;Governor response&#x27;,state.scene&lt;2?&#x27;Permitted dependency and recovery checks continue.&#x27;:&#x27;Unsupported assignments are already held while permitted dependency checks continue.&#x27;],[&#x27;Next checkpoint&#x27;,&#x27;Capability restoration and eligibility re-evaluation; no restoration ETA is supplied.&#x27;]]);
+        tools=link(&#x27;Observability&#x27;,&#x27;data-capability=&quot;observability&quot;&#x27;)+link(&#x27;J17 current work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;);
+      } else if(state.mode===&#x27;trust&#x27;) {
+        title=&#x27;Current authority records&#x27;;subtitle=&#x27;Scoped evidence · No workforce-wide compliance score&#x27;;
+        const rows=[[&#x27;J21 proposal&#x27;,state.scene&lt;3?&#x27;Policy-required approval pending; no operation issued.&#x27;:&#x27;Decision submission and effective grant are separate records.&#x27;],[&#x27;J21 execution&#x27;,state.scene&lt;4?&#x27;No controller operation has started.&#x27;:state.scene===4?&#x27;RUN-021 started after the grant and revalidated prechecks.&#x27;:&#x27;RUN-021 completed; the execution record remains retained.&#x27;],[&#x27;J21 result&#x27;,state.scene&lt;5?&#x27;No verified outcome is established.&#x27;:state.scene===5?&#x27;Verification is pending.&#x27;:&#x27;J21-specific criteria are met and proof is retained.&#x27;],[&#x27;T1 eligibility&#x27;,state.scene&lt;2?&#x27;No assignment restriction has been requested in this snapshot.&#x27;:state.scene===2?&#x27;Restriction requested; unsupported assignments held.&#x27;:&#x27;New-assignment restriction is effective; agent health remains degraded.&#x27;],[&#x27;J23 prerequisite&#x27;,&#x27;D1 is healthy; baseline-source access is still missing.&#x27;]];
+        body=records(rows);tools=link(&#x27;J21 authorization&#x27;,&#x27;data-inspect=&quot;approval&quot; data-for-job=&quot;J21&quot;&#x27;)+link(&#x27;T1 eligibility&#x27;,&#x27;data-inspect=&quot;restriction&quot; data-for-job=&quot;J17&quot;&#x27;);
+      } else if(state.mode===&#x27;event&#x27; &amp;&amp; events[state.event]) {
+        const event=events[state.event];title=event.title;subtitle=`${event.job} · ${event.record}`;
+        body=fieldList([[&#x27;Recorded event&#x27;,event.status],[&#x27;Actor&#x27;,event.actor],[&#x27;What it establishes&#x27;,event.detail],[&#x27;Current job state&#x27;,jobData(event.job).status],[&#x27;Evidence boundary&#x27;,&#x27;This event retains its own meaning; later states do not rewrite it.&#x27;]]);
+        tools=link(&#x27;Current job&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;&#x27;+event.job+&#x27;&quot;&#x27;)+link(&#x27;Authority trace&#x27;,&#x27;data-trust&#x27;);
+      } else if(state.mode===&#x27;agents&#x27;) {
+        title=&#x27;Agent records&#x27;;subtitle=&#x27;Identity, health, and eligibility remain separate&#x27;;
+        body=records([[&#x27;Network Troubleshooter T1&#x27;,jobData(&#x27;J17&#x27;).health+&#x27; · Investigation J17 remains &#x27;+jobData(&#x27;J17&#x27;).status.toLowerCase()+&#x27;.&#x27;],[&#x27;Remediation R1&#x27;,&#x27;Healthy · Remediation J21 is &#x27;+jobData(&#x27;J21&#x27;).status.toLowerCase()+&#x27;.&#x27;],[&#x27;Config Drift D1&#x27;,&#x27;Healthy · Assessment J23 waits for baseline-source access.&#x27;]]);
+        tools=link(&#x27;Inspect T1 work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;)+link(&#x27;Inspect R1 work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J21&quot;&#x27;)+link(&#x27;Inspect D1 work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J23&quot;&#x27;);
+      } else if(state.mode===&#x27;integrations&#x27;) {
+        title=&#x27;J23 · Integration context&#x27;;subtitle=&#x27;Baseline-source access prerequisite&#x27;;
+        body=fieldList([[&#x27;Affected work&#x27;,&#x27;Assessment J23 · Config Drift D1&#x27;],[&#x27;Known constraint&#x27;,&#x27;Baseline-source access for the declared assessment scope is not configured.&#x27;],[&#x27;Agent health&#x27;,&#x27;D1 is healthy; this job state does not establish connector or agent failure.&#x27;],[&#x27;Supported next step&#x27;,&#x27;Establish the permitted source-access prerequisite through its authorized owner, then confirm access and recheck job prerequisites.&#x27;],[&#x27;Permission boundary&#x27;,&#x27;This study provides inspection only and does not change integration settings.&#x27;]]);
+        tools=link(&#x27;J23 current work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J23&quot;&#x27;)+link(&#x27;Help with states&#x27;,&#x27;data-capability=&quot;help&quot;&#x27;);
+      } else if(state.mode===&#x27;observability&#x27;) {
+        title=&#x27;J17 · Observability&#x27;;subtitle=&#x27;Collection capability · Network Troubleshooter T1&#x27;;
+        body=records([[&#x27;Latest evidence&#x27;,state.scene===0?&#x27;Required tool responses are delayed.&#x27;:&#x27;Repeated collection timeouts produced no suitable new evidence.&#x27;],[&#x27;Recovery&#x27;,state.scene===0?&#x27;Dependency checks are the next checkpoint.&#x27;:state.scene===1?&#x27;Bounded recovery and eligibility checks are underway.&#x27;:&#x27;Bounded checks have not restored the capability; no suitable authorized replacement is available in this branch.&#x27;],[&#x27;Work impact&#x27;,state.scene&lt;2?&#x27;J17 cannot advance its required evidence step yet.&#x27;:&#x27;J17 remains constrained. Unsupported collection work is held.&#x27;],[&#x27;Eligibility&#x27;,state.scene&lt;2?&#x27;No eligibility change is represented.&#x27;:state.scene===2?&#x27;A restriction has been requested, not applied.&#x27;:&#x27;The new-assignment restriction is confirmed; existing state remains intact.&#x27;]]);
+        tools=link(&#x27;J17 current work&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;)+link(&#x27;Agent record&#x27;,&#x27;data-capability=&quot;agents&quot;&#x27;);
+      } else if(state.mode===&#x27;models&#x27;) {
+        title=&#x27;Model configuration context&#x27;;subtitle=&#x27;No model cause is inferred&#x27;;
+        body=fieldList([[&#x27;Available evidence&#x27;,&#x27;No model configuration or model-version source records are supplied in these illustrative snapshots.&#x27;],[&#x27;Current distinction&#x27;,&#x27;T1’s collection timeouts and J23’s source-access constraint are not attributed to a model.&#x27;],[&#x27;Supervisory use&#x27;,&#x27;Model settings become relevant when a work or evaluation record establishes the connection, subject to the person’s permissions.&#x27;]]);
+        tools=link(&#x27;Observed T1 evidence&#x27;,&#x27;data-capability=&quot;observability&quot;&#x27;);
+      } else {
+        title=&#x27;Workforce state guide&#x27;;subtitle=&#x27;Inspect the record before choosing a control&#x27;;
+        body=records([[&#x27;Agent health&#x27;,&#x27;Availability and effectiveness are separate; an affected capability can degrade while the agent remains reachable.&#x27;],[&#x27;Waiting job&#x27;,&#x27;A healthy agent can own a job waiting for access, authority, evidence, or another prerequisite.&#x27;],[&#x27;Approval&#x27;,&#x27;A policy-required decision for a specific proposal; review alone does not authorize an action.&#x27;],[&#x27;Restriction&#x27;,&#x27;A supported eligibility control. It does not imply repair, cancellation, rollback, or job success.&#x27;],[&#x27;Verification&#x27;,&#x27;A completed operation requires its own outcome evidence before a remediation is verified.&#x27;]]);
+        tools=link(&#x27;J17 investigation&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J17&quot;&#x27;)+link(&#x27;J21 remediation&#x27;,&#x27;data-inspect=&quot;job&quot; data-for-job=&quot;J21&quot;&#x27;);
+      }
+      root.querySelector(&#x27;.wf-inspector-title&#x27;).textContent=title;
+      root.querySelector(&#x27;.wf-inspector-subtitle&#x27;).textContent=subtitle;
+      root.querySelector(&#x27;.wf-inspector-body&#x27;).innerHTML=body;
+      root.querySelector(&#x27;.wf-inspector-tools&#x27;).innerHTML=tools;
+    }
+
+    function drawConnectors() {
+      const bounds=rail.getBoundingClientRect();
+      if(!bounds.width) return;
+      const plates=[...rail.querySelectorAll(&#x27;.wf-sketch&#x27;)].map(el=&gt;{const r=el.getBoundingClientRect();return {left:r.left-bounds.left,right:r.right-bounds.left,top:r.top-bounds.top,bottom:r.bottom-bounds.top,cx:r.left-bounds.left+r.width/2,cy:r.top-bounds.top+r.height/2};});
+      const buttons=[...rail.querySelectorAll(&#x27;.wf-scene&#x27;)].map(el=&gt;{const r=el.getBoundingClientRect();return {top:r.top-bounds.top,bottom:r.bottom-bounds.top};});
+      let markup=&#x27;&#x27;;
+      for(let i=0;i&lt;plates.length-1;i++) {
+        const a=plates[i],b=plates[i+1];let pts=[];
+        if(Math.abs(a.top-b.top)&lt;4) pts=[[a.right+7,a.cy],[b.left-7,b.cy]];
+        else if(bounds.width&lt;=500) pts=[[a.cx,a.bottom+7],[b.cx,b.top-7]];
+        else {const lane=(buttons[i].bottom+buttons[i+1].top)/2;pts=[[a.right+7,a.cy],[bounds.width-2,a.cy],[bounds.width-2,lane],[2,lane],[2,b.cy],[b.left-7,b.cy]];}
+        const end=pts[pts.length-1],prev=pts[pts.length-2],dx=end[0]-prev[0],dy=end[1]-prev[1],length=Math.hypot(dx,dy)||1,ux=dx/length,uy=dy/length;
+        const left=[end[0]-ux*5-uy*3,end[1]-uy*5+ux*3],right=[end[0]-ux*5+uy*3,end[1]-uy*5-ux*3];
+        markup+=`&lt;polyline points=&quot;${pts.map(p=&gt;p.map(n=&gt;n.toFixed(1)).join(&#x27;,&#x27;)).join(&#x27; &#x27;)}&quot; fill=&quot;none&quot;/&gt;&lt;polyline points=&quot;${left.join(&#x27;,&#x27;)} ${end.join(&#x27;,&#x27;)} ${right.join(&#x27;,&#x27;)}&quot; fill=&quot;none&quot;/&gt;`;
+      }
+      connector.innerHTML=markup;
+    }
+
+    function render(animate=false) {
+      const scene=scenes[state.scene];
+      const changedScene=renderedScene!==state.scene;
+      const focusedInspectorButton=inspector.contains(document.activeElement)?document.activeElement.closest(&#x27;button&#x27;):null;
+      const focusAttributes=focusedInspectorButton?[...focusedInspectorButton.attributes].filter(attr=&gt;attr.name.startsWith(&#x27;data-&#x27;)).map(attr=&gt;[attr.name,attr.value]):[];
+      const knownEvents=new Set(scenes.slice(0,state.scene+1).flatMap(item=&gt;item.events));
+      if(state.mode===&#x27;event&#x27;&amp;&amp;!knownEvents.has(state.event)){state.mode=&#x27;job&#x27;;state.event=null;}
+      root.querySelector(&#x27;.wf-posture&#x27;).textContent=scene.posture;
+      root.querySelectorAll(&#x27;.wf-scene&#x27;).forEach(button=&gt;button.setAttribute(&#x27;aria-pressed&#x27;,String(Number(button.dataset.scene)===state.scene)));
+      root.querySelectorAll(&#x27;.wf-workrow&#x27;).forEach(row=&gt;{
+        const id=row.dataset.job,data=jobData(id),oldSignature=row.dataset.signature;
+        const signature=[data.status,data.health,data.detail,data.next].join(&#x27;|&#x27;);
+        row.setAttribute(&#x27;aria-pressed&#x27;,String(state.selectedJob===id));
+        row.setAttribute(&#x27;aria-label&#x27;,`${data.agent}. ${id}, ${data.kind}. ${data.status}. ${data.health}. Inspect current work.`);
+        row.querySelector(&#x27;.wf-health&#x27;).dataset.tone=data.healthTone;
+        row.querySelector(&#x27;.wf-health-text&#x27;).textContent=data.health;
+        let eligibility=row.querySelector(&#x27;.wf-eligibility&#x27;);
+        if(data.eligibility){if(!eligibility){eligibility=document.createElement(&#x27;span&#x27;);eligibility.className=&#x27;wf-eligibility&#x27;;row.querySelector(&#x27;.wf-agent&#x27;).appendChild(eligibility);}eligibility.textContent=data.eligibility;}else if(eligibility){eligibility.remove();}
+        row.querySelector(&#x27;.wf-status&#x27;).textContent=data.status;
+        row.querySelector(&#x27;.wf-status&#x27;).dataset.tone=data.tone;
+        row.querySelector(&#x27;.wf-job-detail&#x27;).textContent=data.detail;
+        row.querySelector(&#x27;.wf-next&#x27;).innerHTML=`&lt;strong&gt;Next:&lt;/strong&gt; ${escapeHTML(data.next)}`;
+        row.classList.remove(&#x27;wf-updated&#x27;);
+        if(animate &amp;&amp; oldSignature &amp;&amp; oldSignature!==signature){void row.offsetWidth;row.classList.add(&#x27;wf-updated&#x27;);}
+        row.dataset.signature=signature;
+      });
+      if(changedScene){renderAttention();
+      root.querySelector(&#x27;.wf-action-list&#x27;).innerHTML=scene.events.map(id=&gt;{const e=events[id];return `&lt;button type=&quot;button&quot; class=&quot;wf-action cursor-interaction&quot; data-event=&quot;${id}&quot; data-tone=&quot;${e.tone}&quot;&gt;${icon(e.tone===&#x27;positive&#x27;?&#x27;check&#x27;:e.tone===&#x27;warning&#x27;?&#x27;alert-triangle&#x27;:&#x27;activity&#x27;)}&lt;span class=&quot;wf-action-copy&quot;&gt;&lt;span class=&quot;wf-action-title&quot;&gt;${escapeHTML(e.title)}&lt;/span&gt;&lt;span class=&quot;wf-action-meta&quot;&gt;${escapeHTML(e.job)} · ${escapeHTML(e.record)}&lt;/span&gt;&lt;/span&gt;&lt;/button&gt;`;}).join(&#x27;&#x27;);}
+      root.querySelector(&#x27;.wf-trust-text&#x27;).textContent=scene.trust;
+      renderInspector();refreshIcons();requestAnimationFrame(drawConnectors);
+      if(focusedInspectorButton&amp;&amp;!focusedInspectorButton.isConnected&amp;&amp;!inspector.hidden){
+        const replacement=[...inspector.querySelectorAll(&#x27;button&#x27;)].find(button=&gt;focusAttributes.length&amp;&amp;focusAttributes.every(([name,value])=&gt;button.getAttribute(name)===value));
+        (replacement||inspector.querySelector(&#x27;[data-close-inspector]&#x27;)).focus({preventScroll:true});
+      }
+      renderedScene=state.scene;
+      lastScene=state.scene;
+    }
+
+    root.addEventListener(&#x27;click&#x27;,event=&gt;{
+      const button=event.target.closest(&#x27;button&#x27;);
+      if(!button || !root.contains(button))return;
+      if(button.hasAttribute(&#x27;data-scene&#x27;)) {
+        const next=Number(button.dataset.scene);
+        if(next===state.scene)return;
+        state.scene=next;render(true);persist();announce(`${scenes[next].name}. ${scenes[next].posture}`);return;
+      }
+      if(button.hasAttribute(&#x27;data-close-inspector&#x27;)||button.hasAttribute(&#x27;data-home&#x27;)) {
+        const closedInspection=button.hasAttribute(&#x27;data-close-inspector&#x27;);state.mode=null;state.event=null;render(false);if(closedInspection&amp;&amp;state.selectedJob)root.querySelector(`[data-job=&quot;${state.selectedJob}&quot;]`).focus({preventScroll:true});persist();announce(&#x27;Inspection closed. Current workforce and attention remain available.&#x27;);return;
+      }
+      if(button.hasAttribute(&#x27;data-job&#x27;)) {state.selectedJob=button.dataset.job;state.mode=&#x27;job&#x27;;state.event=null;}
+      else if(button.hasAttribute(&#x27;data-inspect&#x27;)) {state.mode=button.dataset.inspect;if(validJobs.includes(button.dataset.forJob))state.selectedJob=button.dataset.forJob;state.event=null;}
+      else if(button.hasAttribute(&#x27;data-trust&#x27;)) {state.mode=&#x27;trust&#x27;;state.event=null;}
+      else if(button.hasAttribute(&#x27;data-capability&#x27;)) {state.mode=button.dataset.capability;state.event=null;if(state.mode===&#x27;integrations&#x27;)state.selectedJob=&#x27;J23&#x27;;if(state.mode===&#x27;observability&#x27;)state.selectedJob=&#x27;J17&#x27;;}
+      else if(button.hasAttribute(&#x27;data-event&#x27;)) {state.event=button.dataset.event;state.selectedJob=events[state.event].job;state.mode=&#x27;event&#x27;;}
+      else return;
+      render(false);persist();announce(`${root.querySelector(&#x27;.wf-inspector-title&#x27;).textContent} selected for inspection.`);
+    });
+    window.addEventListener(&#x27;openai:set_globals&#x27;,event=&gt;{
+      if(!event.detail?.globals || !Object.prototype.hasOwnProperty.call(event.detail.globals,&#x27;widgetState&#x27;))return;
+      Object.assign(state,restoredState(event.detail.globals.widgetState));render(false);
+    });
+    if(typeof ResizeObserver!==&#x27;undefined&#x27;)new ResizeObserver(drawConnectors).observe(rail);
+    window.addEventListener(&#x27;resize&#x27;,drawConnectors);
+    render(false);
+  })();
+  &lt;/script&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+(() =&gt; {
+  let positioningReady = window.FloatingUIDOM
+    ? Promise.resolve(window.FloatingUIDOM)
+    : null;
+  const loadScript = (src) =&gt; new Promise((resolve, reject) =&gt; {
+    const script = document.createElement(&quot;script&quot;);
+    script.src = src;
+    script.onload = resolve;
+    script.onerror = () =&gt; {
+      script.remove();
+      reject(new Error(&quot;Could not load tooltip positioning&quot;));
+    };
+    document.head.appendChild(script);
+  });
+  const loadPositioning = async () =&gt; {
+    const domUrl = &quot;https://unpkg.com/@floating-ui/dom@1.7.4/dist/floating-ui.dom.umd.min.js&quot;;
+    const preload = document.createElement(&quot;link&quot;);
+    preload.rel = &quot;preload&quot;;
+    preload.as = &quot;script&quot;;
+    preload.href = domUrl;
+    document.head.appendChild(preload);
+    try {
+      if (window.FloatingUICore == null) {
+        await loadScript(&quot;https://unpkg.com/@floating-ui/core@1.7.3/dist/floating-ui.core.umd.min.js&quot;);
+      }
+      await loadScript(domUrl);
+      return window.FloatingUIDOM;
+    } finally {
+      preload.remove();
+    }
+  };
+  const getPositioning = () =&gt; positioningReady ??= loadPositioning().catch((error) =&gt; {
+    positioningReady = null;
+    throw error;
+  });
+  const tooltipPlacements = new Set([&quot;top&quot;, &quot;right&quot;, &quot;bottom&quot;, &quot;left&quot;]);
+  const tooltipId = `codex-visualization-tooltip-${
+    window.crypto?.randomUUID?.() ?? Date.now().toString(36)
+  }`;
+  const tooltipGap = 5;
+  const hoverDelay = 700;
+  const skipDelay = 300;
+  let activeTrigger = null;
+  let pendingTrigger = null;
+  let tooltip = null;
+  let openTimeout = null;
+  let autoUpdateCleanup = null;
+  let positionRequest = 0;
+  let skipDelayUntil = 0;
+  let lastPointerWasTouch = false;
+  let pinnedByTouch = false;
+
+  const getTrigger = (event) =&gt; {
+    for (const target of event.composedPath()) {
+      if (target?.nodeType === Node.ELEMENT_NODE) {
+        const trigger = target.closest(&quot;[data-tooltip]&quot;);
+        if (trigger) return trigger;
+      }
+    }
+    return null;
+  };
+  const containsTarget = (trigger, target) =&gt;
+    target?.nodeType != null &amp;&amp; trigger.contains(target);
+  const getContent = (trigger) =&gt;
+    trigger.getAttribute(&quot;data-tooltip&quot;)?.trim() ?? &quot;&quot;;
+  const getPlacement = (trigger) =&gt; {
+    const placement = trigger.getAttribute(&quot;data-tooltip-placement&quot;);
+    return tooltipPlacements.has(placement) ? placement : &quot;top&quot;;
+  };
+  const getTooltip = () =&gt; {
+    if (tooltip == null) {
+      tooltip = document.createElement(&quot;div&quot;);
+      tooltip.id = tooltipId;
+      tooltip.className = &quot;tooltip&quot;;
+      tooltip.setAttribute(&quot;role&quot;, &quot;tooltip&quot;);
+    }
+    return tooltip;
+  };
+  const setDescribedBy = (trigger, described) =&gt; {
+    const ids = new Set(
+      (trigger.getAttribute(&quot;aria-describedby&quot;) ?? &quot;&quot;)
+        .split(/\s+/)
+        .filter(Boolean),
+    );
+    if (described) {
+      ids.add(tooltipId);
+    } else {
+      ids.delete(tooltipId);
+    }
+    if (ids.size === 0) {
+      trigger.removeAttribute(&quot;aria-describedby&quot;);
+    } else {
+      trigger.setAttribute(&quot;aria-describedby&quot;, [...ids].join(&quot; &quot;));
+    }
+  };
+  const clearOpenTimeout = () =&gt; {
+    if (openTimeout != null) {
+      window.clearTimeout(openTimeout);
+      openTimeout = null;
+    }
+    pendingTrigger = null;
+  };
+  const closeTooltip = (activateSkipDelay = true) =&gt; {
+    clearOpenTimeout();
+    pinnedByTouch = false;
+    positionRequest += 1;
+    autoUpdateCleanup?.();
+    autoUpdateCleanup = null;
+    if (activeTrigger == null) {
+      return;
+    }
+    setDescribedBy(activeTrigger, false);
+    activeTrigger = null;
+    tooltip?.remove();
+    if (activateSkipDelay) {
+      skipDelayUntil = Date.now() + skipDelay;
+    }
+  };
+  const updatePosition = (trigger, floating, { computePosition, flip, offset, shift, size }) =&gt; {
+    const request = ++positionRequest;
+    void computePosition(trigger, floating, {
+      middleware: [
+        offset(tooltipGap),
+        flip({ padding: tooltipGap }),
+        shift({ padding: tooltipGap }),
+        size({
+          padding: tooltipGap,
+          apply({ availableHeight, availableWidth, elements }) {
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-width&quot;,
+              `${Math.max(0, availableWidth)}px`,
+            );
+            elements.floating.style.setProperty(
+              &quot;--tooltip-available-height&quot;,
+              `${Math.max(0, availableHeight)}px`,
+            );
+          },
+        }),
+      ],
+      placement: getPlacement(trigger),
+      strategy: &quot;fixed&quot;,
+    })
+      .then(({ x, y }) =&gt; {
+        if (activeTrigger !== trigger || request !== positionRequest) {
+          return;
+        }
+        const scale = window.devicePixelRatio || 1;
+        floating.style.transform = `translate(${Math.round(x * scale) / scale}px, ${Math.round(y * scale) / scale}px)`;
+        floating.style.visibility = &quot;visible&quot;;
+      })
+      .catch(() =&gt; {
+        if (activeTrigger === trigger &amp;&amp; request === positionRequest) {
+          closeTooltip(false);
+        }
+      });
+  };
+  const openTooltip = (trigger) =&gt; {
+    const content = getContent(trigger);
+    if (!trigger.isConnected || content.length === 0) {
+      return;
+    }
+    clearOpenTimeout();
+    if (activeTrigger === trigger) {
+      return;
+    }
+    closeTooltip();
+    const floating = getTooltip();
+    floating.textContent = content;
+    floating.style.visibility = &quot;hidden&quot;;
+    floating.style.transform = &quot;translate(0, 0)&quot;;
+    document.body.appendChild(floating);
+    activeTrigger = trigger;
+    setDescribedBy(trigger, true);
+    const request = positionRequest;
+    void getPositioning().then((positioning) =&gt; {
+      if (request !== positionRequest || !trigger.isConnected) return;
+      autoUpdateCleanup = positioning.autoUpdate(trigger, floating, () =&gt; {
+        updatePosition(trigger, floating, positioning);
+      });
+    }).catch(() =&gt; {
+      if (request === positionRequest) closeTooltip(false);
+    });
+  };
+  const requestOpen = (trigger, immediate = false) =&gt; {
+    if (
+      getContent(trigger).length === 0 ||
+      activeTrigger === trigger ||
+      pendingTrigger === trigger
+    ) {
+      return;
+    }
+    clearOpenTimeout();
+    pendingTrigger = trigger;
+    const delay =
+      immediate || activeTrigger != null || Date.now() &lt; skipDelayUntil
+        ? 0
+        : hoverDelay;
+    if (delay === 0) {
+      openTooltip(trigger);
+      return;
+    }
+    openTimeout = window.setTimeout(() =&gt; {
+      openTimeout = null;
+      pendingTrigger = null;
+      openTooltip(trigger);
+    }, delay);
+  };
+  const handlePointerOpen = (event) =&gt; {
+    if (event.pointerType === &quot;touch&quot;) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    requestOpen(trigger);
+  };
+  const handlePointer = (event) =&gt; {
+    lastPointerWasTouch =
+      event.type === &quot;pointerdown&quot; &amp;&amp; event.pointerType === &quot;touch&quot;;
+  };
+  const handleTouchClick = (event) =&gt; {
+    const isTouch = event.pointerType === &quot;touch&quot; || lastPointerWasTouch;
+    lastPointerWasTouch = false;
+    if (!isTouch || event.detail === 0) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (
+      trigger == null ||
+      !trigger.isConnected ||
+      getContent(trigger).length === 0 ||
+      (pinnedByTouch &amp;&amp; activeTrigger === trigger)
+    ) {
+      if (pinnedByTouch) {
+        closeTooltip();
+      }
+      return;
+    }
+    openTooltip(trigger);
+    pinnedByTouch = activeTrigger === trigger;
+    window.setTimeout(() =&gt; {
+      if (activeTrigger === trigger &amp;&amp; !trigger.isConnected) {
+        closeTooltip(false);
+      }
+    }, 0);
+  };
+  const handleLeave = (event) =&gt; {
+    if (pinnedByTouch) {
+      return;
+    }
+    const trigger = getTrigger(event);
+    if (trigger == null || containsTarget(trigger, event.relatedTarget)) {
+      return;
+    }
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handleFocusIn = (event) =&gt; {
+    const trigger = getTrigger(event);
+    if (trigger?.matches(&quot;:focus-visible&quot;)) {
+      requestOpen(trigger, true);
+    }
+  };
+  const handleKeyDown = (event) =&gt; {
+    if (event.key === &quot;Escape&quot;) {
+      closeTooltip();
+    }
+  };
+  const handleContextMenu = (event) =&gt; {
+    lastPointerWasTouch = false;
+    const trigger = getTrigger(event);
+    if (activeTrigger === trigger || pendingTrigger === trigger) {
+      closeTooltip();
+    }
+  };
+  const handlers = {
+    pointerover: handlePointerOpen,
+    pointerdown: handlePointer,
+    pointercancel: handlePointer,
+    click: handleTouchClick,
+    pointerout: handleLeave,
+    focusin: handleFocusIn,
+    focusout: handleLeave,
+    keydown: handleKeyDown,
+    contextmenu: handleContextMenu,
+  };
+  const roots = new Map();
+  const handledEvents = new WeakSet();
+  const handleEvent = (event) =&gt; {
+    if (handledEvents.has(event)) return;
+    handledEvents.add(event);
+    handlers[event.type](event);
+  };
+  const discoverRoots = (node) =&gt; {
+    if (node.shadowRoot) listen(node.shadowRoot);
+    for (const element of node.querySelectorAll(&quot;*&quot;)) {
+      if (element.shadowRoot) listen(element.shadowRoot);
+    }
+  };
+  const listen = (root) =&gt; {
+    if (roots.has(root)) return;
+    for (const type of Object.keys(handlers)) root.addEventListener(type, handleEvent);
+    const observer = new window.MutationObserver((records) =&gt; {
+      for (const { addedNodes } of records) {
+        for (const node of addedNodes) {
+          if (node.nodeType === Node.ELEMENT_NODE) discoverRoots(node);
+        }
+      }
+      for (const [root, cleanup] of roots) {
+        if (root.host &amp;&amp; !root.host.isConnected) {
+          cleanup();
+          roots.delete(root);
+        }
+      }
+      if (activeTrigger &amp;&amp; !activeTrigger.isConnected) closeTooltip(false);
+    });
+    observer.observe(root, { childList: true, subtree: true });
+    roots.set(root, () =&gt; {
+      observer.disconnect();
+      for (const type of Object.keys(handlers)) root.removeEventListener(type, handleEvent);
+    });
+    discoverRoots(root);
+  };
+  const destroy = () =&gt; {
+    closeTooltip(false);
+    lastPointerWasTouch = false;
+    for (const cleanup of roots.values()) cleanup();
+    roots.clear();
+    tooltip = null;
+  };
+
+  // Events between children of one shadow root never reach the document.
+  listen(document);
+  window.addEventListener(&quot;pagehide&quot;, destroy, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-tabs&quot;&gt;
+(() =&gt; {
+  const selector = &#x27;.nav[role=&quot;tablist&quot;] [role=&quot;tab&quot;]&#x27;;
+  const disabled = &#x27;:disabled,[aria-disabled=&quot;true&quot;]&#x27;;
+  const selectTab = (selected) =&gt; {
+    const panelId = selected.getAttribute(&quot;aria-controls&quot;);
+    for (const tab of selected.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;)) {
+      const active = tab === selected;
+      tab.classList.toggle(&quot;active&quot;, active);
+      tab.setAttribute(&quot;aria-selected&quot;, String(active));
+      const id = tab.getAttribute(&quot;aria-controls&quot;);
+      const panel = id &amp;&amp; document.getElementById(id);
+      if (panel != null) {
+        panel.hidden = id !== panelId;
+        if (!panel.hidden &amp;&amp; selected.id) {
+          panel.setAttribute(&quot;aria-labelledby&quot;, selected.id);
+        }
+      }
+    }
+  };
+  const interact = (event) =&gt; {
+    const tab = event.target?.closest?.(selector);
+    if (event.defaultPrevented || tab == null || tab.matches(disabled)) {
+      return;
+    }
+    if (event.type === &quot;click&quot;) {
+      selectTab(tab);
+      return;
+    }
+    const tabs = Array.from(
+      tab.closest(&#x27;[role=&quot;tablist&quot;]&#x27;).querySelectorAll(&#x27;[role=&quot;tab&quot;]&#x27;),
+    ).filter((candidate) =&gt; !candidate.matches(disabled));
+    const current = tabs.indexOf(tab);
+    let next;
+    if (event.key === &quot;ArrowRight&quot; || event.key === &quot;ArrowDown&quot;) {
+      next = (current + 1) % tabs.length;
+    } else if (event.key === &quot;ArrowLeft&quot; || event.key === &quot;ArrowUp&quot;) {
+      next = (current + tabs.length - 1) % tabs.length;
+    } else if (event.key === &quot;Home&quot;) {
+      next = 0;
+    } else if (event.key === &quot;End&quot;) {
+      next = tabs.length - 1;
+    } else {
+      return;
+    }
+    event.preventDefault();
+    tabs[next].focus();
+    selectTab(tabs[next]);
+  };
+
+  for (const list of document.querySelectorAll(&#x27;.nav[role=&quot;tablist&quot;]&#x27;)) {
+    const selected =
+      list.querySelector(&#x27;[role=&quot;tab&quot;][aria-selected=&quot;true&quot;]&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;].active&#x27;) ??
+      list.querySelector(&#x27;[role=&quot;tab&quot;]&#x27;);
+    if (selected != null) {
+      selectTab(selected);
+    }
+  }
+  document.addEventListener(&quot;click&quot;, interact);
+  document.addEventListener(&quot;keydown&quot;, interact);
+  window.addEventListener(&quot;pagehide&quot;, () =&gt; {
+    document.removeEventListener(&quot;click&quot;, interact);
+    document.removeEventListener(&quot;keydown&quot;, interact);
+  }, { once: true });
+})();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-carousel&quot;&gt;
+  (() =&gt; {
+    for (const root of document.querySelectorAll(&quot;.viz-carousel&quot;)) {
+      const panels = Array.from(
+        root.querySelectorAll(&quot;:scope &gt; [data-variant]&quot;),
+      );
+      if (panels.length === 0) {
+        continue;
+      }
+      root.setAttribute(&quot;role&quot;, &quot;group&quot;);
+      panels.forEach((panel, index) =&gt; {
+        panel.hidden = index !== 0;
+        panel.setAttribute(&quot;role&quot;, &quot;group&quot;);
+        if (!panel.hasAttribute(&quot;aria-label&quot;)) {
+          panel.setAttribute(&quot;aria-label&quot;, panel.dataset.variant);
+        }
+      });
+      root.dataset.activeVariant = panels[0].dataset.variant;
+      if (panels.length === 1) {
+        continue;
+      }
+
+      const controls = document.createElement(&quot;div&quot;);
+      controls.className = &quot;viz-carousel-controls&quot;;
+      // Portable copy of the settings dropdown&#x27;s legacy glyph; no 14px icon-package preset matches it.
+      // https://github.com/openai/openai/blob/master/codex/codex-apps/webview/src/icons/chevron.svg
+      controls.innerHTML = `
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-previous cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-left&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;
+      &lt;details class=&quot;viz-carousel-picker&quot;&gt;
+        &lt;summary class=&quot;cursor-interaction&quot;&gt;
+          &lt;span class=&quot;viz-carousel-count tabular-nums&quot;&gt;&lt;/span&gt;
+          &lt;span class=&quot;viz-carousel-name&quot;&gt;&lt;/span&gt;
+          &lt;svg class=&quot;viz-carousel-caret&quot; width=&quot;14&quot; height=&quot;14&quot; viewBox=&quot;0 0 20 21&quot; fill=&quot;none&quot; aria-hidden=&quot;true&quot; focusable=&quot;false&quot;&gt;
+            &lt;path d=&quot;M15.2793 7.71101C15.539 7.45131 15.961 7.45131 16.2207 7.71101C16.4804 7.97071 16.4804 8.39272 16.2207 8.65242L10.4707 14.4024C10.211 14.6621 9.78902 14.6621 9.52932 14.4024L3.77932 8.65242L3.69436 8.54792C3.52385 8.28979 3.55205 7.93828 3.77932 7.71101C4.00659 7.48374 4.3581 7.45554 4.61623 7.62605L4.72073 7.71101L10 12.9903L15.2793 7.71101Z&quot; fill=&quot;currentColor&quot; stroke=&quot;currentColor&quot; stroke-width=&quot;0.6&quot; /&gt;
+          &lt;/svg&gt;
+        &lt;/summary&gt;
+        &lt;div class=&quot;viz-carousel-options&quot;&gt;&lt;/div&gt;
+      &lt;/details&gt;
+      &lt;button type=&quot;button&quot; class=&quot;viz-carousel-next cursor-interaction&quot;&gt;&lt;i data-lucide=&quot;chevron-right&quot; aria-hidden=&quot;true&quot;&gt;&lt;/i&gt;&lt;/button&gt;`;
+      const previous = controls.querySelector(&quot;.viz-carousel-previous&quot;);
+      const next = controls.querySelector(&quot;.viz-carousel-next&quot;);
+      const picker = controls.querySelector(&quot;.viz-carousel-picker&quot;);
+      const summary = picker.querySelector(&quot;summary&quot;);
+      const count = controls.querySelector(&quot;.viz-carousel-count&quot;);
+      const name = controls.querySelector(&quot;.viz-carousel-name&quot;);
+      const options = controls.querySelector(&quot;.viz-carousel-options&quot;);
+      const status = document.createElement(&quot;span&quot;);
+      status.className = &quot;sr-only&quot;;
+      status.setAttribute(&quot;role&quot;, &quot;status&quot;);
+      status.setAttribute(&quot;aria-live&quot;, &quot;polite&quot;);
+      status.setAttribute(&quot;aria-atomic&quot;, &quot;true&quot;);
+      previous.setAttribute(
+        &quot;aria-label&quot;,
+        root.dataset.previousLabel ?? &quot;Previous variant&quot;,
+      );
+      next.setAttribute(&quot;aria-label&quot;, root.dataset.nextLabel ?? &quot;Next variant&quot;);
+
+      let active = 0;
+      let mousePointerId = null;
+      let summaryPointerHandled = false;
+      summary.addEventListener(&quot;pointerdown&quot;, (event) =&gt; {
+        summaryPointerHandled =
+          event.pointerType === &quot;mouse&quot; &amp;&amp; event.button === 0 &amp;&amp; !event.ctrlKey;
+        if (!summaryPointerHandled) {
+          return;
+        }
+        event.preventDefault();
+        summary.focus({ preventScroll: true });
+        picker.open = !picker.open;
+        mousePointerId = picker.open ? event.pointerId : null;
+      });
+      summary.addEventListener(&quot;click&quot;, (event) =&gt; {
+        if (summaryPointerHandled &amp;&amp; event.detail &gt; 0) {
+          event.preventDefault();
+        }
+      });
+      const choices = panels.map((panel, index) =&gt; {
+        const choice = document.createElement(&quot;button&quot;);
+        choice.type = &quot;button&quot;;
+        choice.className = &quot;cursor-interaction&quot;;
+        choice.textContent = panel.dataset.variant;
+        choice.addEventListener(&quot;click&quot;, () =&gt; {
+          select(index);
+          summary.focus();
+        });
+        choice.addEventListener(&quot;pointerup&quot;, (event) =&gt; {
+          if (
+            picker.open &amp;&amp;
+            event.pointerType === &quot;mouse&quot; &amp;&amp;
+            event.button === 0 &amp;&amp;
+            event.pointerId === mousePointerId
+          ) {
+            choice.click();
+          }
+        });
+        options.appendChild(choice);
+        return choice;
+      });
+      const select = (index) =&gt; {
+        const changed = active !== index;
+        active = index;
+        panels.forEach((panel, position) =&gt; {
+          panel.hidden = position !== active;
+          choices[position].setAttribute(
+            &quot;aria-current&quot;,
+            String(position === active),
+          );
+        });
+        root.dataset.activeVariant = panels[active].dataset.variant;
+        count.textContent = `${active + 1} / ${panels.length}`;
+        name.textContent = panels[active].dataset.variant;
+        picker.open = false;
+        mousePointerId = null;
+        if (changed) {
+          status.textContent = `${count.textContent}: ${name.textContent}`;
+        }
+      };
+      previous.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + panels.length - 1) % panels.length),
+      );
+      next.addEventListener(&quot;click&quot;, () =&gt;
+        select((active + 1) % panels.length),
+      );
+      picker.addEventListener(&quot;keydown&quot;, (event) =&gt; {
+        if (event.key === &quot;Escape&quot; &amp;&amp; picker.open) {
+          event.preventDefault();
+          picker.open = false;
+          mousePointerId = null;
+          summary.focus();
+          return;
+        }
+        if (event.altKey || event.ctrlKey || event.metaKey) {
+          return;
+        }
+        const index = choices.indexOf(document.activeElement);
+        let nextIndex;
+        if (event.key === &quot;ArrowDown&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + 1) % choices.length;
+        } else if (event.key === &quot;ArrowUp&quot;) {
+          nextIndex = index &lt; 0 ? active : (index + choices.length - 1) % choices.length;
+        } else if (picker.open &amp;&amp; event.key === &quot;Home&quot;) {
+          nextIndex = 0;
+        } else if (picker.open &amp;&amp; event.key === &quot;End&quot;) {
+          nextIndex = choices.length - 1;
+        } else {
+          return;
+        }
+        event.preventDefault();
+        picker.open = true;
+        choices[nextIndex].focus();
+      });
+      picker.addEventListener(&quot;focusout&quot;, (event) =&gt; {
+        if (!picker.contains(event.relatedTarget)) {
+          picker.open = false;
+          mousePointerId = null;
+        }
+      });
+      const dismiss = (event) =&gt; {
+        if (!summary.contains(event.target)) {
+          mousePointerId = null;
+        }
+        if (!picker.contains(event.target)) {
+          picker.open = false;
+        }
+      };
+      const endPointerSelection = () =&gt; {
+        mousePointerId = null;
+      };
+      const sizePicker = () =&gt; {
+        root.style.setProperty(
+          &quot;--viz-carousel-picker-height&quot;,
+          `${picker.open ? options.offsetHeight : 0}px`,
+        );
+      };
+      picker.addEventListener(&quot;toggle&quot;, sizePicker);
+      window.addEventListener(&quot;resize&quot;, sizePicker);
+      document.addEventListener(&quot;pointerdown&quot;, dismiss);
+      document.addEventListener(&quot;pointerup&quot;, endPointerSelection);
+      document.addEventListener(&quot;pointercancel&quot;, endPointerSelection);
+      window.addEventListener(&quot;blur&quot;, endPointerSelection);
+      window.addEventListener(
+        &quot;pagehide&quot;,
+        () =&gt; {
+          document.removeEventListener(&quot;pointerdown&quot;, dismiss);
+          document.removeEventListener(&quot;pointerup&quot;, endPointerSelection);
+          document.removeEventListener(&quot;pointercancel&quot;, endPointerSelection);
+          window.removeEventListener(&quot;blur&quot;, endPointerSelection);
+          window.removeEventListener(&quot;resize&quot;, sizePicker);
+        },
+        { once: true },
+      );
+      root.append(controls, status);
+      select(0);
+    }
+  })();
+&lt;/script&gt;
+&lt;script id=&quot;codex-visualization-lucide&quot; async src=&quot;https://unpkg.com/lucide@1.17.0/dist/umd/lucide.js&quot;&gt;&lt;/script&gt;
+&lt;script&gt;
+(() =&gt; {
+  const initialize = () =&gt; {
+    globalThis.lucide?.createIcons({ attrs: { width: 16, height: 16 } });
+  };
+  if (globalThis.lucide != null) {
+    initialize();
+    return;
+  }
+  document
+    .getElementById(&quot;codex-visualization-lucide&quot;)
+    ?.addEventListener(&quot;load&quot;, initialize, { once: true });
+})();
+&lt;/script&gt;
+
+&lt;/body&gt;
+&lt;/html&gt;
+"></iframe>
+
+<script>(() => {
+  const frame = document.getElementById("codex-visualization");
+  if (!(frame instanceof HTMLIFrameElement)) {
+    return;
+  }
+  const isShare = document.documentElement.classList.contains(
+    "visualization-share-root",
+  );
+  let viewportHeight = globalThis.innerHeight;
+  let sizeFingerprint = null;
+  let sizeWriteTimeout;
+  let lastSize = null;
+  let pendingSize = null;
+  const storageKey = `codex:visualization-widget-state-v2:${JSON.stringify([
+    globalThis.location.pathname,
+    globalThis.location.search,
+  ])}`;
+  const sizeStorageKey = `${storageKey}:share-size-v1`;
+  const parseState = (serializedState) => {
+    if (
+      typeof serializedState !== "string" ||
+      new TextEncoder().encode(serializedState).length > 16 * 1024
+    ) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    /** @type {unknown} */
+    const state = JSON.parse(serializedState);
+    if (
+      state == null ||
+      typeof state !== "object" ||
+      Array.isArray(state) ||
+      ("imageIds" in state &&
+        (!Array.isArray(state.imageIds) || state.imageIds.length > 0))
+    ) {
+      throw new TypeError("Widget state must be a JSON object");
+    }
+    const storedState = { modelContent: null, privateContent: null, ...state };
+    const canonicalState = JSON.stringify(
+      storedState,
+      (_key, /** @type {unknown} */ value) => {
+        if (typeof value === "number" && !Number.isFinite(value)) {
+          throw new TypeError("Widget state must contain finite numbers");
+        }
+        return value;
+      },
+    );
+    if (new TextEncoder().encode(canonicalState).length > 16 * 1024) {
+      throw new TypeError(
+        "Widget state must be a JSON object of at most 16 KiB",
+      );
+    }
+    return storedState;
+  };
+  let storage = null;
+  let state = null;
+  try {
+    const localStorage = globalThis.localStorage;
+    const probeKey = `${storageKey}:probe`;
+    localStorage.setItem(probeKey, "1");
+    localStorage.removeItem(probeKey);
+    storage = localStorage;
+    const savedState = storage.getItem(storageKey);
+    if (savedState != null) {
+      try {
+        state = parseState(savedState);
+      } catch {
+        // Invalid saved state does not disable future writes.
+      }
+    }
+  } catch {
+    storage = null;
+  }
+  const persistSize = () => {
+    globalThis.clearTimeout(sizeWriteTimeout);
+    if (pendingSize == null) {
+      return;
+    }
+    try {
+      storage?.setItem(sizeStorageKey, pendingSize);
+    } catch {
+      // A denied or full cache must not affect the visualization.
+    }
+    pendingSize = null;
+  };
+  if (isShare) {
+    globalThis.addEventListener("pagehide", persistSize);
+  }
+  const initialGlobals = {
+    widgetState: state,
+    statePersistence: storage == null ? "none" : "local",
+  };
+
+  const channel = new MessageChannel();
+  channel.port1.addEventListener("message", (event) => {
+    const data = event.data;
+    if (typeof data !== "object" || data == null) {
+      return;
+    }
+    if (data.type === "widget-state-write") {
+      if (!Number.isSafeInteger(data.id) || data.id <= 0) {
+        return;
+      }
+      let ok = false;
+      try {
+        if (storage != null) {
+          const state = parseState(data.state);
+          storage.setItem(storageKey, JSON.stringify(state));
+          ok = true;
+        }
+      } catch {
+        // Storage denial, quota limits, and invalid state return a failed receipt.
+      }
+      channel.port1.postMessage({
+        type: "widget-state-result",
+        id: data.id,
+        ok,
+      });
+      return;
+    }
+    if (data.type === "height") {
+      const height = data.height;
+      if (
+        typeof height !== "number" ||
+        !Number.isFinite(height) ||
+        height < 0
+      ) {
+        return;
+      }
+      if (height <= 10_000) {
+        const width = isShare && storage != null ? frame.clientWidth : null;
+        frame.style.height = Math.ceil(height) + "px";
+        if (isShare && storage != null) {
+          const size = JSON.stringify({
+            fingerprint: sizeFingerprint,
+            width,
+            viewportHeight: globalThis.innerHeight,
+            dark: globalThis.matchMedia("(prefers-color-scheme: dark)").matches,
+            scale: globalThis.devicePixelRatio,
+            height: Math.ceil(height),
+          });
+          if (size !== lastSize) {
+            lastSize = size;
+            pendingSize = size;
+            globalThis.clearTimeout(sizeWriteTimeout);
+            sizeWriteTimeout = globalThis.setTimeout(persistSize, 100);
+          }
+        }
+      }
+      if (isShare) {
+        // Keep unusually tall content accessible without accepting an unbounded height.
+        if (height > 10_000 && Number.parseFloat(frame.style.height) === 0) {
+          frame.style.removeProperty("height");
+        }
+        frame.scrolling = height > 10_000 ? "auto" : "no";
+        document.documentElement.classList.add("visualization-share-ready");
+      }
+      return;
+    }
+    if (data.type === "scroll-to") {
+      const top = data.top;
+      if (
+        typeof top === "number" &&
+        Number.isFinite(top) &&
+        top >= 0 &&
+        globalThis.navigator.userActivation?.isActive === true
+      ) {
+        globalThis.scrollTo({
+          top: Math.ceil(
+            globalThis.scrollY + frame.getBoundingClientRect().top + top,
+          ),
+        });
+      }
+      return;
+    }
+    if (data.type === "open-external") {
+      const rawHref = data.href;
+      if (typeof rawHref !== "string") {
+        return;
+      }
+      let href;
+      try {
+        const url = new URL(rawHref, document.baseURI);
+        if (url.protocol !== "https:") {
+          return;
+        }
+        href = url.href;
+      } catch {
+        return;
+      }
+      if (globalThis.navigator.userActivation?.isActive === true) {
+        const anchor = document.createElement("a");
+        anchor.href = href;
+        anchor.rel = "noopener noreferrer";
+        anchor.target = "_blank";
+        document.body.appendChild(anchor);
+        anchor.click();
+        anchor.remove();
+      }
+      return;
+    }
+    if (data.type === "follow-up") {
+      const prompt = data.prompt;
+      if (
+        typeof prompt !== "string" ||
+        globalThis.navigator.userActivation?.isActive !== true
+      ) {
+        return;
+      }
+      const title = data.title;
+      globalThis.prompt(typeof title === "string" ? title : prompt, prompt);
+    }
+  });
+  channel.port1.start();
+  const srcdoc = frame.dataset.srcdoc;
+  if (srcdoc == null) {
+    return;
+  }
+  globalThis.addEventListener("resize", () => {
+    const height = Number.parseFloat(frame.style.height);
+    if (!isShare && (!Number.isFinite(height) || height <= viewportHeight)) {
+      frame.style.removeProperty("height");
+    }
+    viewportHeight = globalThis.innerHeight;
+    channel.port1.postMessage({ type: "measure" });
+  });
+  frame.addEventListener(
+    "load",
+    () => {
+      frame.contentWindow?.postMessage(
+        { type: "codex-visualization-initialize" },
+        "*",
+        [channel.port2],
+      );
+    },
+    { once: true },
+  );
+  // Match the trusted bootstrap element, not the same text in an authored title.
+  const frameHtml = srcdoc.replace(
+    '<script type="application/json" id="codex-visualization-widget-state">__CODEX_VISUALIZATION_WIDGET_STATE__<\/script>',
+    () =>
+      '<script type="application/json" id="codex-visualization-widget-state">' +
+      JSON.stringify(initialGlobals).replaceAll("<", "\\u003c") +
+      "<\/script>",
+  );
+  if (isShare && storage != null) {
+    // Fingerprint the rendered document, including restored widget state, without
+    // storing its content. This is a layout cache, not a security identity.
+    let hash = 5381;
+    for (let index = 0; index < frameHtml.length; index += 1) {
+      hash = (hash * 33 + frameHtml.charCodeAt(index)) % 4_294_967_296;
+    }
+    sizeFingerprint = hash.toString(36);
+    try {
+      const size = JSON.parse(storage.getItem(sizeStorageKey) ?? "null");
+      if (
+        size?.fingerprint === sizeFingerprint &&
+        size.width === frame.clientWidth &&
+        size.viewportHeight === globalThis.innerHeight &&
+        size.dark ===
+          globalThis.matchMedia("(prefers-color-scheme: dark)").matches &&
+        size.scale === globalThis.devicePixelRatio &&
+        typeof size.height === "number" &&
+        Number.isFinite(size.height) &&
+        size.height >= 0 &&
+        size.height <= 10_000
+      ) {
+        frame.style.height = size.height + "px";
+      }
+    } catch {
+      // Ignore missing or invalid cache entries and measure the live frame.
+    }
+  }
+  frame.srcdoc = frameHtml;
+  delete frame.dataset.srcdoc;
+})();
+</script>
+</body>
+</html>

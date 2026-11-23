@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
+import { Fragment, useCallback, useEffect, useId, useMemo, useRef, useState } from 'react';
 import {
   ACTIVE_WAN, DOMAINS, DEVICE_GROUPS, DEVICES, BUNDLES, GROUP_BUNDLES,
   PAGE_SIZES, domainDevices, groupDevices, domainLabel, groupLabel, findGroup,
@@ -117,6 +117,36 @@ function routePath(points) {
     path += ` L ${before.join(' ')} Q ${point.join(' ')} ${after.join(' ')}`;
   }
   return path;
+}
+
+// Presentation-only camera policy. The Operations overview keeps the original
+// fitted-canvas helpers; a detailed work surface may allow bounded exploration
+// around the baseline camera and zooming below 100%.
+function clampPresentedViewport(current, size, policy) {
+  if (!policy) return panBy(current, 0, 0, size);
+  const width = Math.max(0, Number(size.width) || 0), height = Math.max(0, Number(size.height) || 0);
+  const scale = Math.max(policy.minScale, Math.min(policy.maxScale, Number.isFinite(current?.scale) ? current.scale : 1));
+  const bound = (value, dimension) => {
+    const remaining = dimension * (1 - scale), margin = dimension * policy.overscan;
+    return Math.max(Math.min(0, remaining) - margin, Math.min(Math.max(0, remaining) + margin, Number.isFinite(value) ? value : 0));
+  };
+  return { x: bound(current?.x, width), y: bound(current?.y, height), scale };
+}
+
+function panPresentedViewport(current, dx, dy, size, policy) {
+  if (!policy) return panBy(current, dx, dy, size);
+  const start = clampPresentedViewport(current, size, policy);
+  return clampPresentedViewport({ ...start, x: start.x + dx, y: start.y + dy }, size, policy);
+}
+
+function zoomPresentedViewport(current, factor, anchor, size, policy) {
+  if (!policy) return zoomAt(current, factor, anchor, size);
+  const start = clampPresentedViewport(current, size, policy);
+  const scale = Math.max(policy.minScale, Math.min(policy.maxScale, start.scale * factor));
+  const ratio = scale / start.scale;
+  const x = Number.isFinite(anchor?.x) ? anchor.x : size.width / 2;
+  const y = Number.isFinite(anchor?.y) ? anchor.y : size.height / 2;
+  return clampPresentedViewport({ x: x - (x - start.x) * ratio, y: y - (y - start.y) * ratio, scale }, size, policy);
 }
 
 function AlarmSignal({ summary, compact = false }) {
@@ -264,83 +294,113 @@ function RouteControl({ route, state, kind, onConnection, onHighlight }) {
   </div>;
 }
 
-function LogicalMap({ nodes, bundles, state, kind, page = 0, pageSize = 12, onNavigate, onConnection, spotlight }) {
+export function LogicalMap({ nodes, bundles, state, kind = 'domain', page = 0, pageSize = 12, onNavigate, onConnection, spotlight, presentation }) {
   const [ref, width] = useContainerWidth();
   const [hovered, setHighlight] = useState(null);
   const highlight = hovered || (kind === 'domain' ? spotlight : null);
-  const setupId = ACTIVE_WAN.id;
+  const setupId = presentation ? presentation.setupId || 'national' : ACTIVE_WAN.id;
   const layout = useMemo(() => scaledLayout(nodes, bundles, width, page, pageSize, kind),
     [nodes, bundles, width, page, pageSize, setupId, kind]);
-  const incidents = useMemo(() => kind === 'domain' ? networkWatch(state).incidents : [], [state, kind]);
+  const incidents = useMemo(() => presentation ? [] : kind === 'domain' ? networkWatch(state).incidents : [], [state, kind, presentation]);
   const narrow = width <= 640;
   const related = route => !highlight || route.id === highlight || route.from === highlight || route.to === highlight;
   const highlightedRoute = bundles.find(bundle => bundle.id === highlight);
   const relatedNode = id => id === highlight || highlightedRoute?.from === id || highlightedRoute?.to === id;
   return <hbr-layout direction="column" gap="md">
-    <div ref={ref} className="wan-map" data-narrow={narrow} data-kind={kind} data-source-frame={state.frame}
-      data-view={state.view} style={{ height: narrow ? undefined : layout.height }} role="group"
-      aria-label={`${kind === 'domain' ? 'Operational domains' : 'Device groups'} and their actual logical connections`}>
+    <div ref={ref} className="wan-map" data-narrow={narrow} data-kind={kind} data-source-frame={presentation ? presentation.sourceFrame ?? state?.frame : state.frame}
+      data-view={presentation ? undefined : state.view} style={{ height: narrow ? undefined : layout.height }} role="group"
+      aria-label={presentation?.canvasLabel || `${kind === 'domain' ? 'Operational domains' : 'Device groups'} and their actual logical connections`}>
       <NetworkAtmosphere />
       {!narrow && <svg className="wan-map-routes" viewBox={`0 0 ${layout.width} ${layout.height}`} aria-hidden="true">
         <title>Logical connections derived from actual inventory links. Positions do not represent geography.</title>
         {layout.corridors.map(route => {
-          const summary = kind === 'domain' ? bundleSummary(state, route.id) : groupBundleSummary(state, route.id);
+          const summary = presentation ? presentation.getRouteSummary?.(route.id) || { total: 0, active: 0, unavailable: 0 } : kind === 'domain' ? bundleSummary(state, route.id) : groupBundleSummary(state, route.id);
           return <g key={route.id} data-corridor={route.id}
             data-condition={summary.active ? 'major' : summary.unavailable ? 'unknown' : 'normal'}
             data-stale={summary.unavailable > 0} data-emphasized={Boolean(highlight && related(route))}
             data-muted={Boolean(highlight && !related(route) && !summary.active)}>
             <path className="wan-route-bed" d={routePath(route.points)} />
-            <path className="wan-route-line" d={routePath(route.points)} />
-            {summary.active > 0 && <path key={`${route.id}:condition`} className="wan-route-arrival" d={routePath(route.points)} pathLength="1" />}
+            <path className="wan-route-line" d={routePath(route.points)} pathLength={presentation?.animatePresentation ? 100 : undefined} />
+            {summary.active > 0 && presentation?.animateTraffic !== false && <path key={`${route.id}:condition`} className="wan-route-arrival" d={routePath(route.points)} pathLength="1" />}
             {[route.points[0], route.points.at(-1)].map((point, index) =>
               <circle key={index} className="wan-route-port" cx={point[0]} cy={point[1]} r="3" />)}
           </g>;
         })}
       </svg>}
       <div className="wan-map-nodes">
-        {layout.nodes.map(node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} state={state}
+        {layout.nodes.map(node => presentation ? <Fragment key={`${setupId}:${node.id}`}>{presentation.renderNode?.(node, {
+          focused: Boolean(highlight && relatedNode(node.id)),
+          muted: Boolean(highlight && !relatedNode(node.id) && !presentation.getNodeAlert?.(node.id)),
+          onHighlight: setHighlight,
+        })}</Fragment> : <HierarchyCard key={`${setupId}:${node.id}`} node={node} state={state}
           kind={kind} incidents={incidents} onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
           muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, kind === 'domain' ? domainDevices(node.id) : groupDevices(node.id)).alarms)} />)}
       </div>
-      {!narrow && layout.corridors.map(route => <RouteControl key={`${setupId}:${route.id}`} route={route}
+      {!narrow && layout.corridors.map(route => presentation ? <Fragment key={`${setupId}:${route.id}`}>{presentation.renderRouteControl?.(route, { onHighlight: setHighlight })}</Fragment> : <RouteControl key={`${setupId}:${route.id}`} route={route}
         state={state} kind={kind} onConnection={onConnection} onHighlight={setHighlight} />)}
     </div>
-    <hbr-text type="secondary" size="xs">
+    {presentation?.showCaption !== false && <hbr-text type="secondary" size="xs">
       {narrow ? 'View connections below for actual links. ' : `${plural(layout.corridors.length, 'actual connection')} shown. `}
       Positions are logical.{layout.offPageBundleCount > 0 ? ` ${plural(layout.offPageBundleCount, 'connection')} continue outside this page.` : ''}
-    </hbr-text>
+    </hbr-text>}
   </hbr-layout>;
 }
 
-function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }) {
+export function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight, presentation }) {
   const [ref, width] = useContainerWidth();
   const [hovered, setHighlight] = useState(null);
-  const [viewport, setViewport] = useState({ x: 0, y: 0, scale: 1 });
+  const [viewport, setViewport] = useState(() => ({
+    x: Number.isFinite(presentation?.initialViewport?.x) ? presentation.initialViewport.x : 0,
+    y: Number.isFinite(presentation?.initialViewport?.y) ? presentation.initialViewport.y : 0,
+    scale: Number.isFinite(presentation?.initialViewport?.scale) ? presentation.initialViewport.scale : 1,
+  }));
   const [dragging, setDragging] = useState(false);
   const [animateView, setAnimateView] = useState(false);
   const drag = useRef(null);
-  const setupId = ACTIVE_WAN.id;
+  const setupId = presentation ? presentation.setupId || 'national' : ACTIVE_WAN.id;
+  const previousViewportSetup = useRef(setupId);
   const layout = useMemo(() => buildWorldLayout(nodes, bundles, setupId), [nodes, bundles, setupId]);
-  const incidents = useMemo(() => networkWatch(state).incidents, [state]);
+  const incidents = useMemo(() => presentation ? [] : networkWatch(state).incidents, [state, presentation]);
   const gradientId = `world-land-${useId().replaceAll(':', '')}`;
   // Keep native cards readable; move them below the map before they overlap.
-  const narrow = width <= 760;
-  const height = narrow ? Math.max(180, width * .425) : width * WORLD_HEIGHT / WORLD_WIDTH;
+  const compact = Boolean(presentation?.compact);
+  const showDomainCards = presentation ? presentation.showDomainCards !== false : true;
+  const narrow = compact || width <= 760;
+  const naturalHeight = compact ? Math.min(320, Math.max(180, width * .425)) : narrow ? Math.max(180, width * .425) : width * WORLD_HEIGHT / WORLD_WIDTH;
+  const height = !narrow && Number.isFinite(presentation?.canvasHeight) ? Math.max(320, presentation.canvasHeight) : naturalHeight;
+  const policyEnabled = Boolean(presentation?.viewportPolicy);
+  const policyMin = presentation?.viewportPolicy?.minScale;
+  const policyMax = presentation?.viewportPolicy?.maxScale;
+  const policyOverscan = presentation?.viewportPolicy?.overscan;
+  const cameraPolicy = useMemo(() => {
+    if (!policyEnabled) return null;
+    const minScale = Math.max(.1, Number.isFinite(policyMin) ? policyMin : .5);
+    return { minScale, maxScale: Math.max(minScale, Number.isFinite(policyMax) ? policyMax : MAX_MAP_SCALE), overscan: Math.max(0, Math.min(.5, Number.isFinite(policyOverscan) ? policyOverscan : .22)) };
+  }, [policyEnabled, policyMin, policyMax, policyOverscan]);
+  const minimumScale = cameraPolicy?.minScale ?? MIN_MAP_SCALE, maximumScale = cameraPolicy?.maxScale ?? MAX_MAP_SCALE;
+  const zoomedOutPresentation = Boolean(cameraPolicy && viewport.scale < 1);
+  useEffect(() => { presentation?.onViewportChange?.(viewport); }, [viewport, presentation?.onViewportChange]);
   const fit = fitMapViewport(width, height, narrow
     ? { x: 0, y: 140, width: WORLD_WIDTH, height: 425 }
     : { x: 0, y: 0, width: WORLD_WIDTH, height: WORLD_HEIGHT });
   const mapTransform = `translate(${(viewport.x + (viewport.scale - 1) * fit.x) / fit.scale} ${(viewport.y + (viewport.scale - 1) * fit.y) / fit.scale}) scale(${viewport.scale})`;
   const zoom = useCallback((factor, anchor, animate = true) => {
     setAnimateView(animate);
-    setViewport(current => zoomAt(current, factor, anchor, { width, height }));
-  }, [width, height]);
+    setViewport(current => zoomPresentedViewport(current, factor, anchor, { width, height }, cameraPolicy));
+  }, [width, height, cameraPolicy]);
   const fitAll = () => { setAnimateView(true); setViewport({ x: 0, y: 0, scale: 1 }); };
   // Each landing/setup/size starts with every domain in view. Source updates
   // preserve a deliberate zoom because they do not change the canvas bounds.
   useEffect(() => {
+    const sameSetup = previousViewportSetup.current === setupId;
+    previousViewportSetup.current = setupId;
+    const measured = cameraPolicy && ref.current ? ref.current.getBoundingClientRect() : null;
+    const cameraSize = measured?.width > 0 && measured?.height > 0 ? { width: measured.width, height: measured.height } : { width, height };
     drag.current = null; setDragging(false); setAnimateView(false);
-    setViewport({ x: 0, y: 0, scale: 1 }); setHighlight(null);
-  }, [setupId, width, height]);
+    setViewport(current => presentation?.preserveViewportOnResize && sameSetup
+      ? clampPresentedViewport(current, cameraSize, cameraPolicy)
+      : { x: 0, y: 0, scale: 1 }); setHighlight(null);
+  }, [setupId, width, height, presentation?.preserveViewportOnResize, cameraPolicy, ref]);
   useEffect(() => {
     const element = ref.current;
     if (!element) return undefined;
@@ -359,19 +419,21 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
       const x = point.x * current.scale + current.x, y = point.y * current.scale + current.y;
       const dx = x < margin ? margin - x : x > width - margin ? width - margin - x : 0;
       const dy = y < margin ? margin - y : y > height - margin ? height - margin - y : 0;
-      return dx || dy ? panBy(current, dx, dy, { width, height }) : current;
+      return dx || dy ? panPresentedViewport(current, dx, dy, { width, height }, cameraPolicy) : current;
     });
   };
   const mapPoint = point => ({ x: point.x * fit.scale + fit.x, y: point.y * fit.scale + fit.y });
   const panStart = event => {
-    if (event.button !== 0 || viewport.scale <= MIN_MAP_SCALE || event.target.closest?.('.wan-map-node,hbr-button,.wan-world-route,.wan-world-pin,.wan-world-zoom')) return;
+    const interactivePath = cameraPolicy && (event.nativeEvent?.composedPath?.() || event.composedPath?.() || []).some(element =>
+      element?.matches?.('button,hbr-button,a,input,select,textarea,[role="button"],.wan-world-zoom,.wan-map-node,.wan-world-pin,.wan-world-route'));
+    if (event.button !== 0 || (!cameraPolicy && viewport.scale <= MIN_MAP_SCALE) || interactivePath || event.target.closest?.('.wan-map-node,hbr-button,.wan-world-route,.wan-world-pin,.wan-world-zoom')) return;
     drag.current = { id: event.pointerId, x: event.clientX, y: event.clientY, viewport };
     event.currentTarget.setPointerCapture?.(event.pointerId);
     setAnimateView(false); setDragging(true); setHighlight(null);
   };
   const panMove = event => {
     const start = drag.current;
-    if (start?.id === event.pointerId) setViewport(panBy(start.viewport, event.clientX - start.x, event.clientY - start.y, { width, height }));
+    if (start?.id === event.pointerId) setViewport(panPresentedViewport(start.viewport, event.clientX - start.x, event.clientY - start.y, { width, height }, cameraPolicy));
   };
   const panEnd = event => {
     if (drag.current?.id !== event.pointerId) return;
@@ -385,7 +447,7 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
     else if (event.key === '0' || event.key === 'Home') { event.preventDefault(); fitAll(); }
     else if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(event.key)) {
       event.preventDefault(); setAnimateView(false);
-      setViewport(current => panBy(current, event.key === 'ArrowLeft' ? 48 : event.key === 'ArrowRight' ? -48 : 0, event.key === 'ArrowUp' ? 48 : event.key === 'ArrowDown' ? -48 : 0, { width, height }));
+      setViewport(current => panPresentedViewport(current, event.key === 'ArrowLeft' ? 48 : event.key === 'ArrowRight' ? -48 : 0, event.key === 'ArrowUp' ? 48 : event.key === 'ArrowDown' ? -48 : 0, { width, height }, cameraPolicy));
     }
   };
   const highlight = hovered || spotlight;
@@ -395,72 +457,83 @@ function WorldMap({ nodes, bundles, state, onNavigate, onConnection, spotlight }
   const cardWidth = Math.min(206, Math.max(176, width * .22));
   const baseCards = layout.nodes.map(node => ({ ...node,
     x: Math.max(cardWidth / 2 + 8, Math.min(width - cardWidth / 2 - 8, node.x / WORLD_WIDTH * width)),
-    y: node.y / WORLD_HEIGHT * height, width: cardWidth, height: 80,
+    y: presentation?.canvasHeight ? Math.max(48, Math.min(height - 48, node.y / WORLD_HEIGHT * height)) : node.y / WORLD_HEIGHT * height, width: cardWidth, height: 80,
   }));
   const byId = new Map(baseCards.map(node => [node.id, node]));
   const positioned = baseCards.map(node => ({ ...node, x: node.x * viewport.scale + viewport.x, y: node.y * viewport.scale + viewport.y }));
   const condition = id => {
+    if (presentation) return presentation.getDomainCondition?.(id) || 'unknown';
     const summary = summarize(state, domainDevices(id));
     return summary.critical ? 'critical' : summary.alarms || incidents.some(incident => incident.domainId === id) ? 'major' : summary.stale ? 'unknown' : 'normal';
   };
+  const nodeLabel = id => presentation ? nodes.find(node => node.id === id)?.label || id : domainLabel(id);
   const activate = (event, action) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); action(); } };
-  const card = node => <HierarchyCard key={`${setupId}:${node.id}`} node={node} kind="domain" state={state} incidents={incidents}
+  const card = node => presentation ? <Fragment key={`${setupId}:${node.id}`}>{presentation.renderNode?.(node, {
+    focused: Boolean(highlight && relatedNode(node.id)),
+    muted: Boolean(highlight && !relatedNode(node.id) && !presentation.getNodeAlert?.(node.id)),
+    onReveal: !narrow && !zoomedOutPresentation && byId.has(node.id) ? () => reveal(byId.get(node.id), cardWidth / 2 + 8) : undefined,
+    onHighlight: setHighlight,
+  })}</Fragment> : <HierarchyCard key={`${setupId}:${node.id}`} node={node} kind="domain" state={state} incidents={incidents}
     onNavigate={onNavigate} onHighlight={setHighlight} focused={Boolean(highlight && relatedNode(node.id))}
     onReveal={!narrow && byId.has(node.id) ? () => reveal(byId.get(node.id), cardWidth / 2 + 8) : undefined}
     muted={Boolean(highlight && !relatedNode(node.id) && !summarize(state, domainDevices(node.id)).alarms)}/>;
 
   return <hbr-layout direction="column" gap="lg" class="wan-world-view">
-    <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={state.frame}
-      data-zoom={viewport.scale} data-zoomed={viewport.scale > MIN_MAP_SCALE} data-dragging={dragging} data-animate={animateView && !dragging}
+    <div ref={ref} className="wan-world-viewport" data-narrow={narrow} data-wan-setup={setupId} data-source-frame={presentation ? presentation.sourceFrame ?? state?.frame : state.frame}
+      data-zoom={viewport.scale} data-zoomed={viewport.scale > MIN_MAP_SCALE} data-pannable={cameraPolicy ? true : undefined} data-dragging={dragging} data-animate={animateView && !dragging}
       style={{ height }} role="group" tabIndex={0}
-      aria-label="WAN map canvas. Plus and minus zoom; arrow keys pan; Home resets. Control or Command plus scroll zooms at the pointer. Domain locations are illustrative; connections come from network inventory."
+      aria-label={presentation?.canvasLabel || 'WAN map canvas. Plus and minus zoom; arrow keys pan; Home resets. Control or Command plus scroll zooms at the pointer. Domain locations are illustrative; connections come from network inventory.'}
       onPointerDown={panStart} onPointerMove={panMove} onPointerUp={panEnd} onPointerCancel={panEnd} onLostPointerCapture={panEnd} onKeyDown={keyboard}>
       <svg className="wan-world-svg" viewBox={narrow ? '0 140 1000 425' : `0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`} preserveAspectRatio="xMidYMid meet" role="group" aria-label="Geographic anchors and logical network connections">
         <defs><linearGradient id={gradientId} x1="30" x2="970" y1="0" y2="0" gradientUnits="userSpaceOnUse"><stop offset="0" className="wan-world-gradient-west"/><stop offset=".6" className="wan-world-gradient-center"/><stop offset="1" className="wan-world-gradient-east"/></linearGradient></defs>
         <g className="wan-world-scene" transform={mapTransform}>
         <g className="wan-world-land" aria-hidden="true">{LAND.map((path, index) => <path key={index} d={path} fill={`url(#${gradientId})`}/>)}</g>
-        {!narrow && <g className="wan-world-leaders" aria-hidden="true">{layout.nodes.flatMap(node => {
+        {!narrow && !zoomedOutPresentation && showDomainCards && <g className="wan-world-leaders" aria-hidden="true">{layout.nodes.flatMap(node => {
           const placed = byId.get(node.id);
-          const cardX = placed.x / width * WORLD_WIDTH, cardY = placed.y / height * WORLD_HEIGHT;
-          const edgeY = cardY + (node.anchor.y > cardY ? 1 : -1) * 40 / height * WORLD_HEIGHT / viewport.scale;
+          const cardX = presentation ? (placed.x - fit.x) / fit.scale : placed.x / width * WORLD_WIDTH;
+          const cardY = presentation ? (placed.y - fit.y) / fit.scale : placed.y / height * WORLD_HEIGHT;
+          const edgeY = cardY + (node.anchor.y > cardY ? 1 : -1) * (presentation ? 40 / fit.scale : 40 / height * WORLD_HEIGHT) / viewport.scale;
           return node.anchors.map((anchor, index) => <path key={`${node.id}:${index}`} data-muted={Boolean(highlight && !relatedNode(node.id))} data-multi={node.multiRegion} d={`M ${cardX} ${edgeY} Q ${cardX + (anchor.x - cardX) * .3} ${(edgeY + anchor.y) / 2} ${anchor.x} ${anchor.y}`}/>);
         })}</g>}
         <g className="wan-world-routes">{layout.routes.map(route => {
-          const summary = bundleSummary(state, route.id);
-          const label = `Inspect ${domainLabel(route.from)} to ${domainLabel(route.to)}, ${plural(summary.total, 'member link')}, ${plural(summary.active, 'active alarm')}${summary.unavailable ? `, ${plural(summary.unavailable, 'member')} without current observations` : ''}`;
+          const summary = presentation ? presentation.getRouteSummary?.(route.id) || { total: 0, active: 0, unavailable: 0 } : bundleSummary(state, route.id);
+          const label = presentation ? presentation.getRouteLabel?.(route) || `Inspect ${nodeLabel(route.from)} to ${nodeLabel(route.to)} logical connection` : `Inspect ${domainLabel(route.from)} to ${domainLabel(route.to)}, ${plural(summary.total, 'member link')}, ${plural(summary.active, 'active alarm')}${summary.unavailable ? `, ${plural(summary.unavailable, 'member')} without current observations` : ''}`;
           return <g key={route.id} className="wan-world-route" role="button" tabIndex={0} aria-label={label}
             data-corridor={route.id} data-condition={summary.active ? 'major' : 'normal'} data-stale={summary.unavailable > 0}
             data-emphasized={Boolean(highlight && relatedRoute(route))} data-muted={Boolean(highlight && !relatedRoute(route) && !summary.active)}
             onPointerEnter={() => setHighlight(route.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => { setHighlight(route.id); reveal(mapPoint(route.midpoint)); }} onBlur={() => setHighlight(null)}
             onClick={() => onConnection({ kind: 'domain', id: route.id })} onKeyDown={event => activate(event, () => onConnection({ kind: 'domain', id: route.id }))}>
             <title>{`${label}. Lines show logical connectivity, not physical cable paths.`}</title>
-            <path className="wan-world-route-hit" d={route.d}/><path className="wan-world-route-line" d={route.d}/>
-            {!summary.unavailable && <path className="wan-world-route-travel" d={route.d} pathLength="100" style={{ animationDelay: `${-layout.routes.indexOf(route) * 1.3}s` }}/>}
+            <path className="wan-world-route-hit" d={route.d}/><path className="wan-world-route-line" d={route.d} pathLength={presentation?.animatePresentation ? 100 : undefined}/>
+            {!summary.unavailable && presentation?.animateTraffic !== false && <path className="wan-world-route-travel" d={route.d} pathLength="100" style={{ animationDelay: `${-layout.routes.indexOf(route) * 1.3}s` }}/>}
           </g>;
         })}</g>
         <g className="wan-world-pins">{layout.nodes.flatMap(node => node.anchors.map((anchor, index) => <g key={`${node.id}:${index}`} className="wan-world-pin" data-condition={condition(node.id)} data-selected={Boolean(highlight && relatedNode(node.id))} data-multi={node.multiRegion}
-          role="button" tabIndex={0} aria-label={`Open ${domainLabel(node.id)} device groups. Illustrative ${node.multiRegion ? 'multi-location domain' : 'location'}: ${anchor.label}.`}
+          style={presentation?.animatePresentation ? { '--network-stagger': `${Math.max(0, nodes.findIndex(item => item.id === node.id)) * 80}ms` } : undefined}
+          role="button" tabIndex={0} aria-label={presentation?.getDomainActionLabel?.(node, anchor) || `Open ${nodeLabel(node.id)} device groups. Illustrative ${node.multiRegion ? 'multi-location domain' : 'location'}: ${anchor.label}.`}
+          aria-pressed={presentation?.getDomainPressed?.(node.id)}
           onPointerEnter={() => setHighlight(node.id)} onPointerLeave={() => setHighlight(null)} onFocus={() => { setHighlight(node.id); reveal(mapPoint(anchor)); }} onBlur={() => setHighlight(null)}
           onClick={() => onNavigate('domain', node.id)} onKeyDown={event => activate(event, () => onNavigate('domain', node.id))}>
-          <title>{`${domainLabel(node.id)} · ${anchor.label} · Illustrative placement`}</title>
+          <title>{presentation?.getDomainTitle?.(node, anchor) || `${nodeLabel(node.id)} · ${anchor.label} · Illustrative placement`}</title>
           <circle className="wan-world-pin-target" cx={anchor.x} cy={anchor.y} r={Math.max(19, 18 / fit.scale) / viewport.scale}/>
           <circle className="wan-world-pin-halo" cx={anchor.x} cy={anchor.y} r={(node.multiRegion ? 10 : 15) / viewport.scale}/>
           <circle className="wan-world-pin-core" cx={anchor.x} cy={anchor.y} r={(node.multiRegion ? 4 : 7) / viewport.scale}/>
-          {narrow && index === 0 && <text className="wan-world-pin-label" style={{ fontSize: Math.max(18, 12000 / width) / viewport.scale }} x={anchor.x} y={anchor.y + 38 / viewport.scale} textAnchor="middle">{node.label}</text>}
+          {(narrow || zoomedOutPresentation) && index === 0 && <text className="wan-world-pin-label" style={{ fontSize: Math.max(18, 12000 / width) / viewport.scale }} x={anchor.x} y={anchor.y + 38 / viewport.scale} textAnchor="middle">{node.label}</text>}
+          {presentation?.renderDomainAdornment?.(node, anchor, { index, scale: viewport.scale, fitScale: fit.scale })}
         </g>))}</g>
         </g>
       </svg>
-      {!narrow && <div className="wan-world-cards">{positioned.map(card)}</div>}
+      {!narrow && !zoomedOutPresentation && showDomainCards && <div className="wan-world-cards">{positioned.map(card)}</div>}
       <div className="wan-world-zoom" role="group" aria-label="Map zoom controls">
-        <hbr-tooltip content="Zoom out" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom out map" disabled={viewport.scale <= MIN_MAP_SCALE} onClick={() => zoom(1 / 1.25)}><hbr-icon name="minus" aria-hidden="true"/></hbr-button></hbr-tooltip>
+        <hbr-tooltip content="Zoom out" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom out map" disabled={viewport.scale <= minimumScale} onClick={() => zoom(1 / 1.25)}><hbr-icon name="minus" aria-hidden="true"/></hbr-button></hbr-tooltip>
         <output className="wan-world-zoom-value" aria-label="Map zoom" aria-live="polite">{Math.round(viewport.scale * 100)}%</output>
-        <hbr-tooltip content="Zoom in" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom in map" disabled={viewport.scale >= MAX_MAP_SCALE} onClick={() => zoom(1.25)}><hbr-icon name="plus" aria-hidden="true"/></hbr-button></hbr-tooltip>
+        <hbr-tooltip content="Zoom in" placement="top" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Zoom in map" disabled={viewport.scale >= maximumScale} onClick={() => zoom(1.25)}><hbr-icon name="plus" aria-hidden="true"/></hbr-button></hbr-tooltip>
         <hbr-tooltip content="Fit all domains · Ctrl/⌘ + scroll to zoom · Drag to pan" placement="top-end" hoist dismissOnClick><hbr-button size="small" variant="outline" arialabel="Fit all domains" onClick={fitAll}><hbr-icon name="crosshair" aria-hidden="true"/></hbr-button></hbr-tooltip>
       </div>
     </div>
-    <div className="wan-world-caption"><hbr-text size="xs" type="secondary">Real world geography · Illustrative domain locations</hbr-text><hbr-text size="xs" type="secondary">{plural(layout.routes.length, 'logical connection')}</hbr-text></div>
-    {(narrow || layout.unplaced.length > 0) && <div className="wan-world-domain-list" role="group" aria-label="Domains in the world view">{(narrow ? [...layout.nodes, ...layout.unplaced] : layout.unplaced).map(card)}</div>}
-    {layout.unplaced.length > 0 && <hbr-text size="xs" type="secondary">{plural(layout.unplaced.length, 'domain')} without a geographic placement. All connections remain available below.</hbr-text>}
+    {presentation?.showCaption !== false && <div className="wan-world-caption"><hbr-text size="xs" type="secondary">Real world geography · Illustrative domain locations</hbr-text><hbr-text size="xs" type="secondary">{plural(layout.routes.length, 'logical connection')}</hbr-text></div>}
+    {((showDomainCards && (narrow || zoomedOutPresentation)) || layout.unplaced.length > 0) && <div className="wan-world-domain-list" role="group" aria-label="Domains in the world view">{(showDomainCards && (narrow || zoomedOutPresentation) ? [...layout.nodes, ...layout.unplaced] : layout.unplaced).map(card)}</div>}
+    {layout.unplaced.length > 0 && <hbr-text size="xs" type="secondary">{plural(layout.unplaced.length, 'domain')} without a geographic placement. {presentation ? 'No location is inferred.' : 'All connections remain available below.'}</hbr-text>}
   </hbr-layout>;
 }
 
