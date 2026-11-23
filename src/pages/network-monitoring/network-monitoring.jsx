@@ -16,6 +16,7 @@ import { WORKFORCE_SCENES } from '../../features/workforce/workforce-model.js';
 import PreviousWorkforce from '../../features/workforce-history/PreviousWorkforce.jsx';
 import CombinedDashboard from '../../features/combined/CombinedDashboard.jsx';
 import CombinedBaseline from '../../features/combined-baseline/CombinedDashboard.jsx';
+import CombinedExperienceOverview from '../../features/combined/overview/CombinedExperienceOverview.jsx';
 import { COMBINED_SCENES, COMBINED_VARIANTS, getCombinedSnapshot } from '../../features/combined/combined-model.js';
 import { EXPLORATION_OPTIONS, explorationLabel, getExplorationOption } from '../../features/explorations/options.js';
 import { FRAMES, currentFrame, reduce } from '../../features/wan/model/model.js';
@@ -78,7 +79,7 @@ export default function NetworkMonitoring() {
   const overviewTriggerRef = useRef(null), resumePreviewRef = useRef(false), previousDialogRef = useRef(null);
 
   useEffect(() => {
-    if (previousDialogRef.current === 'overview' && dialog !== 'overview') overviewTriggerRef.current?.setFocus();
+    if (['overview', 'combined-overview'].includes(previousDialogRef.current) && dialog !== previousDialogRef.current) overviewTriggerRef.current?.setFocus();
     previousDialogRef.current = dialog;
   }, [dialog]);
 
@@ -174,7 +175,7 @@ export default function NetworkMonitoring() {
     </div>
     {view === 'home' && <OperationsDashboard key={setup} state={state} onOpen={openResponse} onInspect={setEvidence} onAction={agentAction}/>}
     </>}
-    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label={`Preview controls. Viewing ${explorationLabel(activeOption)}`} data-preview-controls="true" data-iteration-cue={activeOption.cue} aria-hidden={dialog === 'overview' ? 'true' : undefined}>
+    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label={`Preview controls. Viewing ${explorationLabel(activeOption)}`} data-preview-controls="true" data-iteration-cue={activeOption.cue} aria-hidden={dialog === 'overview' || dialog === 'combined-overview' ? 'true' : undefined}>
       <hbr-dropdown hoist menu placement="top-start" distance="12" className="wan-exploration-switch">
         <hbr-button slot="trigger" size="small" variant="outline" caret aria-label="Switch exploration">{explorationLabel(activeOption)}</hbr-button>
         <hbr-menu onhbr-select={event => switchExploration(event.detail?.item?.value)}>
@@ -183,6 +184,7 @@ export default function NetworkMonitoring() {
         </hbr-menu>
       </hbr-dropdown>
       {isAlternative ? <>
+        {exploration === 'combined' && <hbr-button ref={overviewTriggerRef} className="wan-overview-launch" size="small" variant="outline" onClick={() => { resumePreviewRef.current = combinedPlaying; setCombinedPlaying(false); setDialog('combined-overview'); }}><hbr-icon name="eye" slot="prefix"/>Experience overview</hbr-button>}
         {isCombined && <>
           <span className="wan-review-label">Simulated</span>
           <hbr-dropdown hoist menu placement="top-start" distance="12"><hbr-button slot="trigger" size="small" variant="text" caret aria-label="Choose combined story state">{COMBINED_SCENES[combinedSnapshot.scene]?.shortTitle}</hbr-button><hbr-menu onhbr-select={event => changeCombinedScene(Number(event.detail?.item?.value))}>{COMBINED_SCENES.map(scene => <hbr-menu-item key={scene.id} value={String(scene.id)}>{scene.shortTitle}</hbr-menu-item>)}</hbr-menu></hbr-dropdown>
@@ -219,6 +221,7 @@ export default function NetworkMonitoring() {
     </div> : <hbr-button className="wan-review-reopen" size="small" variant="outline" aria-label={`Open preview controls. Viewing ${explorationLabel(activeOption)}`} onClick={() => setReviewVisible(true)}>Preview · {activeOption.shortLabel || explorationLabel(activeOption)}</hbr-button>, document.body)}
     <EvidenceModal state={state} selection={evidence} onClose={() => setEvidence(null)} onInspect={setEvidence}/>
     {dialog === 'overview' && <ExperienceOverview onClose={() => { setDialog(null); setPlaying(resumePreviewRef.current); }}/>}
+    {dialog === 'combined-overview' && <CombinedExperienceOverview onClose={() => { setDialog(null); setCombinedPlaying(resumePreviewRef.current); }}/>}
     {dialog === 'review' && <ReviewModal state={state} onClose={() => setDialog(null)} onFrame={frameChange} onSource={sourceAction} onPlay={() => { setState(s => ({ ...s, history: null })); setPlaying(true); setDialog(null); }}/>}
   </div>;
 }

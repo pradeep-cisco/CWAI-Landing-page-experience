@@ -14,6 +14,8 @@ The World view always uses the detailed geographic presentation, with native dom
 
 The page flows in three rows: **full-width network overview → Attention and Actions in two equal columns → full-width Activity**. Attention precedes Actions when the second row stacks on a small screen. The Home title and the entire Production / All permitted domains / UTC row are removed.
 
+Attention, Actions and Activity are open sections without outer container surfaces. Their individual native decision, action and job cards remain. Small native status tags summarize the displayed jobs with subtle sentiment tints, icons and tabular counts; zero-count categories are omitted.
+
 The network stays detailed, with no Expand/Collapse action. Its camera persists through source and layout updates rather than repeatedly fitting the whole world. Dragging at the current scale and explicit zoom-out provide access to domains outside the view; Fit all remains a deliberate control. Selecting scope or reviewing a job preserves the camera and does not confer authority. A transient new-attention cue can still surface a consequential change while the user reads elsewhere.
 
 Activity is the entire job panel, not a second chronological ticker. Each native job card retains its title, scope, actual checkpoint/status, and inspection. Supporting snapshot facts appear automatically in place with a short transition. Hover/focus, reduced motion, source interruption, offscreen state, and a pause control prevent movement from displacing reading. No staged update authorizes a plan or advances execution. Supplied source times remain source times; missing event times are not replaced by a fictional live clock.
@@ -24,7 +26,15 @@ Horizontal native Magnetic progress bars represent confirmed checkpoints with st
 
 Attention, Activity, and Actions remain the three operating jobs. The ribbon supplies network orientation and relevant observed scope. Minimalism means showing consequential summaries clearly, retaining important work, and revealing supporting detail in context. The page can grow vertically; it does not impose a first-fold content limit.
 
-The stable reading order is overview → Attention and Actions → Activity. Native Magnetic Container cards, typography, progress bars, buttons, tags, and focus treatments retain the One CD midnight language. The network graphic and work associations are custom content inside those surfaces.
+The stable reading order is overview → Attention and Actions → Activity. Native Magnetic cards, typography, progress bars, buttons, tags, and focus treatments retain the One CD midnight language. The network graphic and work associations are custom content.
+
+## Experience overview
+
+The current Option 3 floating panel includes **Experience overview**, a six-slide interactive presentation. Its light editorial style follows the existing Option 1 overview and is deliberately separate from the dark product UI. The six outcomes are: start with current work, understand the page layout, interpret findings from evidence, make a scoped review decision, follow independent jobs, and confirm the resulting state.
+
+The slides include selectable layout areas, unexpected/expected/missing-evidence comparisons, authorization/hold/revision choices, independent job checkpoints and pending/verified outcome evidence. They are self-contained illustrations: interactions never alter dashboard jobs, network scope, authority or controller state. Submitted decisions, confirmed authorization, acknowledged execution, completion and verified outcomes remain distinct. A delegated reviewer is required for the illustrated production correction.
+
+Opening the overview pauses the deterministic story runner and closing it restores prior playback and launcher focus. Arrow keys, Home/End, slide navigation, Escape, motion pause, reduced-motion preferences and a scrollable narrow-screen layout are supported. The Option 1 presentation and preserved Combined baseline are unchanged.
 
 ## Implemented interactions
 
