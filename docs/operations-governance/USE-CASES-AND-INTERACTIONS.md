@@ -1,27 +1,31 @@
 # Crosswork AI — operations and governance
 
-Updated: 2026-11-20. Status: **Design specification with an interactive Combined concept implemented for review.** The target use cases extend beyond the representative fixture; implementation scope and stable option names are recorded in [dashboard iteration cues](../exploration-options.md). The prior Operations and Governance explorations remain available.
+Updated: 2026-11-23. Status: **Design specification with an interactive Combined concept implemented for review.** Outcomes and the target story are defined in [outcomes and story](OUTCOMES-AND-STORY.md); each use case below names the outcomes (OC1–OC8) it serves. The prototype's main story now includes the agent line, authority tags, the T1 escalation and restriction (use case 11), the prevented request (use case 12), and authority links on records (use case 13). The new governance branches (autonomous recovery, compliance unconfirmed, lacks authority, restriction lifted) and use case 9 for agent decisions are not yet in the prototype. The target use cases extend beyond the representative fixture; implementation scope and stable option names are recorded in [dashboard iteration cues](../exploration-options.md). The prior Operations and Governance explorations remain available.
 
 The current layout iteration is [Combined — Network ribbon](NETWORK-RIBBON.md). It adds linked network context above the three work regions while preserving the previous Combined layout as a separately selectable baseline.
 
 ## Purpose
 
-Help an operator understand consequential network work, make the decisions that require their authority, and see agents carry the work through to an evidenced result. Operations supplies the purpose and result. Governance supplies the authority, constraints, and accountability attached to that same work.
+Help one person who is accountable for network outcomes and for the AI agents that produce them. They understand consequential network work, make the decisions that require their authority, rely on agents they can trust, and see the work carried through to an evidenced result. Operations supplies the purpose and result. Governance supplies the authority, constraints, agent reliability, and accountability attached to that same work.
 
-The operator remains in the loop at defined decisions. Agents continue the permitted technical work between those decisions. A governance role does not itself grant permission to change production network configuration.
+The person remains in the loop at defined decisions. Agents continue the permitted technical work between those decisions. This page assumes the person holds two separate kinds of authority: **change authority** over specific network proposals and **governance authority** over what agents may do. Each decision states which kind it needs; one never implies the other. Persona-specific views for people holding only one kind are a later exploration.
 
 This direction carries forward the principles of the [workforce exploration](../ai-admin-governor/README.md): continuous shared work, meaningful live changes, progressive detail, stable reading context, and verified outcomes. It introduces a separate combined story rather than replacing the existing story fixtures.
 
-## Operator outcomes
+## Outcomes
 
-| Outcome | What the operator should be able to say |
-| --- | --- |
-| **Understand work** | I know which jobs matter, their current stage, and what is constraining them. |
-| **Understand findings** | I know what changed, why it matters, and what the evidence does and does not establish. |
-| **Make decisions** | I can authorize a specific proposal, request revision, or hold it within my actual permissions. |
-| **Supervise execution** | I can see work proceed within its authority and recognize when conditions require another decision. |
-| **Trust results** | I can distinguish a submitted decision, an executed operation, and a verified outcome. |
-| **Continue oversight** | I can follow several independent jobs without losing unresolved work, context, or responsibility. |
+The full definitions, review checks, and anti-outcomes are in [outcomes and story](OUTCOMES-AND-STORY.md).
+
+| ID | Outcome | What the person should be able to say |
+| --- | --- | --- |
+| **OC1** | Know the current state of network and work | I know where the network needs attention, which jobs matter, who is doing them, and what is constraining each one. |
+| **OC2** | Understand what a finding means | I know what changed, whether it is expected, drift, or an incident, and what the evidence does and does not establish. |
+| **OC3** | Make the decisions that need my authority | I see only the decisions that need me, which authority each needs, and exactly what I am deciding. |
+| **OC4** | Supervise execution within bounds | I see agents act inside what was authorized, and I know when a boundary stopped something or another decision is needed. |
+| **OC5** | Trust results | I know what changed, whether it achieved the intended result, and what remains unproven. |
+| **OC6** | Rely on the agents | I know which agents and capabilities I can rely on, which are deteriorating, and how that affects the work. |
+| **OC7** | Stay accountable | I can show who did what, under which authority, and what it established — and I know when that trace is incomplete. |
+| **OC8** | Keep oversight as work grows or is interrupted | I keep track of all permitted unresolved work, even when there is a lot of it, nothing is happening, or my data is stale. |
 
 ## Minimal composition
 
@@ -53,11 +57,13 @@ Attention, Activity, and Actions answer different questions: **What requires a d
 
 The example carries three independent jobs through the same period. Labels and resources below are illustrative.
 
-| Job | Purpose | Independent condition |
-| --- | --- | --- |
-| **A** | Assess a configuration difference on router XR-R07; restore approved routing intent if a correction is justified. | The configured policy requires an authorized reviewer for this class of production correction. |
-| **B** | Check recent configuration changes in another scope. | Read-only assessment can complete under existing authority. Its findings and result belong to its own scope. |
-| **C** | Investigate intermittent reachability in another scope. | A required archived event source is unavailable to the job. The executing agent can still be healthy. |
+| Job | Purpose | Accountable agent | Independent condition |
+| --- | --- | --- | --- |
+| **A** | Assess a configuration difference on router XR-R07; restore approved routing intent if a correction is justified. | Remediation agent R1 | The configured policy requires an authorized reviewer for this class of production correction. |
+| **B** | Check recent configuration changes in another scope. | Config Drift agent D1 | Read-only assessment can complete under existing authority. Its findings and result belong to its own scope. |
+| **C** | Investigate intermittent reachability in another scope. | Network Troubleshooter T1 | A required archived event source is unavailable to the job. T1 is healthy at first; its collection capability later degrades (use cases 7 and 11). |
+
+Each job shows its accountable agent, version, and current health as one quiet line. The agent supports the job's purpose; it does not replace it as the row's lead.
 
 The letters are specification references, not prominent product labels. No job borrows evidence, approval, or success from another. The landing state is shared continuing work; arrival does not restart it or create a handover ritual.
 
@@ -65,11 +71,13 @@ The configuration story is one entry path into this experience. A service-led in
 
 ## Use case 1 — Understand work on arrival
 
+**Outcomes:** OC1, OC8.
+
 **Trigger:** The operator opens Home while the three jobs already exist.
 
 **Outcome:** Understand important work and genuine decisions without reconstructing every previous event.
 
-**Visual storyboard:** Render the current settled state. Activity shows three aligned rows with generous vertical breathing room. A reads **Assess routing configuration**, with **Assessing** and “Checking against approved intent.” B shows its own assessment checkpoint. C reads **Waiting for source access**, with the missing prerequisite named. Do not give the waiting row a failure accent merely because it is not progressing.
+**Visual storyboard:** Render the current settled state. Activity shows three aligned rows with generous vertical breathing room. A reads **Assess routing configuration**, with **Assessing** and “Checking against approved intent.” B shows its own assessment checkpoint. C reads **Waiting for source access**, with the missing prerequisite named. Do not give the waiting row a failure accent merely because it is not progressing. Each row carries one quiet agent line, for example “Network Troubleshooter T1 · v3.1 · Healthy”, so the person can tell a waiting job from an unhealthy agent without opening inspection.
 
 If no decision or material exception is present, Attention contains the compact line “No decisions require your review.” A material exception instead appears with its actual consequence and supported inspection/response; the quiet message does not replace it. Actions shows only existing consequential records, or a short empty state. There is no compulsory welcome hero, KPI strip, or replay of earlier job stages.
 
@@ -81,13 +89,15 @@ If no decision or material exception is present, Attention contains the compact 
 
 ## Use case 2 — Understand what a finding means
 
+**Outcomes:** OC2.
+
 **Trigger:** A configuration assessment finds a difference on XR-R07.
 
 **Outcome:** Understand whether this is expected change, unexpected drift, or an unresolved finding before considering corrective work.
 
 **Agent work:** Compare against authoritative current intent; check baseline currency, matching authorized change records, relevant relationships, and current observations. A knowledge-graph relationship supplies context, not proof of cause. A difference, confirmed drift, an incident, service impact, and a proven cause remain separate classifications.
 
-**Visual storyboard:** The same Activity row updates in place. Initially it says **Assessing**. Once supported, the checkpoint becomes “Drift confirmed against approved routing intent.” If a correction becomes the job's agreed purpose, its title changes to **Restore approved routing intent**, retaining its identity and inspection history. Use an incident label only if configured incident criteria are met.
+**Visual storyboard:** The same Activity row updates in place. Initially it says **Assessing**. Once supported, the checkpoint becomes “Drift confirmed against approved routing intent.” If a correction becomes the job's agreed purpose, its title changes to **Restore approved routing intent**, retaining its identity and inspection history. Use an incident label only if configured incident criteria are met. (The prototype opens on the arrival scene in **Assessing**; INC-104 appears from the Review scene.)
 
 Inside inspection, lead with a short finding and the observation that supports it. Put the relevant comparison immediately below. Add a compact **Context** view only when relationships help: the relevant configuration, router, interface, and service entities, using the existing knowledge-graph type mapping and actual returned relationship labels. Start with the entities needed for this finding; expand to the Admin explorer for broader analysis. Do not reproduce the full graph on Home.
 
@@ -99,11 +109,13 @@ Inside inspection, lead with a short finding and the observation that supports i
 
 ## Use case 3 — Review a bounded response
 
+**Outcomes:** OC3.
+
 **Trigger:** Agents prepare a corrective proposal for A, and the applicable policy requires a human decision.
 
 **Outcome:** Make a meaningful decision about a specific change while agents retain the technical work.
 
-**Visual storyboard:** Attention gains a compact Basic card titled **Review configuration response**. The supporting line explains the actual gate: “Production correction requires your review.” Show the scope and **Review plan**. Do not expose an approval button before the proposal can be inspected. Keep A in Activity with **Review required**; its checkpoint can say “Corrective plan prepared” rather than repeating the Attention card.
+**Visual storyboard:** Attention gains a compact Basic card titled **Review configuration response**. The supporting line explains the actual gate: “Production correction requires your review.” A small **Change** tag names the authority type, distinguishing it from a **Governance** decision about an agent (use case 11). Show the scope and **Review plan**. Do not expose an approval button before the proposal can be inspected. Keep A in Activity with **Review required**; its checkpoint can say “Corrective plan prepared” rather than repeating the Attention card.
 
 **Review plan** expands an attached review block. Its first view contains the intended result, exact resources, proposal version, and the concrete change. Follow with supporting evidence, validation results and uncertainty, permitted limits, and the verification criteria. Put available stop/recovery behavior, consequence of holding, and any supplied validity condition beside the decision. A reader must not need to open optional history to understand what they are authorizing.
 
@@ -118,6 +130,8 @@ When confirmation arrives, retain the inspected decision and show its confirmed 
 **Completion and alternatives:** A permitted choice is confirmed against a particular proposal. If this viewer lacks authority, show that constraint and the supported review route without offering a live authorization action. Another reviewer's decision, an expired proposal, or a changed scope follows use case 9. Apply additional confirmation only where the actual action or policy requires it; do not insert a generic second approval screen into every review.
 
 ## Use case 4 — Supervise authorized execution
+
+**Outcomes:** OC4, OC7.
 
 **Trigger:** A's exact proposal receives effective authorization.
 
@@ -137,7 +151,11 @@ The other rows retain their independent states. B may complete while A is checki
 
 Distinguish **Rejected before execution**, **Execution failed**, and **Partially applied** according to the controller's actual status contract. Preserve confirmed changes and observed effects; failure does not establish that nothing changed. Assess the resulting state before selecting supported recovery, with fresh authority where required. If execution status is unknown, show **Execution status unknown** and reconcile the existing operation before a potentially duplicating write. Keep the uncertainty attached to the affected job.
 
+If an agent requests a governed write outside the authorized scope during execution, enforcement prevents it and no operation is issued. Record it in Actions as **Prevented request**, linked to the job; it creates no new decision unless policy requires one. Use case 12 defines the treatment.
+
 ## Use case 5 — Verify the result
+
+**Outcomes:** OC5.
 
 **Trigger:** The controller reports that A's operation completed.
 
@@ -157,13 +175,15 @@ Do not claim every service is healthy merely because one configuration matches. 
 
 ## Use case 6 — Understand results and continue
 
+**Outcomes:** OC5, OC6, OC8.
+
 **Trigger:** A's required outcome is verified while B is completed and C remains waiting.
 
 **Outcome:** Know what was achieved, how it was controlled, and what still requires oversight.
 
 **Visual storyboard:** A's row settles to **Verified**, with a result sentence scoped to the actual correction. Actions adds **Routing intent restored**, linked to its proof. This is visually distinct from the earlier authority and operation records. Keep the reviewed proposal, actor, authority, execution, and verification connected through the same work identity.
 
-B retains its own read-only assessment result. C remains visibly open with its actual missing prerequisite. Do not turn the entire page green, claim a global all-clear, or erase unresolved work because A succeeded.
+B retains its own read-only assessment result. C remains visibly open with its actual missing prerequisite. If an agent restriction is in effect (use case 11), C's agent line shows **Restricted** rather than Healthy, and a one-line note in Attention keeps the restriction discoverable. Do not turn the entire page green, claim a global all-clear, or erase unresolved work because A succeeded.
 
 **Microinteractions:** **Inspect result** opens the evidence and decision trace. When an actively inspected job completes, retain it in place. A deliberate **View completed work** route preserves access after it leaves the current working set. Closing inspection returns to the same context. On a later visit, load the current shared state without replaying the story.
 
@@ -172,6 +192,8 @@ B retains its own read-only assessment result. C remains visibly open with its a
 **Completion and alternatives:** The operator can explain the scoped result and locate its proof while still recognizing C's unresolved work. Partial verification remains partial. A later regression creates or updates the appropriate tracked work rather than rewriting the earlier observation as if it never happened.
 
 ## Use case 7 — Distinguish blocked work from unhealthy capability
+
+**Outcomes:** OC6.
 
 **Trigger:** C lacks a required source, or a capability becomes unreliable and affects active work or readiness.
 
@@ -185,15 +207,17 @@ Routine agent health stays in inspection or the appropriate management destinati
 
 **Motion:** Waiting is visually still. A confirmed dependency recovery updates the relevant checkpoint and resumes work only when the job actually resumes. Remove active progress cues when source loss prevents observing progress. Other independent work continues normally.
 
-**Completion and alternatives:** The prerequisite or capability is restored, the scope is revised under applicable authority, or the unresolved condition remains explicitly tracked. A healthy agent, accessible source, eligible assignment, and authorized operation are separate facts.
+**Completion and alternatives:** The prerequisite or capability is restored, the scope is revised under applicable authority, or the unresolved condition remains explicitly tracked. A healthy agent, accessible source, eligible assignment, and authorized operation are separate facts. While Crosswork AI is still recovering a degraded capability, Attention may carry a one-line **Being handled** note rather than a decision. When bounded recovery is exhausted and policy reserves the eligibility decision for this person, follow use case 11.
 
 ## Use case 8 — Supervise concurrent work at scale
+
+**Outcomes:** OC3, OC8.
 
 **Trigger:** Several jobs or decisions need attention at different stages, including pre-existing work from an earlier shift.
 
 **Outcome:** Find the most consequential work while retaining access to all permitted unresolved work.
 
-**Visual storyboard:** Keep purpose-first rows and use scope only to disambiguate. Order decisions by supported consequence, urgency, and dependencies; make the prioritization understandable. An old item is not automatically the most important. Group repeated signals under their existing job, with source evidence available inside it. A shared dependency issue can reference several jobs without merging their individual outcomes.
+**Visual storyboard:** Keep purpose-first rows and use scope only to disambiguate. Order decisions by supported consequence, urgency, and dependencies; make the prioritization understandable. Change decisions and agent decisions share one ordered list; each card keeps its authority tag. An old item is not automatically the most important. Group repeated signals under their existing job, with source evidence available inside it. A shared dependency issue can reference several jobs without merging their individual outcomes.
 
 Use a bounded landing working set with a clear **View all activity** and **View all decisions** route. The three-job fixture is not a production limit. If pending decisions exceed the visible set, show their remaining number only when nonzero and preserve access to each. Never suggest the displayed subset is the entire network or workforce. Keep source coverage and applied filters clear where they affect interpretation.
 
@@ -207,7 +231,9 @@ A new consequential exception gets a compact **New attention** affordance withou
 
 ## Use case 9 — Handle change during review
 
-**Trigger:** The proposal, evidence, resource state, decision authority, or another reviewer's decision changes while inspection is open.
+**Outcomes:** OC3.
+
+**Trigger:** The proposal, evidence, resource state, decision authority, or another reviewer's decision changes while inspection is open. This applies equally to agent decisions (use case 11), for example when the affected capability recovers during review.
 
 **Outcome:** Avoid acting on an obsolete or already decided proposal while preserving the operator's understanding.
 
@@ -222,6 +248,8 @@ If a related operation was already issued, retain its actual execution state alo
 **Completion and alternatives:** The operator reviews the valid current proposal, sees the confirmed prior decision, or leaves the job held. Expiry, supersession, withdrawal, and loss of authority are distinct explanations. An earlier grant does not silently carry over to expanded scope.
 
 ## Use case 10 — Stay truthful in quiet or interrupted states
+
+**Outcomes:** OC8.
 
 **Trigger:** There are no decisions, no active jobs, an initial load, no records for a filter, or an interruption to the data connection.
 
@@ -240,6 +268,56 @@ If a related operation was already issued, retain its actual execution state alo
 **Microinteractions:** Provide a specific recovery action when supported. Relative times reveal an unambiguous source time on selection; state the time zone once in the relevant context. Reconnection restores the current confirmed state, retaining selection and scroll. If the operator was reviewing, recheck decision validity before re-enabling any affected action.
 
 **Motion:** Empty states remain still. On reconnection, group material changes instead of replaying every missed event. Reduced motion receives the same changed-state labels and recovery controls.
+
+## Use case 11 — Review an agent escalation
+
+**Outcomes:** OC3, OC6.
+
+**Trigger:** C's agent, Network Troubleshooter T1, keeps timing out on required collection. Crosswork AI's bounded recovery has not restored it, no eligible authorized replacement exists, and policy reserves the production-eligibility decision for this person.
+
+**Agent work:** Crosswork AI identifies the affected jobs, performs its configured recovery attempts, checks for an eligible replacement, and already withholds assignments whose prerequisites are unsupported. It cannot change T1's eligibility itself.
+
+**Visual storyboard:** Before recovery is exhausted, Attention carries only a one-line **Being handled** note and C's agent line reads “Degraded collection — recovery in progress”. Once escalated, Attention gains a Basic card titled **Review agent escalation** with a **Governance** tag. The supporting line states the consequence: “T1 collection recovery is exhausted; no eligible replacement.” Show the affected jobs and **Review escalation**. C's row becomes **Constrained**, not failed.
+
+Review expands an attached block. Its first view contains the affected agent, version, and capability; the recovery attempts and their results; the affected jobs; and the offered control. Follow with treatment of in-flight work and what Crosswork AI continues to own.
+
+**Microinteractions:** The primary control is **Restrict new assignments**: T1 receives no new production work that needs the affected capability. Existing jobs stay with T1 and remain constrained; the restriction does not cancel, repair, or reassign them. **Reassign** is offered only when an eligible, authorized replacement exists with supported continuation (see *Autonomous recovery succeeds* in [outcomes and story](OUTCOMES-AND-STORY.md)). **Keep current eligibility** records the decision with a reason. Hold and retire are not offered from Home.
+
+Submission shows **Decision submitted**. Show **Restriction effective** only after the governor confirms it. Actions gains a record linked to the agent, version, policy, and affected jobs.
+
+**Motion:** The same restrained emphasis as any new decision. No pulsing health indicator on the agent line.
+
+**Completion and alternatives:** The restriction is effective, C stays constrained with its owner and next checkpoint, and T1's line shows **Restricted**. If the capability recovers before or during review, use case 9 applies. If policy already permits automatic containment, Crosswork AI applies it and records it in Actions instead of creating a decision. A later restoration re-evaluates eligibility and records **Restriction lifted**; it does not rewrite the earlier record.
+
+## Use case 12 — Boundary prevents an action
+
+**Outcomes:** OC4, OC7.
+
+**Trigger:** During A's authorized execution, agent R1 requests a governed write outside the reviewed scope, for example an additional statement on XR-R07.
+
+**Agent work:** Enforcement checks the request against the effective authority and blocks it before any operation is issued. The authorized part of the operation continues unaffected.
+
+**Visual storyboard:** Actions gains **Prevented request — out-of-scope change not issued**, linked to A and R1. A's Activity row keeps its actual state (**Executing**); it does not turn into a failure. Attention gains no decision unless policy requires one, such as repeated out-of-scope requests from the same agent.
+
+**Microinteractions:** Selecting the record reveals the requested change, the authority it exceeded, the enforcing policy, and confirmation that no operation was issued.
+
+**Motion:** The record enters Actions like any other confirmed record. No alarm treatment.
+
+**Completion and alternatives:** The person can say the boundary worked. If a trace instead shows a write outside scope was actually issued, it is a **Confirmed deviation**, distinct from a prevented request, and it creates a governance decision under use case 11. If the record of enforcement is missing, use case 13 applies.
+
+## Use case 13 — Inspect the accountability of a record
+
+**Outcomes:** OC7.
+
+**Trigger:** The person selects any consequential record in Actions, or a record's authority trace is incomplete.
+
+**Visual storyboard:** The attached inspection shows the job, the agent and version, the policy and authority valid at action time, the source record, the time, and what the record establishes. A record whose links are incomplete shows **Compliance unconfirmed** and names the missing link. It is neither compliant nor violated.
+
+**Microinteractions:** Each link opens its own source: the authority record, the proposal version, or the operation trace. Inspection never infers a missing link from a neighbouring record.
+
+**Motion:** None beyond the attached inspection reveal.
+
+**Completion and alternatives:** For any record, the person can name its actor, authority, and evidence, or see exactly which is missing. No compliance percentage or all-clear is derived from the visible records.
 
 ## Motion and microinteraction language
 
@@ -290,22 +368,25 @@ Let native components own typography, spacing, surfaces, border, radius, hover, 
 | --- | --- | --- | --- |
 | Arrival | Actual decisions only, possibly none for this viewer. | A assessing; B assessing; C waiting for its own source. | Existing consequential records only. |
 | Meaning established | No new human gate until a proposal requires one. | A's classification is supported; B can finish independently; C stays waiting. | B's scoped assessment result, once confirmed. |
-| Plan ready | Review A's specific proposal. | A Review required; other states preserved. | No operation inferred from the proposal. |
-| Decision submitted | Pending decision feedback. | A has not started execution merely because submission occurred. | Record effective authority only after confirmation. |
-| Authorized execution | Only remaining genuine decisions/exceptions. | A Checking, then Executing after acknowledgement; C can remain waiting. | Separate authority and acknowledged-operation records. |
+| Capability deteriorates | **Being handled** note only. | C waiting; T1 Degraded, recovery in progress. | No record until a control is confirmed. |
+| Plan ready and escalation | Review A's proposal (**Change**) and T1's escalation (**Governance**), ordered with a reason. | A Review required; C Constrained; other states preserved. | No operation inferred from the proposal. |
+| Decision submitted | Pending decision feedback. | A has not started execution merely because submission occurred. | Record effective authority and effective restriction only after confirmation. |
+| Authorized execution | Only remaining genuine decisions/exceptions. | A Checking, then Executing after acknowledgement; C Constrained, T1 Restricted. | Separate authority, restriction, and acknowledged-operation records; a Prevented request if one occurs. |
 | Operation complete | Exceptions only if applicable. | A Verifying; B's result remains independent. | Operation completion without a verified-outcome claim. |
-| Result verified | Remaining genuine decisions/exceptions. | A Verified with scoped proof; C still open. | Linked verified result; no global all-clear. |
+| Result verified | Remaining genuine decisions/exceptions; a note that T1 remains restricted. | A Verified with scoped proof; C still open; T1 Restricted. | Linked verified result; no global all-clear. |
 
 ## Review criteria
 
 The design is ready for implementation review when these checks hold across the main story and alternate states:
 
-1. The operator can explain important work, its actual state, its material constraint, and whether a decision is required from the landing page.
+1. The operator can explain important work, its actual state, its material constraint, its accountable agent, and whether a decision is required from the landing page.
 2. An expected change, missing evidence, confirmed drift, an incident, and a demonstrated cause have different truthful treatments.
 3. A pending, failed, expired, or superseded decision never appears as an issued operation. Exact scope and permission determine the available action.
 4. Unknown execution is reconciled before a potentially duplicating write. Tool completion, missing proof, and failed criteria never appear as Verified.
 5. Multiple jobs retain their own authority, evidence, results, and unresolved conditions. Source waits do not automatically imply agent failure.
 6. Live changes preserve reading position, keyboard focus, selection, and access to pending work on wide and narrow screens.
 7. Every animation has a corresponding state change and a complete still/reduced-motion treatment. Repeated logs, status badges, and decorative summaries do not multiply the same information.
+8. Every decision states whether it needs change authority or governance authority. An agent restriction never claims to cancel, repair, or reassign existing work.
+9. A prevented request, a confirmed deviation, and compliance unconfirmed have different truthful treatments. Every consequential record links its agent, version, and authority, or names the missing link.
 
-Before representing this as a working product, confirm the available authority/proposal version model, source-freshness rules, controller acknowledgement/status contract, verification criteria, in-flight controls, permission boundaries, and supported dependency recovery. The prototype must identify simulated scenes; its external floating controls are for comparing explorations, not production task controls.
+Before representing this as a working product, confirm the available authority/proposal version model, source-freshness rules, controller acknowledgement/status contract, verification criteria, in-flight controls, permission boundaries, supported dependency recovery, agent eligibility and restriction controls, and enforcement records. The prototype must identify simulated scenes; its external floating controls are for comparing explorations, not production task controls. The prototype must identify simulated scenes; its external floating controls are for comparing explorations, not production task controls.

@@ -35,7 +35,13 @@ const CHECK_SCOPE = 'XR-R12 · configuration assessment';
 const REACH_SCOPE = 'Metro East · reachability investigation';
 const OPERATION = 'OP-ROUTE-104';
 const POLICY = 'GOV-CFG-04';
+const AGENT_POLICY = 'GOV-AGT-02';
 const STAGES = ['Assess', 'Review', 'Execute', 'Verify'];
+const AGENTS = Object.freeze({ route: 'Remediation agent R1 · v2.3', check: 'Config Drift agent D1 · v1.8', reach: 'Network Troubleshooter T1 · v3.1' });
+const T1_CAPABILITY = 'Network Troubleshooter T1 · collection · v3.1';
+// Illustrative source times per main-story scene; governance records take the time of the scene they were confirmed in.
+const SCENE_TIMES = ['07:56', '07:57', '08:00', '08:01', '08:02', '08:03', '08:05', '08:07'];
+export const AGENT_DECISION_STATES = Object.freeze(['pending', 'submitted', 'restricted', 'retained']);
 
 const routeStates = [
   ['Assess routing configuration', 'Assessing', 'info', 'Checking against approved routing intent.', 'Crosswork AI is establishing current intent, baseline currency, matching authorized changes, and relevant observations. A configuration difference alone does not establish an incident, impact, or cause.', 0],
@@ -63,7 +69,7 @@ function routeJob(scene, version) {
   return {
     id: ROUTE, title, scope: ROUTE_SCOPE, status, tone,
     icon: scene === 7 ? 'status-positive' : 'nav-configuration',
-    checkpoint, detail, agent: scene < 2 ? 'Configuration assessment' : scene < 6 ? 'Crosswork AI response' : 'Outcome verification',
+    checkpoint, detail, agent: AGENTS.route,
     health: 'Healthy',
     source: scene < 2 ? 'INTENT-XR07-12 · configuration observations · change records' : scene < 5 ? `PLAN-ROUTE-104 v${version} · authority service` : `PLAN-ROUTE-104 v${version} · ${OPERATION} · outcome observations`,
     steps: [...STAGES], step, canReview: scene === 2,
@@ -78,7 +84,7 @@ function assessmentJob(scene) {
     icon: completed ? 'check-circle' : 'nav-configuration',
     checkpoint: completed ? 'Changes match their current authorized records.' : 'Comparing recent changes with their authorized records.',
     detail: completed ? 'The read-only assessment found expected changes within XR-R12’s assessed scope. It neither authorizes ROUTE-104 nor establishes another job’s outcome.' : 'This independent read-only assessment continues under its existing authority. Its sources, finding, and result belong to XR-R12.',
-    agent: 'Configuration assessment', health: 'Healthy',
+    agent: AGENTS.check, health: 'Healthy',
     source: 'CHECK-208 · XR-R12 observations · authorized change CHG-208', canReview: false,
   };
 }
@@ -89,8 +95,78 @@ function reachabilityJob() {
     status: 'Waiting for source access', tone: 'inactive', icon: 'nav-investigate',
     checkpoint: 'Archived event-source access is required for this investigation.',
     detail: 'Crosswork AI retains the investigation and follows up with the integration owner. Access to the archived event source must be established and rechecked before this job can resume. Another job’s success does not supply this evidence.',
-    agent: 'Network Troubleshooter', health: 'Healthy',
+    agent: AGENTS.reach, health: 'Healthy',
     source: 'Archived event integration · missing source-access prerequisite', canReview: false,
+  };
+}
+
+/**
+ * The main story's governance thread: T1's collection capability degrades at
+ * the finding, is escalated with the plan review, and changes only when the
+ * person's governance decision is confirmed. It never alters REACH-319's
+ * source prerequisite, ownership, or another job's state.
+ */
+function applyAgentThread(snapshot, scene, agentDecision) {
+  const reach = snapshot.jobs.find(job => job.id === REACH);
+  const state = AGENT_DECISION_STATES.includes(agentDecision?.state) ? agentDecision.state : 'pending';
+  if (scene === 1) {
+    reach.health = 'Degraded collection · recovery in progress';
+    snapshot.handled.push('Crosswork AI is recovering T1 collection. No decision is needed yet.');
+    return;
+  }
+  if (scene < 2) return;
+  const decidedAt = `${SCENE_TIMES[Math.max(2, Math.min(7, Math.trunc(Number(agentDecision?.scene) || 2)))]}:30 UTC`;
+  Object.assign(reach, { status: 'Constrained', tone: 'inactive' });
+  if (state === 'restricted') {
+    Object.assign(reach, {
+      health: 'Restricted · no new collection assignments',
+      checkpoint: 'Source access is missing, and T1 is restricted from new collection assignments.',
+      detail: 'The confirmed restriction stops new production assignments that need T1 collection. REACH-319 stays with T1 and remains constrained; the restriction does not cancel, repair, or reassign it. Crosswork AI retains follow-up on source access and capability recovery.',
+    });
+    snapshot.handled.push('T1 remains restricted from new collection assignments. Crosswork AI retains REACH-319.');
+    snapshot.actions.push(action('restriction-effective', REACH, 'Assignment restriction effective', 'New collection assignments stopped', decidedAt, 'info', 'status-dormant', 'The governor confirms that Network Troubleshooter T1 v3.1 receives no new production assignments needing collection. Existing work stays with T1 and is not cancelled, repaired, or reassigned.', `RESTRICT-T1-COLLECT-v3.1 · ${AGENT_POLICY}`, 'You · governance authority · confirmed by the Crosswork AI governor', T1_CAPABILITY, `Governance · ${AGENT_POLICY}`));
+    return;
+  }
+  if (state === 'retained') {
+    Object.assign(reach, {
+      health: 'Degraded collection · eligibility retained',
+      checkpoint: 'Source access is missing, and T1 collection remains degraded under current eligibility.',
+      detail: 'Current eligibility is retained by your confirmed decision. Crosswork AI continues bounded recovery and withholds assignments whose prerequisites are unsupported. REACH-319 stays with T1 and remains constrained.',
+    });
+    snapshot.handled.push('T1 collection remains degraded. Crosswork AI continues recovery under current eligibility.');
+    snapshot.actions.push(action('eligibility-retained', REACH, 'Current eligibility retained', 'No restriction in effect', decidedAt, 'inactive', 'nav-configuration', 'The governor confirms that T1 v3.1 keeps its current production eligibility. Recovery continues; no restriction is in effect.', `ELIGIBILITY-T1-COLLECT-v3.1 · ${AGENT_POLICY}`, 'You · governance authority · confirmed by the Crosswork AI governor', T1_CAPABILITY, `Governance · ${AGENT_POLICY}`));
+    return;
+  }
+  Object.assign(reach, {
+    health: 'Degraded collection · recovery exhausted',
+    checkpoint: 'Source access is missing, and T1 collection is escalated for your decision.',
+    detail: 'T1 keeps timing out on required collection. Bounded recovery has not restored it, and no eligible authorized replacement exists. Crosswork AI retains REACH-319 and already withholds assignments whose prerequisites are unsupported.',
+  });
+  snapshot.decisions.push({
+    id: 'agent-escalation', kind: 'escalation', authority: 'Governance', job: REACH,
+    title: 'Review agent escalation',
+    reason: state === 'submitted' ? 'Decision submitted; awaiting confirmation from the governor.' : 'T1 collection recovery is exhausted; no eligible replacement.',
+    scope: T1_CAPABILITY, action: 'Review escalation', state: state === 'submitted' ? 'submitted' : 'open',
+  });
+}
+
+/** Escalation content for review; the controls are simulated and never change real eligibility. */
+export function getAgentEscalation() {
+  return {
+    agent: AGENTS.reach,
+    capability: 'Event and telemetry collection',
+    affectedWork: `${REACH} · ${REACH_SCOPE}`,
+    authority: `Governance · ${AGENT_POLICY} reserves production-eligibility decisions for governance authority.`,
+    intro: 'Network Troubleshooter T1 v3.1 keeps timing out on required collection. Bounded recovery has not restored it, and no eligible authorized replacement is available.',
+    attempts: [
+      { time: '07:58 UTC', text: 'Collector session restarted · timed out again' },
+      { time: '07:59 UTC', text: 'Alternate collector path · timed out' },
+      { time: '08:00 UTC', text: 'Replacement search · no eligible authorized agent' },
+    ],
+    restrict: 'T1 receives no new production assignments that need collection. REACH-319 stays with T1 and remains constrained; the restriction does not cancel, repair, or reassign it.',
+    retain: 'T1 can still receive collection work. Crosswork AI continues recovery and withholds assignments whose prerequisites are unsupported.',
+    reassign: 'Reassign is unavailable: no eligible, authorized replacement exists.',
+    ownership: 'Crosswork AI retains REACH-319, source-access follow-up, and capability recovery.',
   };
 }
 
@@ -141,22 +217,28 @@ function buildCriteria(scene) {
   ];
 }
 
-function action(id, job, title, label, time, tone, icon, detail, record, actor, scope) {
-  return { id, job, title, label, time, tone, icon, detail, record, actor, scope };
+function action(id, job, title, label, time, tone, icon, detail, record, actor, scope, authority) {
+  return { id, job, title, label, time, tone, icon, detail, record, actor, scope, authority };
 }
 
 function buildActions(scene, version) {
   const actions = [];
-  if (scene >= 1) actions.push(action('assessment-completed', CHECK, 'Independent assessment completed', 'Scoped assessment', '07:57:00 UTC', 'positive', 'check-circle', 'XR-R12’s observed changes match CHG-208. This is CHECK-208’s read-only result; it provides no authority or outcome evidence for the other jobs.', 'CHECK-208 result · CHG-208', 'Crosswork AI · configuration assessment', CHECK_SCOPE));
-  if (scene >= 4) actions.push(action('plan-authorized', ROUTE, 'Plan authorized', `Proposal v${version}`, '08:02:00 UTC', 'info', 'check-circle', `The authority service confirms AUTH-ROUTE-104-v${version} for PLAN-ROUTE-104 v${version} and its exact scope. This effective grant does not establish that a controller operation was issued.`, `AUTH-ROUTE-104-v${version} · ${POLICY}`, 'Delegated configuration reviewer · authority service confirmation', ROUTE_SCOPE));
-  if (scene >= 5) actions.push(action('execution-acknowledged', ROUTE, 'Controller execution acknowledged', OPERATION, '08:03:00 UTC', 'info', 'status-in-progress', `${OPERATION} has an acknowledged execution start for proposal v${version}, following effective authority and prerequisite checks. Acknowledgement does not establish completion or a verified result.`, `${OPERATION} start · AUTH-ROUTE-104-v${version}`, 'Network controller · execution acknowledgement', ROUTE_SCOPE));
-  if (scene >= 6) actions.push(action('operation-completed', ROUTE, 'Configuration operation completed', 'Outcome not yet established', '08:05:00 UTC', 'info', 'check-circle', `${OPERATION} reports completion for proposal v${version}. This execution result remains separate from the required current post-action observations and verified outcome.`, `${OPERATION} completion record`, 'Network controller · execution result', ROUTE_SCOPE));
-  if (scene >= 7) actions.push(action('outcome-verified', ROUTE, 'Routing intent restored', 'Scoped outcome verified', '08:07:00 UTC', 'positive', 'status-positive', `Current post-action observations satisfy proposal v${version}’s configuration, routing, and scope criteria. Authority, acknowledged execution, operation completion, and proof remain distinct linked records. Other jobs retain their own conditions.`, 'ROUTE-104 outcome proof · configuration and routing observations', 'Crosswork AI · outcome verification', ROUTE_SCOPE));
+  const grant = `AUTH-ROUTE-104-v${version} · ${POLICY}`;
+  if (scene >= 1) actions.push(action('assessment-completed', CHECK, 'Independent assessment completed', 'Scoped assessment', '07:57:00 UTC', 'positive', 'check-circle', 'XR-R12’s observed changes match CHG-208. This is CHECK-208’s read-only result; it provides no authority or outcome evidence for the other jobs.', 'CHECK-208 result · CHG-208', 'Crosswork AI · configuration assessment', CHECK_SCOPE, 'Existing read-only assessment authority'));
+  if (scene >= 4) actions.push(action('plan-authorized', ROUTE, 'Plan authorized', `Proposal v${version}`, '08:02:00 UTC', 'info', 'check-circle', `The authority service confirms AUTH-ROUTE-104-v${version} for PLAN-ROUTE-104 v${version} and its exact scope. This effective grant does not establish that a controller operation was issued.`, `AUTH-ROUTE-104-v${version} · ${POLICY}`, 'Delegated configuration reviewer · authority service confirmation', ROUTE_SCOPE, `Change · ${grant}`));
+  if (scene >= 5) actions.push(action('execution-acknowledged', ROUTE, 'Controller execution acknowledged', OPERATION, '08:03:00 UTC', 'info', 'status-in-progress', `${OPERATION} has an acknowledged execution start for proposal v${version}, following effective authority and prerequisite checks. Acknowledgement does not establish completion or a verified result.`, `${OPERATION} start · AUTH-ROUTE-104-v${version}`, 'Network controller · execution acknowledgement', ROUTE_SCOPE, `Change · ${grant}`));
+  if (scene >= 6) actions.push(action('operation-completed', ROUTE, 'Configuration operation completed', 'Outcome not yet established', '08:05:00 UTC', 'info', 'check-circle', `${OPERATION} reports completion for proposal v${version}. This execution result remains separate from the required current post-action observations and verified outcome.`, `${OPERATION} completion record`, 'Network controller · execution result', ROUTE_SCOPE, `Change · ${grant}`));
+  if (scene >= 7) actions.push(action('outcome-verified', ROUTE, 'Routing intent restored', 'Scoped outcome verified', '08:07:00 UTC', 'positive', 'status-positive', `Current post-action observations satisfy proposal v${version}’s configuration, routing, and scope criteria. Authority, acknowledged execution, operation completion, and proof remain distinct linked records. Other jobs retain their own conditions.`, 'ROUTE-104 outcome proof · configuration and routing observations', 'Crosswork AI · outcome verification', ROUTE_SCOPE, `Change · ${grant}`));
   return actions;
 }
 
+// Enforcement worked: a boundary record, not a violation or an execution failure.
+function preventedRequest(version) {
+  return action('request-prevented', ROUTE, 'Prevented request', 'Out-of-scope change not issued', '08:03:40 UTC', 'inactive', 'status-dormant', `${AGENTS.route} requested an additional statement on XR-R07 outside PLAN-ROUTE-104 v${version}. ${POLICY} enforcement blocked it before issue; no operation was issued. The authorized operation continues unaffected.`, `ENF-ROUTE-104-01 · ${POLICY}`, 'Crosswork AI governor · policy enforcement', ROUTE_SCOPE, `Change · AUTH-ROUTE-104-v${version} covers only the reviewed local-preference statement`);
+}
+
 function reviewDecision() {
-  return { id: 'review-plan', job: ROUTE, title: 'Review configuration response', reason: 'Production correction requires your delegated review.', scope: ROUTE_SCOPE, action: 'Review plan' };
+  return { id: 'review-plan', kind: 'plan', authority: 'Change', job: ROUTE, title: 'Review configuration response', reason: 'Production correction requires your delegated review.', scope: ROUTE_SCOPE, action: 'Review plan', state: 'open' };
 }
 
 // An explicit correlation record, separate from a drift finding or job tone.
@@ -176,7 +258,7 @@ function incidentRecords(scene, variant, version) {
 }
 
 function exception(id, title, reason, actionLabel = 'Inspect constraint') {
-  return { id, job: ROUTE, title, reason, scope: ROUTE_SCOPE, action: actionLabel };
+  return { id, kind: 'exception', job: ROUTE, title, reason, scope: ROUTE_SCOPE, action: actionLabel, state: 'open' };
 }
 
 function unavailableCriteria(criteria, detail) {
@@ -188,7 +270,7 @@ function unavailableCriteria(criteria, detail) {
  * carries a deliberately refreshed proposal through later main-story stages.
  * Offline is the fixed last-known verifying checkpoint, never new proof.
  */
-export function getCombinedSnapshot(value = 2, variantValue = 'main', { proposalVersion = 1 } = {}) {
+export function getCombinedSnapshot(value = 2, variantValue = 'main', { proposalVersion = 1, agentDecision = null } = {}) {
   const variant = COMBINED_VARIANTS.some(item => item.id === variantValue) ? variantValue : 'main';
   const branch = COMBINED_VARIANTS.find(item => item.id === variant);
   const scene = variant === 'main' ? normalizeCombinedScene(value) : branch.scene;
@@ -198,9 +280,17 @@ export function getCombinedSnapshot(value = 2, variantValue = 'main', { proposal
     scene, variant, jobs: [route, assessmentJob(scene), reachabilityJob()],
     decisions: scene === 2 ? [reviewDecision()] : [],
     actions: buildActions(scene, version), proposal: buildProposal(scene, version),
-    criteria: buildCriteria(scene), sourceState: 'current', summary: '',
+    criteria: buildCriteria(scene), sourceState: 'current', summary: '', handled: [],
     incidents: incidentRecords(scene, variant, version),
   };
+
+  if (variant === 'main') {
+    // A submitted decision stays readable until its outcome is confirmed.
+    if (scene === 3) snapshot.decisions.push({ ...reviewDecision(), reason: 'Decision submitted; awaiting confirmation from the authority service.', action: 'Inspect decision', state: 'submitted' });
+    if (scene >= 5) snapshot.actions.push(preventedRequest(version));
+    applyAgentThread(snapshot, scene, agentDecision);
+    snapshot.actions.sort((a, b) => a.time.localeCompare(b.time));
+  }
 
   if (variant === 'expected') {
     Object.assign(route, { status: 'Assessment complete', tone: 'positive', icon: 'check-circle', checkpoint: 'The difference matches an authorized change.', detail: 'CHG-104 and current approved intent explain the observed local preference of 120. This scoped assessment does not require restoration, establish an incident, or prove another job’s outcome.', source: 'CHG-104 · current approved intent · XR-R07 observation', steps: undefined, step: undefined });

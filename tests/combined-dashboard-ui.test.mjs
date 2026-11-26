@@ -17,14 +17,27 @@ before(async () => {
 after(async () => { await server?.close(); });
 const render = (Component, props = {}) => renderToStaticMarkup(React.createElement(Component, props));
 
-test('every Combined branch retains the global work surface and independent source-waiting job alongside the ribbon', () => {
+test('every Combined branch retains the global work surface and independent source-dependent job alongside the ribbon', () => {
   for (const { id } of COMBINED_VARIANTS) {
     const html = render(Dashboard, { scene: 2, variant: id });
     for (const section of ['Network', 'Attention', 'Activity', 'Actions']) assert.match(html, new RegExp(`>${section}</h2>`), `${id}: ${section}`);
     assert.match(html, /Investigate intermittent reachability/);
-    assert.match(html, /Waiting for source access/);
+    assert.match(html, id === 'main' ? />Constrained</ : /Waiting for source access/);
     assert.match(html, /Network overview view/);
   }
+});
+
+test('Attention names the authority type of each decision and the agent line stays on every job', () => {
+  const html = render(Dashboard, { scene: 2 });
+  assert.match(html, /Review configuration response<\/h3><\/hbr-text><hbr-tag[^>]*>Change</);
+  assert.match(html, /Review agent escalation<\/h3><\/hbr-text><hbr-tag[^>]*>Governance</);
+  assert.match(html, /Ordered by consequence/);
+  for (const agent of ['Remediation agent R1', 'Config Drift agent D1', 'Network Troubleshooter T1']) assert.match(html, new RegExp(agent));
+  assert.match(html, /data-healthy="false"> · Network Troubleshooter T1 · v3\.1 · Degraded collection/);
+  const finding = render(Dashboard, { scene: 1 });
+  assert.match(finding, /No decisions require your review/);
+  assert.match(finding, /Being handled<\/strong> · Crosswork AI is recovering T1 collection/);
+  assert.doesNotMatch(render(Baseline, { scene: 2 }), /Review agent escalation|Being handled/);
 });
 
 test('Combined opens on an incident with overview, paired decisions, then full-width Activity', () => {

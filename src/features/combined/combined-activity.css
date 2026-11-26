@@ -132,3 +132,4 @@
   .combined-activity *, .combined-activity *::before, .combined-activity *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
   .combined-activity-job::part(base) { animation: none !important; transition: none !important; }
 }
+.combined-activity-agent[data-healthy='false'] { color: var(--warning-text-default, var(--combined-warning)); }

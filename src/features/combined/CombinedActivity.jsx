@@ -48,7 +48,7 @@ function workBucket(job) {
   if (isComplete(job)) return 'Complete';
   if (['Review required', 'Plan changed'].includes(job.status)) return 'Review';
   if (/unknown|Partial result|Verification unavailable/i.test(job.status)) return 'Needs attention';
-  if (/^Waiting|^Held$|^Revision requested$|^Decision submitted$/i.test(job.status)) return 'Waiting';
+  if (/^Waiting|^Constrained$|^Held$|^Revision requested$|^Decision submitted$/i.test(job.status)) return 'Waiting';
   return 'Running';
 }
 
@@ -93,6 +93,7 @@ function criterionObservation(criterion) {
 function supportingObservations(job, model) {
   const records = (model.actions || []).filter(record => record.job === job.id);
   if (job.id === REACH) return [
+    ...(job.health !== 'Healthy' ? [{ id: `reach-agent:${job.health}`, label: 'Agent capability', text: `${job.agent} · ${job.health}.`, source: 'Crosswork AI governor' }] : []),
     { id: 'reach-source', label: 'Source prerequisite', text: 'Archived event-source access is required for this investigation.', source: job.source },
     { id: 'reach-access', label: 'Access', text: 'Source access has not been established for this job.', source: job.source },
     { id: 'reach-ownership', label: 'Ownership', text: 'Crosswork AI retains follow-up with the integration owner.', source: 'Investigation ownership' },
@@ -200,7 +201,7 @@ function JobCard({ job, model, index, selected, changed, related, outsideFilter,
         </div>
       </div>}
       <div className="combined-activity-job-footer">
-        <hbr-text type="secondary" size="xs">{job.id}</hbr-text>
+        <hbr-text type="secondary" size="xs">{job.id}{job.agent && <span className="combined-activity-agent" data-healthy={job.health === 'Healthy'}> · {job.agent} · {job.health.split(' · ')[0]}</span>}</hbr-text>
         <hbr-button ref={node => registerJobControl?.(job.id, node)} variant="text" size="small" arialabel={`Inspect ${job.title}`}
           aria-expanded={selected && inspectedKind === 'job'} onClick={event => onInspect?.(job, event)}>Inspect job<hbr-icon name="arrow-right" slot="suffix" size="14px"/></hbr-button>
       </div>

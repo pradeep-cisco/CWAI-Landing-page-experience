@@ -3,6 +3,7 @@ export const EXPLORATION_OPTIONS = [
   { id: 'network', cue: '01', label: 'Operations', path: '/network-monitoring' },
   { id: 'workforce', cue: '02', label: 'Governance', path: '/network-monitoring?exploration=workforce' },
   { id: 'combined', cue: '03', label: 'Combined · Live activity', shortLabel: '03 · Combined · Live', path: '/network-monitoring?exploration=combined' },
+  { id: 'agent-centric', cue: '04', label: 'Agent-centric', shortLabel: '04 · Agent-centric', path: '/network-monitoring?exploration=agent-centric' },
   { id: 'combined-baseline', cue: '03', label: 'Combined · Baseline', shortLabel: '03 · Combined · Baseline', path: '/network-monitoring?exploration=combined&layout=baseline', archived: true },
   { id: 'workforce-original', cue: 'Archive', label: 'Governance original', path: '/network-monitoring?exploration=workforce-original', archived: true },
 ];

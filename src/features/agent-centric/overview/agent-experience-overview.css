@@ -1,0 +1,28 @@
+.agent-exp-viewer {
+  position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none;
+  margin: 0; padding: 0; border: 0; overflow: hidden; background: #080e16; color: #e2e7ee;
+  font: 14px/1.5 Inter, Arial, sans-serif; box-sizing: border-box;
+}
+.agent-exp-viewer[open] { display: flex; flex-direction: column; }
+.agent-exp-viewer::backdrop { background: #080e16; }
+.agent-exp-viewer * { box-sizing: border-box; }
+.agent-exp-toolbar, .agent-exp-controls { display: flex; flex: none; align-items: center; gap: 16px; padding: 12px 24px; }
+.agent-exp-toolbar { justify-content: space-between; border-bottom: 1px solid #202b38; }
+.agent-exp-option, .agent-exp-count { color: #9caaba; }
+.agent-exp-stage { display: flex; flex: 1; justify-content: center; align-items: center; min-width: 0; min-height: 0; padding: 8px 16px; overflow: auto; }
+.agent-exp-slide { display: block; width: 100%; height: 100%; object-fit: contain; min-height: 0; }
+.agent-exp-controls { border-top: 1px solid #202b38; }
+.agent-exp-viewer button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 36px; padding: 6px 12px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: inherit; font: inherit; cursor: pointer; transition: background 140ms ease; }
+.agent-exp-viewer button:hover { background: #162130; }
+.agent-exp-viewer button:focus-visible { outline: 2px solid #83a9ff; outline-offset: 2px; }
+.agent-exp-viewer button:disabled { opacity: .35; cursor: default; background: transparent; }
+.agent-exp-toolbar button > span { font-size: 23px; line-height: 1; }
+.agent-exp-pagination { display: flex; gap: 4px; margin-left: auto; }
+.agent-exp-pagination button { width: 32px; min-height: 36px; padding: 8px; }
+.agent-exp-pagination button > span { width: 7px; height: 7px; border-radius: 50%; background: #526174; transition: background 140ms ease; }
+.agent-exp-pagination button[aria-current] > span { background: #83a9ff; }
+.agent-exp-count { min-width: 38px; font-variant-numeric: tabular-nums; }
+.agent-exp-viewer .agent-exp-next { min-width: 100px; margin-left: auto; border-color: #334154; }
+.agent-exp-sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+@media(max-width:650px) { .agent-exp-toolbar, .agent-exp-controls { padding: 8px 12px; gap: 8px; } .agent-exp-stage { padding: 4px; } .agent-exp-pagination { gap: 0; } .agent-exp-pagination button { width: 22px; padding: 5px; } .agent-exp-option { display: none; } .agent-exp-viewer .agent-exp-next { min-width: 70px; } }
+@media(prefers-reduced-motion:reduce) { .agent-exp-viewer * { transition: none !important; } }

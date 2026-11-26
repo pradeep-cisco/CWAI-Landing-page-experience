@@ -923,3 +923,25 @@
     opacity: 0;
   }
 }
+
+/* Authority type and governor-owned conditions in Attention. */
+.combined-decision-title {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.combined-decision[data-decision-state='submitted'] .combined-decision-heading > hbr-icon { color: var(--combined-blue); }
+.combined-handled {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: 12px;
+  color: var(--combined-muted);
+  font-size: var(--hbr-font-size-xs, 12px);
+  line-height: var(--hbr-font-line-height-normal, 1.5);
+}
+.combined-handled > hbr-icon { flex: none; margin-top: 2px; color: var(--combined-blue); }
+.combined-handled strong { color: var(--base-text-default, inherit); font-weight: 600; }
+.combined-evidence-list.combined-attempts > li > hbr-icon { color: var(--combined-warning); }

@@ -1,0 +1,69 @@
+.agent-job-inspector { display: flex; flex-direction: column; gap: 18px; min-width: 0; color: var(--base-text-default); }
+.agent-job-inspector :is(h3, h4, p, dl, ul, ol) { margin: 0; }
+.agent-job-inspector :is(p, dd, dt, span, strong, h3, h4, a) { overflow-wrap: anywhere; }
+.agent-job-inspector :is(hbr-text, hbr-button, hbr-tag, hbr-chat-message) { min-width: 0; max-width: 100%; }
+.agent-job-inspector h3 { font: inherit; }
+.agent-job-inspector h4 { font-size: var(--hbr-font-size-sm, 14px); font-weight: 600; line-height: 1.5; }
+.agent-job-inspector-owner { display: grid; grid-template-columns: 42px minmax(0, 1fr); align-items: center; gap: 10px 12px; }
+.agent-job-inspector-owner > div { display: flex; flex-direction: column; gap: 4px; }
+.agent-job-inspector-owner > hbr-tag { grid-column: 2; justify-self: start; }
+.agent-job-inspector-avatar { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 12px; color: var(--interact-icon-weak-default); border: 1px solid color-mix(in srgb, var(--interact-border-default) 25%, var(--base-border-default)); background: color-mix(in srgb, var(--interact-border-default) 7%, var(--control-bg-weak-default)); }
+.agent-job-inspector-checkpoint { font-size: var(--hbr-font-size-sm, 14px); line-height: 1.65; color: var(--base-text-default); }
+.agent-job-inspector-muted { font-size: var(--hbr-font-size-xs, 12px); line-height: 1.7; color: var(--base-text-medium-default); }
+.agent-job-inspector-source-note { display: flex; align-items: start; gap: 8px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; color: var(--base-text-medium-default); }
+.agent-job-inspector-source-note > hbr-icon { flex: none; margin-top: 2px; }
+.agent-job-inspector-fields { display: flex; flex-direction: column; gap: 12px; }
+.agent-job-inspector-fields > div { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.agent-job-inspector-fields dt { color: var(--base-text-medium-default); font-size: 11px; line-height: 1.5; }
+.agent-job-inspector-fields dd { color: var(--base-text-default); font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; margin: 0; }
+.agent-job-inspector-block { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding-top: 18px; border-top: 1px solid var(--base-border-default); min-width: 0; }
+.agent-job-inspector-callout { display: flex; align-items: start; gap: 10px; padding: 12px 14px; border: 1px solid var(--base-border-default); border-radius: 8px; background: color-mix(in srgb, var(--interact-border-default) 3%, var(--control-bg-weak-default)); }
+.agent-job-inspector-callout > hbr-icon { flex: none; color: var(--interact-icon-weak-default); margin-top: 2px; }
+.agent-job-inspector-callout strong { display: block; font-size: var(--hbr-font-size-xs, 12px); font-weight: 600; line-height: 1.6; }
+.agent-job-inspector-callout p { margin-top: 4px; color: var(--base-text-medium-default); font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; }
+.agent-job-inspector-validation { display: flex; flex-direction: column; gap: 10px; padding: 0; list-style: none; width: 100%; }
+.agent-job-inspector-validation li { display: flex; align-items: start; gap: 9px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; }
+.agent-job-inspector-validation hbr-icon { flex: none; margin-top: 2px; color: var(--interact-icon-weak-default); }
+.agent-job-inspector-validation small { display: block; margin-top: 4px; color: var(--base-text-medium-default); font-size: 11px; }
+.agent-job-inspector-next-step { display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; width: 100%; border-left: 2px solid color-mix(in srgb,var(--interact-border-default) 55%,transparent); background: color-mix(in srgb,var(--interact-border-default) 3%,transparent); }
+.agent-job-inspector-next-step > span { font-size: 11px; color: var(--base-text-medium-default); }
+.agent-job-inspector-next-step > p { font-size: 13px; line-height: 1.7; color: var(--base-text-default); }
+.agent-job-inspector-criteria { display: flex; flex-direction: column; gap: 14px; padding: 0; list-style: none; width: 100%; }
+.agent-job-inspector-criteria li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 5px 8px; align-items: start; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; }
+.agent-job-inspector-criteria li > hbr-icon { margin-top: 2px; color: var(--base-text-medium-default); }
+.agent-job-inspector-criteria li[data-state=met] > hbr-icon { color: var(--positive-icon-default); }
+.agent-job-inspector-criteria li[data-state=failed] > hbr-icon { color: var(--negative-icon-default); }
+.agent-job-inspector-criteria strong { font-weight: 600; }
+.agent-job-inspector-criteria p { margin-top: 4px; color: var(--base-text-medium-default); }
+.agent-job-inspector-criteria li > div > span { display: block; margin-top: 4px; color: var(--base-text-medium-default); font-size: 11px; }
+.agent-job-inspector-criterion-state { grid-column: 2; color: var(--base-text-medium-default); font-size: 11px; }
+.agent-job-inspector-disclosure, .agent-job-inspector-questions { padding-top: 16px; border-top: 1px solid var(--base-border-default); min-width: 0; }
+.agent-job-inspector :is(details > summary) { font-size: var(--hbr-font-size-sm, 14px); line-height: 1.5; font-weight: 500; cursor: pointer; color: var(--base-text-default); }
+.agent-job-inspector :is(details > summary):focus-visible { outline: var(--hbr-focus-outline); outline-offset: 4px; border-radius: 2px; }
+.agent-job-inspector details[open] > summary { margin-bottom: 16px; }
+.agent-job-inspector-context { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.agent-job-inspector-context ul { display: flex; flex-direction: column; gap: 14px; width: 100%; padding: 0; list-style: none; }
+.agent-job-inspector-context li { display: flex; align-items: start; gap: 10px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.6; }
+.agent-job-inspector-context li > span { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--base-border-default); color: var(--interact-icon-weak-default); }
+.agent-job-inspector-context small { display: block; font-size: 10px; color: var(--base-text-medium-default); }
+.agent-job-inspector-context strong { display: block; font-weight: 600; }
+.agent-job-inspector-context li p { margin-top: 3px; color: var(--base-text-medium-default); }
+.agent-job-inspector-context-note { font-size: 11px; line-height: 1.65; color: var(--base-text-medium-default); }
+.agent-job-inspector-context > a { display: flex; align-items: center; gap: 8px; color: var(--interact-text-default); text-decoration: none; font-size: var(--hbr-font-size-xs, 12px); }
+.agent-job-inspector-context > a:hover { text-decoration: underline; }
+.agent-job-inspector-records { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 22px; }
+.agent-job-inspector-records > li { display: grid; grid-template-columns: 19px minmax(0, 1fr); gap: 9px; align-items: start; min-width: 0; }
+.agent-job-inspector-record-mark { margin-top: 1px; color: var(--interact-icon-weak-default); }
+.agent-job-inspector-record-title { display: flex; flex-direction: column; gap: 4px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.6; }
+.agent-job-inspector-record-title strong { font-weight: 600; }
+.agent-job-inspector-record-title time { font: inherit; font-size: 11px; font-variant-numeric: tabular-nums; color: var(--base-text-medium-default); }
+.agent-job-inspector-records > li > div > p { margin-top: 6px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.65; color: var(--base-text-medium-default); }
+.agent-job-inspector-records .agent-job-inspector-fields { margin-top: 12px; gap: 8px; }
+.agent-job-inspector-question-controls { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.agent-job-inspector-message { display: block; margin-top: 14px; }
+.agent-job-inspector-message-content { display: flex; flex-direction: column; gap: 8px; font-size: var(--hbr-font-size-xs, 12px); line-height: 1.7; }
+.agent-job-inspector-message-content > strong { font-weight: 600; }
+.agent-job-inspector-message-content > small { font-size: 10px; color: var(--base-text-medium-default); }
+@media (prefers-reduced-motion: reduce) {
+  .agent-job-inspector *, .agent-job-inspector *::before, .agent-job-inspector *::after { animation: none !important; transition: none !important; }
+}

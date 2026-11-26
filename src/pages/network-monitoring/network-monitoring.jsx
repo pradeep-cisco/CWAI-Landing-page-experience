@@ -17,6 +17,7 @@ import PreviousWorkforce from '../../features/workforce-history/PreviousWorkforc
 import CombinedDashboard from '../../features/combined/CombinedDashboard.jsx';
 import CombinedBaseline from '../../features/combined-baseline/CombinedDashboard.jsx';
 import CombinedExperienceOverview from '../../features/combined/overview/CombinedExperienceOverview.jsx';
+import AgentCentricDashboard from '../../features/agent-centric/AgentCentricDashboard.jsx';
 import { COMBINED_SCENES, COMBINED_VARIANTS, getCombinedSnapshot } from '../../features/combined/combined-model.js';
 import { EXPLORATION_OPTIONS, explorationLabel, getExplorationOption } from '../../features/explorations/options.js';
 import { FRAMES, currentFrame, reduce } from '../../features/wan/model/model.js';
@@ -54,15 +55,16 @@ export default function NetworkMonitoring() {
   const { section } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const view = section === 'admin' || section === 'incidents' ? section : 'home';
+  const view = section === 'admin' || section === 'incidents' ? section : section === 'jobs' && searchParams.get('exploration') === 'agent-centric' ? 'jobs' : 'home';
   const requestedExploration = searchParams.get('exploration') === 'combined' && searchParams.get('layout') === 'baseline' ? 'combined-baseline' : searchParams.get('exploration');
-  const exploration = view === 'home' && EXPLORATION_OPTIONS.some(option => option.id === requestedExploration) ? requestedExploration : 'network';
+  const exploration = (view === 'home' || view === 'jobs') && EXPLORATION_OPTIONS.some(option => option.id === requestedExploration) ? requestedExploration : 'network';
   const activeOption = getExplorationOption(exploration);
   const isAlternative = exploration !== 'network';
   const isCombined = exploration === 'combined' || exploration === 'combined-baseline';
   const [workforceScene, setWorkforceScene] = useState(2);
   const [workforcePlaying, setWorkforcePlaying] = useState(false);
-  const [combinedScene, setCombinedScene] = useState(2);
+  // Live activity opens on arrival (Assessing); the preserved baseline keeps its review checkpoint.
+  const [combinedScene, setCombinedScene] = useState(() => exploration === 'combined' ? 0 : 2);
   const [combinedVariant, setCombinedVariant] = useState('main');
   const [combinedPlaying, setCombinedPlaying] = useState(false);
   const [combinedProposalVersion, setCombinedProposalVersion] = useState(1);
@@ -152,6 +154,7 @@ export default function NetworkMonitoring() {
   const CombinedView = exploration === 'combined-baseline' ? CombinedBaseline : CombinedDashboard;
 
   return <div className="wan-page" data-exploration={exploration} data-iteration-cue={activeOption.cue}>
+    <AgentCentricDashboard active={exploration === 'agent-centric'} page={view === 'jobs' ? 'jobs' : 'home'} routeSearch={searchParams.toString()} onNavigate={(path, options) => navigate(path, options)} onSwitchExploration={switchExploration}/>
     {isAlternative ? <>
       <div hidden={exploration !== 'workforce'}><WorkforceDashboard scene={workforceScene}/></div>
       <div hidden={exploration !== 'workforce-original'}><PreviousWorkforce/></div>
@@ -175,7 +178,7 @@ export default function NetworkMonitoring() {
     </div>
     {view === 'home' && <OperationsDashboard key={setup} state={state} onOpen={openResponse} onInspect={setEvidence} onAction={agentAction}/>}
     </>}
-    {createPortal(reviewVisible ? <div className="wan-review-controller" aria-label={`Preview controls. Viewing ${explorationLabel(activeOption)}`} data-preview-controls="true" data-iteration-cue={activeOption.cue} aria-hidden={dialog === 'overview' || dialog === 'combined-overview' ? 'true' : undefined}>
+    {exploration !== 'agent-centric' && createPortal(reviewVisible ? <div className="wan-review-controller" aria-label={`Preview controls. Viewing ${explorationLabel(activeOption)}`} data-preview-controls="true" data-iteration-cue={activeOption.cue} aria-hidden={dialog === 'overview' || dialog === 'combined-overview' ? 'true' : undefined}>
       <hbr-dropdown hoist menu placement="top-start" distance="12" className="wan-exploration-switch">
         <hbr-button slot="trigger" size="small" variant="outline" caret aria-label="Switch exploration">{explorationLabel(activeOption)}</hbr-button>
         <hbr-menu onhbr-select={event => switchExploration(event.detail?.item?.value)}>

@@ -48,18 +48,70 @@ test('scene and variant controls expose coherent stable checkpoints', () => {
   assert.equal(normalizeCombinedScene(Infinity), 2);
 });
 
-test('all branch snapshots retain the three independent jobs and a healthy source-waiting investigator', () => {
+test('all branch snapshots retain the three independent jobs; only the main story carries the T1 governance thread', () => {
   for (const variant of COMBINED_VARIANTS) {
     for (const { id: scene } of COMBINED_SCENES) {
       const snapshot = getCombinedSnapshot(scene, variant.id);
+      const reach = job(snapshot, 'REACH-319');
       assert.deepEqual(snapshot.jobs.map(item => item.id), ['ROUTE-104', 'CHECK-208', 'REACH-319']);
-      assert.equal(job(snapshot, 'REACH-319').status, 'Waiting for source access');
-      assert.equal(job(snapshot, 'REACH-319').health, 'Healthy');
-      assert.equal(job(snapshot, 'REACH-319').tone, 'inactive');
-      assert.match(job(snapshot, 'REACH-319').detail, /Another job’s success does not supply this evidence/);
-      assert.ok(snapshot.actions.every(item => item.job !== 'REACH-319'));
+      assert.equal(reach.tone, 'inactive');
+      assert.match(reach.agent, /Network Troubleshooter T1/);
+      assert.match(reach.detail, variant.id === 'main' && scene >= 2 ? /Crosswork AI retains REACH-319/ : /Another job’s success does not supply this evidence/);
+      assert.ok(snapshot.actions.every(item => item.job !== 'REACH-319'), 'no governance record before a confirmed decision');
+      if (variant.id !== 'main') {
+        assert.equal(reach.status, 'Waiting for source access');
+        assert.equal(reach.health, 'Healthy');
+        assert.ok(snapshot.decisions.every(item => item.kind !== 'escalation'));
+      }
     }
   }
+  assert.equal(job(getCombinedSnapshot(0), 'REACH-319').health, 'Healthy');
+  assert.match(job(getCombinedSnapshot(1), 'REACH-319').health, /Degraded collection · recovery in progress/);
+  assert.equal(job(getCombinedSnapshot(1), 'REACH-319').status, 'Waiting for source access');
+  assert.equal(job(getCombinedSnapshot(2), 'REACH-319').status, 'Constrained');
+});
+
+test('a degrading capability is first handled by Crosswork AI, then escalated as a governance decision', () => {
+  const finding = getCombinedSnapshot(1);
+  assert.equal(finding.decisions.length, 0);
+  assert.match(finding.handled[0], /recovering T1 collection/);
+  const review = getCombinedSnapshot(2);
+  assert.deepEqual(review.decisions.map(item => [item.title, item.authority]), [['Review configuration response', 'Change'], ['Review agent escalation', 'Governance']]);
+  for (const scene of [3, 5, 7]) assert.ok(getCombinedSnapshot(scene).decisions.some(item => item.kind === 'escalation' && item.state === 'open'), `escalation stays open at scene ${scene}`);
+  const submitted = getCombinedSnapshot(4, 'main', { agentDecision: { state: 'submitted', scene: 4 } });
+  assert.equal(submitted.decisions.find(item => item.kind === 'escalation').state, 'submitted');
+  assert.ok(!ids(submitted).includes('restriction-effective'));
+  assert.match(job(submitted, 'REACH-319').health, /recovery exhausted/);
+});
+
+test('a confirmed restriction constrains new assignments without cancelling, repairing, or reassigning work', () => {
+  const snapshot = getCombinedSnapshot(7, 'main', { agentDecision: { state: 'restricted', scene: 4 } });
+  const reach = job(snapshot, 'REACH-319');
+  assert.equal(reach.status, 'Constrained');
+  assert.match(reach.health, /^Restricted/);
+  assert.match(reach.detail, /does not cancel, repair, or reassign/);
+  assert.ok(snapshot.decisions.every(item => item.kind !== 'escalation'));
+  assert.match(snapshot.handled[0], /remains restricted/);
+  const record = snapshot.actions.find(item => item.id === 'restriction-effective');
+  assert.equal(record.job, 'REACH-319');
+  assert.equal(record.time, '08:02:30 UTC');
+  assert.match(record.authority, /^Governance · GOV-AGT-02/);
+  assert.equal(job(snapshot).status, 'Verified', 'the restriction does not change another job');
+  const retained = getCombinedSnapshot(5, 'main', { agentDecision: { state: 'retained', scene: 2 } });
+  assert.ok(ids(retained).includes('eligibility-retained'));
+  assert.ok(!ids(retained).includes('restriction-effective'));
+  assert.match(job(retained, 'REACH-319').health, /eligibility retained/);
+});
+
+test('a prevented request records enforcement without failing the authorized execution', () => {
+  for (const scene of [0, 1, 2, 3, 4]) assert.ok(!ids(getCombinedSnapshot(scene)).includes('request-prevented'));
+  const executing = getCombinedSnapshot(5);
+  const prevented = executing.actions.find(item => item.id === 'request-prevented');
+  assert.equal(prevented.job, 'ROUTE-104');
+  assert.match(prevented.detail, /no operation was issued/);
+  assert.equal(job(executing).status, 'Executing');
+  for (const variant of ['unknown', 'partial', 'capability', 'offline']) assert.ok(!ids(getCombinedSnapshot(7, variant)).includes('request-prevented'), variant);
+  for (const record of getCombinedSnapshot(7).actions) assert.ok(record.authority, `${record.id} links its authority`);
 });
 
 test('a difference is assessed before drift, a proposal, or any incident claim', () => {
@@ -90,7 +142,7 @@ test('review, submission, and effective authority never stand in for an issued o
   const review = getCombinedSnapshot(2);
   assert.equal(review.proposal.reviewable, true);
   assert.equal(job(review).canReview, true);
-  assert.deepEqual(review.decisions.map(item => item.action), ['Review plan']);
+  assert.deepEqual(review.decisions.map(item => item.action), ['Review plan', 'Review escalation']);
   assert.match(review.proposal.authority, /governance role alone does not grant/);
   assert.match(review.proposal.holdConsequence, /keeps this correction unissued/);
   for (const scene of [0, 1, 2, 3, 4]) {
@@ -99,7 +151,9 @@ test('review, submission, and effective authority never stand in for an issued o
     assert.ok(snapshot.criteria.every(item => item.state !== 'met'));
   }
   assert.equal(job(getCombinedSnapshot(3)).status, 'Decision submitted');
-  assert.equal(getCombinedSnapshot(3).decisions.length, 0);
+  const pending = getCombinedSnapshot(3).decisions.find(item => item.job === 'ROUTE-104');
+  assert.equal(pending.state, 'submitted', 'the submitted decision stays readable until confirmed');
+  assert.ok(!getCombinedSnapshot(4).decisions.some(item => item.job === 'ROUTE-104'));
   assert.ok(!ids(getCombinedSnapshot(3)).includes('plan-authorized'));
   assert.equal(job(getCombinedSnapshot(4)).status, 'Checking');
   assert.ok(ids(getCombinedSnapshot(4)).includes('plan-authorized'));
@@ -120,7 +174,7 @@ test('acknowledgement, completion, and verified outcome are distinct and preserv
   assert.equal(job(verified).status, 'Verified');
   assert.equal(job(verified).step, job(verified).steps.length);
   assert.ok(verified.criteria.every(item => item.state === 'met'));
-  assert.deepEqual(ids(verified), ['assessment-completed', 'plan-authorized', 'execution-acknowledged', 'operation-completed', 'outcome-verified']);
+  assert.deepEqual(ids(verified), ['assessment-completed', 'plan-authorized', 'execution-acknowledged', 'request-prevented', 'operation-completed', 'outcome-verified']);
   assert.ok(verified.criteria.every(item => item.source && item.time));
   for (const scene of [5, 6, 7]) {
     const actions = getCombinedSnapshot(scene).actions;

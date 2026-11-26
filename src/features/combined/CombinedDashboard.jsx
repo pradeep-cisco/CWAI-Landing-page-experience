@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getCombinedSnapshot } from './combined-model.js';
+import { getAgentEscalation, getCombinedSnapshot } from './combined-model.js';
 import NetworkRibbon from './NetworkRibbon.jsx';
 import CombinedActivity from './CombinedActivity.jsx';
 import { getRibbonNetwork, getWorkNetworkScope, relatedWorkIds } from './ribbon-model.js';
@@ -68,7 +68,46 @@ function Context() {
   </div>;
 }
 
-function Inspection({ selection, model, onClose, onReview, onAuthorize, onHold, onRevision, reviewedVersion, onRefresh, detailRef, revisionNote, onLocate }) {
+function Inspection({ selection, model, onClose, onReview, onAuthorize, onHold, onRevision, reviewedVersion, onRefresh, detailRef, revisionNote, onLocate, agentDecision, onAgentDecision }) {
+  if (selection.kind === 'escalation') return <EscalationInspection model={model} detailRef={detailRef} onClose={onClose} agentDecision={agentDecision} onAgentDecision={onAgentDecision}/>;
+  return <WorkInspection selection={selection} model={model} onClose={onClose} onReview={onReview} onAuthorize={onAuthorize} onHold={onHold} onRevision={onRevision} reviewedVersion={reviewedVersion} onRefresh={onRefresh} detailRef={detailRef} revisionNote={revisionNote} onLocate={onLocate}/>;
+}
+
+/** Simulated governance review. Its controls never change a real agent's eligibility. */
+function EscalationInspection({ model, detailRef, onClose, agentDecision, onAgentDecision }) {
+  const escalation = getAgentEscalation();
+  const resultRef = useRef(null), pendingFocus = useRef(false);
+  const state = agentDecision.state;
+  const canDecide = model.sourceState === 'current' && state === 'pending';
+  useEffect(() => {
+    if (pendingFocus.current && resultRef.current) { pendingFocus.current = false; resultRef.current.focus({ preventScroll: true }); }
+  }, [state]);
+  const decide = choice => { if (!canDecide) return; pendingFocus.current = true; onAgentDecision(choice); };
+  const result = state === 'submitted' ? ['Decision submitted', 'Waiting for the governor to confirm. No change to T1 eligibility is in effect yet.']
+    : state === 'restricted' ? ['Restriction effective', 'T1 receives no new collection assignments. REACH-319 stays with T1 and is not cancelled or reassigned.']
+    : state === 'retained' ? ['Current eligibility retained', 'No restriction is in effect. Crosswork AI continues recovery.'] : null;
+  return <div ref={detailRef} className="combined-inspection" data-enter="true" role="region" aria-label="Agent escalation">
+    <div className="combined-inspection-heading">
+      <div><hbr-text type="secondary" size="xs">{escalation.agent} · Governance decision</hbr-text><hbr-text variant="sub-section-title"><h3 tabIndex={-1}>T1 collection escalation</h3></hbr-text></div>
+      <hbr-button variant="text" size="small" onClick={onClose} arialabel="Close inspection"><hbr-icon name="x"/></hbr-button>
+    </div>
+    <p className="combined-inspection-intro">{escalation.intro}</p>
+    <Fields entries={[["Agent", escalation.agent], ["Capability", escalation.capability], ["Affected work", escalation.affectedWork], ["Authority", escalation.authority]]}/>
+    <div className="combined-detail-block"><h4>Recovery already attempted</h4><ul className="combined-evidence-list combined-attempts">{escalation.attempts.map(item => <li key={item.time}><hbr-icon name="status-warning" size="14px"/><span>{item.text} · {item.time}</span></li>)}</ul></div>
+    <div className="combined-detail-grid">
+      <div className="combined-detail-block"><h4>If you restrict new assignments</h4><p>{escalation.restrict}</p></div>
+      <div className="combined-detail-block"><h4>If you keep current eligibility</h4><p>{escalation.retain}</p></div>
+    </div>
+    <p className="combined-inspection-intro">{escalation.reassign} {escalation.ownership}</p>
+    {result && <div className="combined-notice" role="status"><hbr-icon name={state === 'submitted' ? 'nav-workflows' : 'check-circle'}/><div><strong ref={resultRef} tabIndex={-1}>{result[0]}</strong><p>{result[1]}</p></div></div>}
+    <div className="combined-controls">
+      <hbr-button size="small" disabled={!canDecide} onClick={() => decide('restricted')}>{state === 'restricted' ? 'Restriction effective' : 'Restrict new assignments'}</hbr-button>
+      <hbr-button size="small" variant="text" disabled={!canDecide} onClick={() => decide('retained')}>Keep current eligibility</hbr-button>
+    </div>
+  </div>;
+}
+
+function WorkInspection({ selection, model, onClose, onReview, onAuthorize, onHold, onRevision, reviewedVersion, onRefresh, detailRef, revisionNote, onLocate }) {
   const job = model.jobs.find(item => item.id === selection.job);
   const incident = model.incidents?.find(item => item.job === selection.job);
   const action = selection.kind === 'action' ? model.actions.find(item => item.id === selection.id) : null;
@@ -93,7 +132,7 @@ function Inspection({ selection, model, onClose, onReview, onAuthorize, onHold, 
     </div>
     <p className="combined-inspection-intro">{intro}</p>
     {onLocate && <div className="combined-locate"><hbr-button variant="text" size="small" onClick={onLocate}><hbr-icon name="nav-network-wide" slot="prefix"/>Locate scope</hbr-button></div>}
-    {action ? <Fields entries={[["Actor", action.actor], ["Scope", action.scope], ["Record establishes", action.label], ["Work", job.title]]}/> : isPlan ? <>
+    {action ? <Fields entries={[["Actor", action.actor], ["Agent", job.agent], ["Authority", action.authority], ["Scope", action.scope], ["Record establishes", action.label], ["Work", job.title]]}/> : isPlan ? <>
       {['changed', 'held', 'revision'].includes(model.variant) && <div className="combined-notice" role="status"><hbr-icon name={model.variant === 'held' ? 'status-dormant' : model.variant === 'revision' ? 'nav-workflows' : 'status-warning'}/><div>
         <strong ref={resultRef} tabIndex={-1}>{model.variant === 'held' ? 'Plan held' : model.variant === 'revision' ? 'Revision requested' : needsRefresh ? 'Plan changed' : `Version ${proposal.version} reviewed`}</strong>
         <p>{model.variant === 'held' ? 'No corrective write has been issued. Crosswork AI retains the job.' : model.variant === 'revision' ? revisionNote || 'Crosswork AI is reassessing the proposal. A revised plan needs validation and review.' : proposal.changeSummary}</p>
@@ -133,7 +172,8 @@ function Inspection({ selection, model, onClose, onReview, onAuthorize, onHold, 
 }
 
 export default function CombinedDashboard({ scene = 2, variant = 'main', proposalVersion = 1, revisionNote = '', onAuthorize, onHold, onRevision, onRecheck }) {
-  const model = useMemo(() => getCombinedSnapshot(scene, variant, { proposalVersion }), [scene, variant, proposalVersion]);
+  const [agentDecision, setAgentDecision] = useState({ state: 'pending', scene: null });
+  const model = useMemo(() => getCombinedSnapshot(scene, variant, { proposalVersion, agentDecision }), [scene, variant, proposalVersion, agentDecision]);
   const network = useMemo(() => getRibbonNetwork(model), [model]);
   const [selection, setSelection] = useState(null), [changed, setChanged] = useState([]), [announcement, setAnnouncement] = useState('');
   const [networkSelection, setNetworkSelection] = useState(null), [workFilter, setWorkFilter] = useState(null), [newAttention, setNewAttention] = useState(false);
@@ -142,6 +182,17 @@ export default function CombinedDashboard({ scene = 2, variant = 'main', proposa
   const ribbonRef = useRef(null), attentionRef = useRef(null), attentionVisible = useRef(true);
   const lastSelection = useRef(selection);
   lastSelection.current = selection;
+
+  // The governance thread belongs to the main story; leaving it or returning before the escalation resets it.
+  useEffect(() => {
+    if (variant !== 'main' || model.scene < 2) setAgentDecision(current => current.state === 'pending' ? current : { state: 'pending', scene: null });
+  }, [variant, model.scene]);
+  useEffect(() => {
+    if (agentDecision.state !== 'submitted') return undefined;
+    const timer = setTimeout(() => setAgentDecision(current => current.state === 'submitted' ? { ...current, state: current.choice } : current), 1400);
+    return () => clearTimeout(timer);
+  }, [agentDecision]);
+  const decideAgent = choice => setAgentDecision({ state: 'submitted', choice, scene: model.scene });
 
   useEffect(() => {
     if (!attentionRef.current || typeof IntersectionObserver === 'undefined') return;
@@ -165,7 +216,7 @@ export default function CombinedDashboard({ scene = 2, variant = 'main', proposa
     setChanged(updates);
     const selected = lastSelection.current;
     const currentJob = selected && model.jobs.find(job => job.id === selected.job);
-    const attentionArrived = model.decisions.some(decision => !before.decisions.some(old => old.id === decision.id && old.reason === decision.reason));
+    const attentionArrived = model.decisions.some(decision => decision.state !== 'submitted' && !before.decisions.some(old => old.id === decision.id && (old.reason === decision.reason || old.state === 'submitted')));
     if (currentJob && updates.includes(currentJob.id)) setAnnouncement(`${currentJob.title}. ${currentJob.status}. ${currentJob.checkpoint}`);
     else if (attentionArrived) setAnnouncement('New attention is available.');
     if (attentionArrived && !attentionVisible.current) setNewAttention(true);
@@ -199,7 +250,7 @@ export default function CombinedDashboard({ scene = 2, variant = 'main', proposa
     requestAnimationFrame(() => { if (!focusControl(trigger.current) && !focusControl(jobControls.current.get(safeSelection?.job))) attentionRef.current?.querySelector('h2')?.focus({ preventScroll: true }); });
   };
   const openPlan = event => inspect({ kind: 'plan', job: ROUTE_JOB, region: 'attention' }, event);
-  const inspection = location => safeSelection && safeSelection.region === location ? <Inspection key={`${safeSelection.kind}-${safeSelection.id || safeSelection.job}`} selection={safeSelection} model={model} detailRef={detailRef} onClose={close} onReview={event => variant === 'held' ? onRecheck() : openPlan(event)} onAuthorize={onAuthorize} onHold={onHold} onRevision={onRevision} reviewedVersion={reviewedVersion} onRefresh={() => setReviewedVersion(model.proposal.version)} revisionNote={revisionNote} onLocate={getWorkNetworkScope(safeSelection.job).domainIds.length ? locateScope : null}/> : null;
+  const inspection = location => safeSelection && safeSelection.region === location ? <Inspection key={`${safeSelection.kind}-${safeSelection.id || safeSelection.job}`} selection={safeSelection} model={model} detailRef={detailRef} onClose={close} onReview={event => variant === 'held' ? onRecheck() : openPlan(event)} onAuthorize={onAuthorize} onHold={onHold} onRevision={onRevision} reviewedVersion={reviewedVersion} onRefresh={() => setReviewedVersion(model.proposal.version)} revisionNote={revisionNote} agentDecision={agentDecision} onAgentDecision={decideAgent} onLocate={getWorkNetworkScope(safeSelection.job).domainIds.length ? locateScope : null}/> : null;
   const matchingJobs = new Set(relatedWorkIds(model.jobs, networkSelection));
   const filteredJobIds = new Set(workFilter ? relatedWorkIds(model.jobs, workFilter) : model.jobs.map(job => job.id));
   const pendingActions = model.actions.filter(item => !visibleActionIds.includes(item.id) && filteredJobIds.has(item.job));
@@ -207,6 +258,10 @@ export default function CombinedDashboard({ scene = 2, variant = 'main', proposa
   const activeActions = model.actions.filter(item => visibleActionIds.includes(item.id) && (filteredJobIds.has(item.job) || safeSelection?.kind === 'action' && safeSelection.id === item.id));
   const hasOpenPlan = safeSelection?.kind === 'plan';
   const retainDecision = hasOpenPlan && !model.decisions.some(item => item.job === ROUTE_JOB);
+  const retainEscalation = safeSelection?.kind === 'escalation' && !model.decisions.some(item => item.kind === 'escalation');
+  const openDecision = (decision, event) => decision.kind === 'escalation' ? inspect({ kind: 'escalation', job: decision.job, region: 'attention' }, event)
+    : decision.id.startsWith('review-') ? openPlan(event) : inspect({ kind: 'job', job: decision.job, region: 'attention' }, event);
+  const decisionExpanded = decision => safeSelection?.region === 'attention' && (decision.kind === 'escalation' ? safeSelection.kind === 'escalation' : safeSelection.kind !== 'escalation' && safeSelection.job === decision.job);
   const filterLabel = workFilter?.kind === 'domain' ? network.domains.find(domain => domain.id === workFilter.id)?.label || workFilter.id : workFilter?.kind === 'platform' ? 'Platform' : 'Cross-domain';
   const filterScope = scope => { setWorkFilter(scope); setAnnouncement(`Activity and Actions filtered to ${scope.kind === 'domain' ? scope.id : scope.kind}. Attention remains global.`); };
   const clearFilter = () => { setWorkFilter(null); setAnnouncement('All permitted work is shown.'); requestAnimationFrame(() => focusControl(ribbonRef.current?.querySelector('.combined-ribbon-focus'))); };
@@ -219,13 +274,15 @@ export default function CombinedDashboard({ scene = 2, variant = 'main', proposa
       <NetworkRibbon ref={ribbonRef} network={network} expanded alwaysExpanded selectedScope={networkSelection} workScope={safeSelection ? getWorkNetworkScope(safeSelection.job) : null} onSelectScope={setNetworkSelection} onFilterScope={filterScope} onClearSelection={() => setNetworkSelection(null)} onInspectIncident={(incident, event) => inspect({ kind: 'job', job: incident.job, region: 'activity' }, event)}/>
     {workFilter && <div className="combined-filter-scope"><div><strong>{filterLabel}</strong><span>Activity and Actions · Attention remains global</span></div><hbr-button size="small" variant="text" onClick={clearFilter}>Clear filter<hbr-icon name="x" slot="suffix"/></hbr-button></div>}
       <div className="combined-decision-row">
-    <Region id="combined-attention" regionRef={attentionRef} title="Attention" subtitle={workFilter ? 'All permitted domains' : null}>
-      {model.decisions.length || retainDecision ? <div className="combined-attention-grid">
-        {model.decisions.map(decision => <hbr-card key={decision.id} class="combined-decision" data-network-match={networkSelection && matchingJobs.has(decision.job)}>
-          <div className="combined-decision-heading"><hbr-icon name="status-warning" size="20px"/><div className="combined-decision-copy"><hbr-text variant="sub-section-title"><h3>{decision.title}</h3></hbr-text><p>{decision.reason}</p><hbr-text type="secondary" size="xs">{decision.scope}</hbr-text>{networkSelection && matchingJobs.has(decision.job) && <span className="combined-linked-label">Related to selected scope</span>}</div><hbr-button size="small" variant="outline" onClick={event => decision.id.startsWith('review-') ? openPlan(event) : inspect({ kind: 'job', job: decision.job, region: 'attention' }, event)} aria-expanded={safeSelection?.region === 'attention' && safeSelection.job === decision.job}>{decision.action || 'Review plan'}<hbr-icon slot="suffix" name="arrow-right"/></hbr-button></div>
+    <Region id="combined-attention" regionRef={attentionRef} title="Attention" subtitle={workFilter ? 'All permitted domains' : model.decisions.length > 1 ? 'Ordered by consequence' : null}>
+      {model.decisions.length || retainDecision || retainEscalation ? <div className="combined-attention-grid">
+        {model.decisions.map(decision => <hbr-card key={decision.id} class="combined-decision" data-decision-state={decision.state} data-network-match={networkSelection && matchingJobs.has(decision.job)}>
+          <div className="combined-decision-heading"><hbr-icon name={decision.state === 'submitted' ? 'nav-workflows' : 'status-warning'} size="20px"/><div className="combined-decision-copy"><div className="combined-decision-title"><hbr-text variant="sub-section-title"><h3>{decision.title}</h3></hbr-text>{decision.authority && <hbr-tag size="small" sentiment={decision.authority === 'Governance' ? 'info' : 'warning'} class="combined-decision-authority">{decision.authority}</hbr-tag>}</div><p>{decision.reason}</p><hbr-text type="secondary" size="xs">{decision.scope}</hbr-text>{networkSelection && matchingJobs.has(decision.job) && <span className="combined-linked-label">Related to selected scope</span>}</div><hbr-button size="small" variant="outline" onClick={event => openDecision(decision, event)} aria-expanded={decisionExpanded(decision)}>{decision.action || 'Review plan'}<hbr-icon slot="suffix" name="arrow-right"/></hbr-button></div>
         </hbr-card>)}
         {retainDecision && <div className="combined-quiet"><hbr-icon name="check-circle" size="18px"/><span>{model.scene === 3 ? 'Decision submitted' : model.scene >= 4 ? `Version ${model.proposal.version} authorized` : model.variant === 'held' ? 'Plan held' : 'Response retained for review'}</span></div>}
+        {retainEscalation && <div className="combined-quiet"><hbr-icon name="check-circle" size="18px"/><span>{agentDecision.state === 'retained' ? 'Current eligibility retained' : 'Restriction effective'}</span></div>}
       </div> : <div className="combined-quiet"><hbr-icon name="check-circle" size="18px"/><span>No decisions require your review.</span></div>}
+      {model.handled.map(note => <p key={note} className="combined-handled"><hbr-icon name="nav-workflows" size="14px" aria-hidden="true"/><span><strong>Being handled</strong> · {note}</span></p>)}
       {inspection('attention')}
     </Region>
     <Region id="combined-actions" title="Actions">
