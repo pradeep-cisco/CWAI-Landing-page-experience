@@ -1,12 +1,14 @@
 # Dashboard iteration cues
 
-Updated: 2026-11-23.
+Updated: 2026-11-26.
+
+**Option 4 is the default landing experience.** Opening the app root or `/network-monitoring` without an exploration query opens Agent-centric. Explicit choices in the floating panel remain selectable; Option 1 now uses `?exploration=network`. Admin and Incidents retain their existing destinations.
 
 Use the visible cue in the floating Preview controls to name the target of an iteration. The cue remains visible on the collapsed Preview button and the selected option is encoded in its URL.
 
 | Cue | Direction | Local entry |
 | --- | --- | --- |
-| **01 · Operations** | Existing NOC operator dashboard, WAN overview, and network work. | `/network-monitoring` |
+| **01 · Operations** | Existing NOC operator dashboard, WAN overview, and network work. | `/network-monitoring?exploration=network` |
 | **02 · Governance** | Focused AI workforce supervision exploration. Formerly Workforce · Focused. | `/network-monitoring?exploration=workforce` |
 | **03 · Combined — Live activity** | Detailed full-width overview; Attention and Actions in a two-column second row; full-width live Activity last. | `/network-monitoring?exploration=combined` |
 | **04 · Agent-centric** | Required decisions and optional suggestions, current agent-owned issues, and scoped capabilities with agent controls. | `/network-monitoring?exploration=agent-centric` |

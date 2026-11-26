@@ -19,7 +19,7 @@ import CombinedBaseline from '../../features/combined-baseline/CombinedDashboard
 import CombinedExperienceOverview from '../../features/combined/overview/CombinedExperienceOverview.jsx';
 import AgentCentricDashboard from '../../features/agent-centric/AgentCentricDashboard.jsx';
 import { COMBINED_SCENES, COMBINED_VARIANTS, getCombinedSnapshot } from '../../features/combined/combined-model.js';
-import { EXPLORATION_OPTIONS, explorationLabel, getExplorationOption } from '../../features/explorations/options.js';
+import { EXPLORATION_OPTIONS, explorationLabel, getExplorationOption, resolveExploration } from '../../features/explorations/options.js';
 import { FRAMES, currentFrame, reduce } from '../../features/wan/model/model.js';
 import { createAgentState, enterAgentFrame, syncAgentResponse, reduceAgent, agentFrameTitle } from '../../features/wan/model/agentic-model.js';
 import { WAN_SETUPS, ACTIVE_WAN, MONITORING_CONTEXT, setActiveWanSetup, domainLabel, groupLabel, navigateScope } from '../../features/wan/model/scale.js';
@@ -55,9 +55,9 @@ export default function NetworkMonitoring() {
   const { section } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const view = section === 'admin' || section === 'incidents' ? section : section === 'jobs' && searchParams.get('exploration') === 'agent-centric' ? 'jobs' : 'home';
-  const requestedExploration = searchParams.get('exploration') === 'combined' && searchParams.get('layout') === 'baseline' ? 'combined-baseline' : searchParams.get('exploration');
-  const exploration = (view === 'home' || view === 'jobs') && EXPLORATION_OPTIONS.some(option => option.id === requestedExploration) ? requestedExploration : 'network';
+  const requestedExploration = resolveExploration(searchParams);
+  const view = section === 'admin' || section === 'incidents' ? section : section === 'jobs' && requestedExploration === 'agent-centric' ? 'jobs' : 'home';
+  const exploration = view === 'home' || view === 'jobs' ? requestedExploration : 'network';
   const activeOption = getExplorationOption(exploration);
   const isAlternative = exploration !== 'network';
   const isCombined = exploration === 'combined' || exploration === 'combined-baseline';

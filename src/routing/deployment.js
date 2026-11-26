@@ -9,6 +9,6 @@ export function resolveDeploymentRouting({ pathname, assetBase = "/", routerBase
 
   return {
     basename: routerBase || (isVersionedPreview ? previewMount : assetBase),
-    landingPath: isVersionedPreview ? "/network-monitoring" : "/home",
+    landingPath: "/network-monitoring",
   };
 }

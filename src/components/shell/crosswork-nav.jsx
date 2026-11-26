@@ -1,4 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
+import { getExplorationOption, resolveExploration } from '../../features/explorations/options.js';
 import "./crosswork-nav.css";
 
 const sections = [
@@ -9,12 +10,14 @@ const sections = [
 
 function SectionLinks() {
   const location = useLocation();
-  const agentCentric = new URLSearchParams(location.search).get('exploration') === 'agent-centric';
+  const exploration = resolveExploration(location.search);
+  const agentCentric = exploration === 'agent-centric' && /\/network-monitoring(?:\/jobs)?\/?$/.test(location.pathname);
+  const home = { ...sections[0], value: getExplorationOption(exploration).path };
   const visible = agentCentric ? [
-    { ...sections[0], value: '/network-monitoring?exploration=agent-centric' },
+    home,
     { value: '/network-monitoring/jobs?exploration=agent-centric', label: 'Jobs', icon: 'nav-workflows' },
     ...sections.slice(1),
-  ] : sections;
+  ] : [home, ...sections.slice(1)];
   return visible.map(section => <NavLink key={section.value} to={section.value} end>
     <hbr-icon name={section.icon} size="24px" aria-hidden="true" />
     <span>{section.label}</span>
